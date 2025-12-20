@@ -119,11 +119,11 @@ const Expenses = () => {
               <ExpensesIcon className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-red-400" />
               Expenses
             </h1>
-            <p className="text-gray-400">Track and manage your spending</p>
+            <p className="text-slate-400 font-medium">Track and manage your spending</p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium flex items-center text-sm sm:text-base"
+            className="btn-premium text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold flex items-center text-sm sm:text-base shadow-lg shadow-indigo-500/30"
           >
             <span className="mr-2">{showForm ? '✕' : '+'}</span>
             {showForm ? 'Cancel' : 'Add Expense'}
@@ -138,11 +138,11 @@ const Expenses = () => {
             .sort(([, a], [, b]) => b - a)
             .slice(0, 10)
             .map(([category, total]) => (
-              <div key={category} className="glass-light rounded-xl p-4 border border-gray-700">
-                <div className="flex items-center mb-2 text-gray-400">
+              <div key={category} className="glass-light rounded-xl p-4 border border-slate-700/50 hover:border-indigo-500/30 transition-all shadow-lg">
+                <div className="flex items-center mb-2 text-slate-400">
                   {categoryIcons[category] || <ShoppingIcon className="w-5 h-5" />}
                 </div>
-                <p className="text-xs text-gray-400 mb-1">{category}</p>
+                <p className="text-xs text-slate-400 mb-1 font-medium">{category}</p>
                 <p className="text-lg font-bold text-white">₹{total.toFixed(2)}</p>
               </div>
             ))}
@@ -150,29 +150,29 @@ const Expenses = () => {
       )}
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="glass-light p-6 rounded-xl mb-6">
+        <form onSubmit={handleSubmit} className="glass-light p-6 rounded-xl mb-6 shadow-xl border border-slate-700/30">
           <h2 className="text-xl font-bold text-white mb-4">
             {editingExpense ? 'Edit Expense' : 'Add New Expense'}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Amount (₹)</label>
+              <label className="block text-sm font-semibold text-slate-200 mb-2.5">Amount (₹)</label>
               <input
                 type="number"
                 step="0.01"
                 required
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-900/60 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
                 placeholder="0.00"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Category</label>
+              <label className="block text-sm font-semibold text-slate-200 mb-2.5">Category</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-900/60 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
               >
                 {categories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
@@ -180,32 +180,32 @@ const Expenses = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Date</label>
+              <label className="block text-sm font-semibold text-slate-200 mb-2.5">Date</label>
               <input
                 type="date"
                 required
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-900/60 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Note (Optional)</label>
+              <label className="block text-sm font-semibold text-slate-200 mb-2.5">Note (Optional)</label>
               <input
                 type="text"
                 value={formData.note}
                 onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-900/60 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
                 placeholder="Add a note..."
               />
             </div>
           </div>
           <div className="flex gap-3 mt-4">
-            <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium">
+            <button type="submit" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all">
               {editingExpense ? 'Update' : 'Add'} Expense
             </button>
             {editingExpense && (
-              <button type="button" onClick={resetForm} className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium">
+              <button type="button" onClick={resetForm} className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-2.5 rounded-lg font-semibold transition-all">
                 Cancel
               </button>
             )}
@@ -217,11 +217,11 @@ const Expenses = () => {
         <table className="min-w-full">
           <thead className="bg-gray-800">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Category</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Amount</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Note</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Date</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Category</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Amount</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Note</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
@@ -234,8 +234,8 @@ const Expenses = () => {
             ) : (
               expenses.map((expense) => (
                 <tr key={expense._id} className="hover:bg-gray-800/50">
-                  <td className="px-6 py-4 text-sm text-gray-300">{new Date(expense.date).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 text-sm text-gray-300 flex items-center">
+                  <td className="px-6 py-4 text-sm text-slate-300">{new Date(expense.date).toLocaleDateString()}</td>
+                  <td className="px-6 py-4 text-sm text-slate-300 flex items-center">
                     {categoryIcons[expense.category] && <span className="mr-2">{categoryIcons[expense.category]}</span>}
                     {expense.category}
                   </td>

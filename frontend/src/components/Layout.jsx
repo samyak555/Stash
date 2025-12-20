@@ -32,8 +32,8 @@ const Layout = ({ children, user, setUser }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-black">
-      <nav className="glass-light shadow-lg border-b border-white/10 sticky top-0 z-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <nav className="glass-light shadow-xl border-b border-slate-700/30 sticky top-0 z-50 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -46,10 +46,10 @@ const Layout = ({ children, user, setUser }) => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center ${
                       location.pathname === item.path
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30'
+                        : 'text-slate-300 hover:bg-slate-800/50 hover:text-white hover:translate-x-1'
                     }`}
                   >
                     <item.Icon className="w-5 h-5 mr-2" />
@@ -61,10 +61,10 @@ const Layout = ({ children, user, setUser }) => {
             
             {/* Desktop User Info */}
             <div className="hidden md:flex items-center space-x-4">
-              <span className="text-gray-300 text-sm">Hello, {user?.name}</span>
+              <span className="text-slate-300 text-sm font-medium">Hello, <span className="text-indigo-400">{user?.name}</span></span>
               <button
                 onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all duration-200 hover:scale-105"
               >
                 Logout
               </button>
@@ -72,10 +72,10 @@ const Layout = ({ children, user, setUser }) => {
 
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center space-x-2">
-              <span className="text-gray-300 text-xs truncate max-w-[100px]">{user?.name?.split(' ')[0] || 'User'}</span>
+              <span className="text-slate-300 text-xs truncate max-w-[100px] font-medium">{user?.name?.split(' ')[0] || 'User'}</span>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="text-gray-300 hover:text-white p-2"
+                className="text-slate-300 hover:text-indigo-400 p-2 transition-colors duration-200"
                 aria-label="Toggle menu"
               >
                 {mobileMenuOpen ? (
@@ -101,10 +101,10 @@ const Layout = ({ children, user, setUser }) => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
+                  className={`block px-3 py-2.5 rounded-lg text-base font-medium flex items-center transition-all duration-200 ${
                     location.pathname === item.path
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                      : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
                   }`}
                 >
                   <item.Icon className="w-5 h-5 mr-3" />
@@ -116,7 +116,7 @@ const Layout = ({ children, user, setUser }) => {
                   handleLogout();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-400 hover:bg-gray-800 hover:text-red-300 flex items-center"
+                className="w-full text-left px-3 py-2.5 rounded-lg text-base font-medium text-red-400 hover:bg-slate-800/50 hover:text-red-300 flex items-center transition-all duration-200"
               >
                 <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

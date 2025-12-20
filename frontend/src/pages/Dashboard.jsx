@@ -230,13 +230,13 @@ const Dashboard = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2">Dashboard</h1>
-            <p className="text-gray-400">Comprehensive overview of your financial activity</p>
+            <p className="text-slate-400 font-medium">Comprehensive overview of your financial activity</p>
           </div>
           <div className="mt-4 sm:mt-0 flex flex-wrap gap-2 sm:gap-3">
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="px-3 sm:px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm sm:text-base"
+              className="px-3 sm:px-4 py-2 bg-slate-800/60 border border-slate-600/50 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
             >
               <option value="month">Monthly</option>
               <option value="week">Weekly</option>
@@ -245,7 +245,7 @@ const Dashboard = () => {
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              className="px-3 sm:px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm sm:text-base"
+              className="px-3 sm:px-4 py-2 bg-slate-800/60 border border-slate-600/50 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
             >
               {Array.from({ length: 12 }, (_, i) => (
                 <option key={i + 1} value={i + 1}>
@@ -256,7 +256,7 @@ const Dashboard = () => {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="px-3 sm:px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm sm:text-base"
+              className="px-3 sm:px-4 py-2 bg-slate-800/60 border border-slate-600/50 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
             >
               {Array.from({ length: 5 }, (_, i) => {
                 const year = new Date().getFullYear() - 2 + i;
@@ -268,7 +268,7 @@ const Dashboard = () => {
       </div>
 
       {/* Financial Health Score Card */}
-      <div className="glass-light rounded-xl p-6 mb-8 border border-blue-500/20">
+      <div className="glass-light rounded-xl p-6 mb-8 border border-indigo-500/20 shadow-xl">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="text-center">
             <div className="inline-block relative w-24 h-24 mb-3">
@@ -289,60 +289,60 @@ const Dashboard = () => {
                 <span className="text-xl font-bold text-white">{savingsRate}%</span>
               </div>
             </div>
-            <p className="text-sm text-gray-400">Savings Rate</p>
+            <p className="text-sm text-slate-400 font-medium">Savings Rate</p>
           </div>
           <div className="text-center">
             <p className="text-3xl font-bold text-blue-400 mb-1">₹{avgDailySpending}</p>
-            <p className="text-sm text-gray-400">Avg Daily Spending</p>
+            <p className="text-sm text-slate-400 font-medium">Avg Daily Spending</p>
           </div>
           <div className="text-center">
             <p className="text-3xl font-bold text-purple-400 mb-1">₹{spendingVelocity}</p>
-            <p className="text-sm text-gray-400">Spending Velocity/Day</p>
+            <p className="text-sm text-slate-400 font-medium">Spending Velocity/Day</p>
           </div>
           <div className="text-center">
             <p className="text-3xl font-bold text-green-400 mb-1">{expenses.length}</p>
-            <p className="text-sm text-gray-400">Total Transactions</p>
+            <p className="text-sm text-slate-400 font-medium">Total Transactions</p>
           </div>
         </div>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="glass-light rounded-xl p-6 border border-green-500/20 hover:border-green-500/40 transition-colors">
+        <div className="glass-light rounded-xl p-6 border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300 shadow-lg hover:shadow-emerald-500/10">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center mb-2">
-                <IncomeIcon className="w-5 h-5 text-green-400 mr-2" />
-                <h3 className="text-gray-400 text-sm font-medium">Total Income</h3>
+                <IncomeIcon className="w-5 h-5 text-emerald-400 mr-2" />
+                <h3 className="text-slate-300 text-sm font-semibold">Total Income</h3>
               </div>
-              <p className="text-3xl font-bold text-green-400">₹{totalIncome.toFixed(2)}</p>
-              <p className="text-xs text-gray-500 mt-1">{incomes.length} income entries</p>
+              <p className="text-3xl font-bold text-emerald-400">₹{totalIncome.toFixed(2)}</p>
+              <p className="text-xs text-slate-500 mt-1 font-medium">{incomes.length} income entries</p>
             </div>
           </div>
         </div>
-        <div className="glass-light rounded-xl p-6 border border-red-500/20 hover:border-red-500/40 transition-colors">
+        <div className="glass-light rounded-xl p-6 border border-rose-500/20 hover:border-rose-500/40 transition-all duration-300 shadow-lg hover:shadow-rose-500/10">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center mb-2">
-                <ExpensesIcon className="w-5 h-5 text-red-400 mr-2" />
-                <h3 className="text-gray-400 text-sm font-medium">Total Expenses</h3>
+                <ExpensesIcon className="w-5 h-5 text-rose-400 mr-2" />
+                <h3 className="text-slate-300 text-sm font-semibold">Total Expenses</h3>
               </div>
-              <p className="text-3xl font-bold text-red-400">₹{totalExpenses.toFixed(2)}</p>
-              <p className="text-xs text-gray-500 mt-1">{expenses.length} expense entries</p>
+              <p className="text-3xl font-bold text-rose-400">₹{totalExpenses.toFixed(2)}</p>
+              <p className="text-xs text-slate-500 mt-1 font-medium">{expenses.length} expense entries</p>
             </div>
           </div>
         </div>
-        <div className="glass-light rounded-xl p-6 border border-blue-500/20 hover:border-blue-500/40 transition-colors">
+        <div className="glass-light rounded-xl p-6 border border-indigo-500/20 hover:border-indigo-500/40 transition-all duration-300 shadow-lg hover:shadow-indigo-500/10">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center mb-2">
-                <DashboardIcon className="w-5 h-5 text-blue-400 mr-2" />
-                <h3 className="text-gray-400 text-sm font-medium">Balance</h3>
+                <DashboardIcon className="w-5 h-5 text-indigo-400 mr-2" />
+                <h3 className="text-slate-300 text-sm font-semibold">Balance</h3>
               </div>
-              <p className={`text-3xl font-bold ${balance >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
+              <p className={`text-3xl font-bold ${balance >= 0 ? 'text-indigo-400' : 'text-rose-400'}`}>
                 ₹{balance.toFixed(2)}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-slate-500 mt-1 font-medium">
                 {balance >= 0 ? 'Positive balance' : 'Negative balance'}
               </p>
             </div>
@@ -353,7 +353,7 @@ const Dashboard = () => {
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Income vs Expenses Trend */}
-        <div className="glass-light rounded-xl p-6">
+        <div className="glass-light rounded-xl p-6 shadow-lg border border-slate-700/30">
           <div className="flex items-center mb-4">
             <DashboardIcon className="w-5 h-5 text-blue-400 mr-2" />
             <h3 className="text-xl font-bold text-white">Income vs Expenses Trend</h3>
@@ -383,7 +383,7 @@ const Dashboard = () => {
         </div>
 
         {/* Category Breakdown Pie Chart */}
-        <div className="glass-light rounded-xl p-6">
+        <div className="glass-light rounded-xl p-6 shadow-lg border border-slate-700/30">
           <div className="flex items-center mb-4">
             <ShoppingIcon className="w-5 h-5 text-purple-400 mr-2" />
             <h3 className="text-xl font-bold text-white">Category Breakdown</h3>
@@ -414,16 +414,16 @@ const Dashboard = () => {
           ) : (
             <div className="flex flex-col items-center justify-center h-[300px] text-center">
               <ShoppingIcon className="w-16 h-16 text-gray-600 mb-4" />
-              <p className="text-gray-400 text-lg mb-2">No expenses yet</p>
-              <p className="text-gray-500 text-sm">Add expenses to see category breakdown</p>
+              <p className="text-slate-400 text-lg mb-2 font-medium">No expenses yet</p>
+              <p className="text-slate-500 text-sm">Add expenses to see category breakdown</p>
               <div className="mt-6 grid grid-cols-3 gap-4 w-full max-w-md">
                 {['Food', 'Travel', 'Shopping', 'Entertainment', 'Bills', 'Others'].map((cat, idx) => (
-                  <div key={cat} className="glass-light rounded-lg p-3 border border-gray-700">
+                  <div key={cat} className="glass-light rounded-lg p-3 border border-slate-700/50 hover:border-indigo-500/30 transition-all">
                     <div className="flex items-center justify-center mb-2">
-                      {categoryIcons[cat] || <ShoppingIcon className="w-5 h-5 text-gray-500" />}
+                      {categoryIcons[cat] || <ShoppingIcon className="w-5 h-5 text-slate-500" />}
                     </div>
-                    <p className="text-xs text-gray-500 text-center">{cat}</p>
-                    <p className="text-xs text-gray-600 text-center mt-1">₹0.00</p>
+                    <p className="text-xs text-slate-400 text-center font-medium">{cat}</p>
+                    <p className="text-xs text-slate-600 text-center mt-1">₹0.00</p>
                   </div>
                 ))}
               </div>
@@ -435,7 +435,7 @@ const Dashboard = () => {
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Monthly Spending Bar Chart */}
-        <div className="glass-light rounded-xl p-6">
+        <div className="glass-light rounded-xl p-6 shadow-lg border border-slate-700/30">
           <div className="flex items-center mb-4">
             <ExpensesIcon className="w-5 h-5 text-red-400 mr-2" />
             <h3 className="text-xl font-bold text-white">Monthly Spending</h3>
@@ -455,7 +455,7 @@ const Dashboard = () => {
         </div>
 
         {/* Daily Spending Trend */}
-        <div className="glass-light rounded-xl p-6">
+        <div className="glass-light rounded-xl p-6 shadow-lg border border-slate-700/30">
           <div className="flex items-center mb-4">
             <DashboardIcon className="w-5 h-5 text-yellow-400 mr-2" />
             <h3 className="text-xl font-bold text-white">Daily Spending Trend (Last 30 Days)</h3>
