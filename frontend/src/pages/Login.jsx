@@ -43,7 +43,7 @@ const Login = ({ setUser }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-indigo-950/20 to-slate-950 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 relative overflow-hidden">
       {/* Full Page Logo Background - Covering the entire page */}
       <Logo fullPage={true} />
       
@@ -51,20 +51,18 @@ const Login = ({ setUser }) => {
       <div className="flex-1 flex items-center justify-center py-4 sm:py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-sm w-full space-y-6 sm:space-y-8 animate-fade-in">
           <div className="text-center animate-slide-up">
-            <h2 className="text-center text-2xl sm:text-3xl font-bold text-white mb-3">
-              <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Welcome Back
-              </span>
+            <h2 className="text-center text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
+              Welcome Back
             </h2>
-            <p className="text-center text-sm sm:text-base text-slate-400 px-4 font-medium">
+            <p className="text-center text-sm sm:text-base text-slate-600 px-4 font-medium">
               Sign in to your account to continue your financial journey
             </p>
           </div>
           
-          <form className="mt-6 sm:mt-8 space-y-5 sm:space-y-6 glass-light p-6 sm:p-8 rounded-2xl shadow-2xl border border-slate-700/30 backdrop-blur-xl" onSubmit={handleSubmit}>
+          <form className="mt-6 sm:mt-8 space-y-5 sm:space-y-6 bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl shadow-xl border border-slate-200/50" onSubmit={handleSubmit}>
             <div className="space-y-5">
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-slate-200 mb-2.5">
+                <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-2.5">
                   Email address
                 </label>
                 <input
@@ -72,7 +70,7 @@ const Login = ({ setUser }) => {
                   name="email"
                   type="email"
                   required
-                  className="appearance-none relative block w-full px-4 py-3.5 border border-slate-600/50 rounded-xl bg-slate-900/60 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-base focus:bg-slate-900/80"
+                  className="appearance-none relative block w-full px-4 py-3.5 border border-slate-300 rounded-xl bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-base shadow-sm"
                   placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleChange}
@@ -84,7 +82,7 @@ const Login = ({ setUser }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-premium group relative w-full flex justify-center py-3.5 px-4 text-sm sm:text-base font-semibold rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/30"
+                className="group relative w-full flex justify-center py-3.5 px-4 text-sm sm:text-base font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200"
               >
                 {loading ? (
                   <span className="flex items-center">
@@ -103,7 +101,7 @@ const Login = ({ setUser }) => {
             <div className="text-center pt-2">
               <Link
                 to="/register"
-                className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors inline-flex items-center text-sm sm:text-base"
+                className="font-medium text-blue-600 hover:text-blue-700 transition-colors inline-flex items-center text-sm sm:text-base"
               >
                 Don't have an account? 
                 <span className="ml-1 underline">Sign up</span>

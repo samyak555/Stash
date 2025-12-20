@@ -11,16 +11,17 @@ const Logo = ({ size = 'default', className = '', showText = true, fullPage = fa
 
   if (fullPage) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0" style={{ opacity: 0.15 }}>
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0" style={{ opacity: 0.25 }}>
         <img
           src="/logo.png"
           alt="Stash"
-          className="object-cover"
+          className="object-contain"
           style={{ 
-            width: '100vw',
-            height: '100vh',
-            objectFit: 'cover',
-            filter: 'drop-shadow(0 0 200px rgba(99, 102, 241, 0.4))'
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+            width: 'auto',
+            height: 'auto',
+            objectFit: 'contain'
           }}
           onError={(e) => {
             e.target.style.display = 'none';
