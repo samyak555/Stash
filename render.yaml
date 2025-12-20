@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: stash-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    disk:
+      name: stash-data
+      mountPath: /opt/render/project/src/backend/data
+      sizeGB: 1
+
