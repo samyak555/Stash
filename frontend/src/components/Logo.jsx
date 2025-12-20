@@ -17,10 +17,8 @@ const Logo = ({ size = 'default', className = '', showText = true, fullPage = fa
           alt="Stash"
           className="object-contain"
           style={{ 
-            maxWidth: '90vw',
-            maxHeight: '90vh',
-            width: 'auto',
-            height: 'auto',
+            width: '100vw',
+            height: '100vh',
             objectFit: 'contain'
           }}
           onError={(e) => {
