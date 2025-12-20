@@ -37,11 +37,8 @@ I've prepared everything for you! Just follow these simple steps.
 5. **Environment Variables:**
    - `NODE_ENV` = `production`
    - `PORT` = `10000`
-6. **Create Disk:**
-   - Name: `stash-data`
-   - Mount: `/opt/render/project/src/backend/data`
-   - Size: `1 GB`
-7. Click "Create Web Service"
+6. Click "Create Web Service"
+   - **Note**: Persistent disks are not available on free tier. Your app will work - data persists while service is running.
 8. **Copy your backend URL** (e.g., `https://stash-backend.onrender.com`)
 
 ### Step 3: Deploy Frontend to Vercel (5 min)

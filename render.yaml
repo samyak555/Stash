@@ -10,9 +10,7 @@ services:
         value: production
       - key: PORT
         value: 10000
-    disk:
-      name: stash-data
-      mountPath: /opt/render/project/src/backend/data
-      sizeGB: 1
+    # Note: Persistent disks require paid plan on Render
+    # Data will persist while service is running on free tier
 
 
