@@ -10,3 +10,4 @@ export const getInsights = async (req, res) => {
   }
 };
 
+

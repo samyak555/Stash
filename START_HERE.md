@@ -18,7 +18,7 @@ I've prepared everything for you! Just follow these simple steps.
    git add .
    git commit -m "Ready for deployment"
    git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/stash-finance.git
+   git remote add origin https://github.com/samyak555/Stash.git
    git push -u origin main
    ```
    *(Replace YOUR_USERNAME with your GitHub username)*
@@ -80,4 +80,5 @@ If something doesn't work:
 3. Make sure backend URL is accessible
 
 **That's it! You're ready to deploy! 🎉**
+
 

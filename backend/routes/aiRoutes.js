@@ -9,3 +9,4 @@ router.get('/insights', getInsights);
 
 export default router;
 
+
