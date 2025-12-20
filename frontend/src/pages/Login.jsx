@@ -48,11 +48,12 @@ const Login = ({ setUser }) => {
       <Logo fullPage={true} />
       
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-sm w-full space-y-8 animate-fade-in">
+      <div className="flex-1 flex items-center justify-center py-4 sm:py-12 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-sm w-full space-y-6 sm:space-y-8 animate-fade-in">
           <div className="text-center animate-slide-up">
-            <div className="relative inline-block mb-6">
-              <div className="w-72 h-72 mx-auto">
+            <div className="relative inline-block mb-4 sm:mb-6">
+              {/* Responsive Logo */}
+              <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-72 md:h-72 mx-auto">
                 <img
                   src="/logo.png"
                   alt="Stash"
@@ -60,15 +61,15 @@ const Login = ({ setUser }) => {
                 />
               </div>
             </div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-white bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <h2 className="mt-4 sm:mt-6 text-center text-2xl sm:text-3xl font-extrabold text-white bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
               Welcome Back
             </h2>
-            <p className="mt-3 text-center text-base text-gray-300">
+            <p className="mt-2 sm:mt-3 text-center text-sm sm:text-base text-gray-300 px-4">
               Sign in to your account to continue your financial journey
             </p>
           </div>
           
-          <form className="mt-8 space-y-6 glass-light p-8 rounded-2xl shadow-2xl border border-white/10 backdrop-blur-xl" onSubmit={handleSubmit}>
+          <form className="mt-6 sm:mt-8 space-y-5 sm:space-y-6 glass-light p-6 sm:p-8 rounded-2xl shadow-2xl border border-white/10 backdrop-blur-xl" onSubmit={handleSubmit}>
             <div className="space-y-5">
               <div>
                 <label htmlFor="email" className="block text-sm font-semibold text-gray-200 mb-2">
@@ -79,7 +80,7 @@ const Login = ({ setUser }) => {
                   name="email"
                   type="email"
                   required
-                  className="appearance-none relative block w-full px-4 py-3.5 border border-gray-600 rounded-xl bg-gray-900/80 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="appearance-none relative block w-full px-4 py-3 sm:py-3.5 border border-gray-600 rounded-xl bg-gray-900/80 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-base"
                   placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleChange}
@@ -91,7 +92,7 @@ const Login = ({ setUser }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative w-full flex justify-center py-3.5 px-4 border border-transparent text-base font-semibold rounded-xl text-white bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
+                className="group relative w-full flex justify-center py-3 sm:py-3.5 px-4 border border-transparent text-sm sm:text-base font-semibold rounded-xl text-white bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
               >
                 {loading ? (
                   <span className="flex items-center">
@@ -110,7 +111,7 @@ const Login = ({ setUser }) => {
             <div className="text-center pt-2">
               <Link
                 to="/register"
-                className="font-medium text-blue-400 hover:text-blue-300 transition-colors inline-flex items-center"
+                className="font-medium text-blue-400 hover:text-blue-300 transition-colors inline-flex items-center text-sm sm:text-base"
               >
                 Don't have an account? 
                 <span className="ml-1 underline">Sign up</span>

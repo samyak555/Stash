@@ -1,12 +1,14 @@
 import { Link, useLocation } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
+import { useState } from 'react';
 import Logo from './Logo';
 import Footer from './Footer';
 import { DashboardIcon, ExpensesIcon, IncomeIcon, BudgetsIcon, GoalsIcon, FamilyIcon, InsightsIcon } from './Icons';
 
 const Layout = ({ children, user, setUser }) => {
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -38,7 +40,8 @@ const Layout = ({ children, user, setUser }) => {
               <Link to="/" className="flex items-center">
                 <Logo size="default" showText={true} />
               </Link>
-              <div className="hidden sm:ml-8 sm:flex sm:space-x-4">
+              {/* Desktop Navigation */}
+              <div className="hidden md:ml-8 md:flex md:space-x-4">
                 {navItems.map((item) => (
                   <Link
                     key={item.path}
@@ -55,7 +58,9 @@ const Layout = ({ children, user, setUser }) => {
                 ))}
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            
+            {/* Desktop User Info */}
+            <div className="hidden md:flex items-center space-x-4">
               <span className="text-gray-300 text-sm">Hello, {user?.name}</span>
               <button
                 onClick={handleLogout}
@@ -64,11 +69,66 @@ const Layout = ({ children, user, setUser }) => {
                 Logout
               </button>
             </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center space-x-2">
+              <span className="text-gray-300 text-xs truncate max-w-[100px]">{user?.name?.split(' ')[0] || 'User'}</span>
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="text-gray-300 hover:text-white p-2"
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-white/10">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
+                    location.pathname === item.path
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                  }`}
+                >
+                  <item.Icon className="w-5 h-5 mr-3" />
+                  {item.label}
+                </Link>
+              ))}
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-400 hover:bg-gray-800 hover:text-red-300 flex items-center"
+              >
+                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Logout
+              </button>
+            </div>
+          </div>
+        )}
       </nav>
 
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
         {children}
         <Footer />
       </main>

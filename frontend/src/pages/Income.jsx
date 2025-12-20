@@ -113,8 +113,8 @@ const Income = () => {
         <Logo size="default" showText={true} className="mb-6" />
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-[40px] font-bold text-white mb-3 flex items-center leading-tight">
-              <IncomeIcon className="w-8 h-8 mr-3 text-green-400 opacity-70" />
+            <h1 className="text-3xl sm:text-4xl md:text-[40px] font-bold text-white mb-3 flex items-center leading-tight">
+              <IncomeIcon className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-green-400 opacity-70" />
               Income
             </h1>
             <p className="text-[15px] text-gray-400" style={{ lineHeight: '1.75', opacity: 0.7 }}>
@@ -123,7 +123,7 @@ const Income = () => {
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-5 py-3 rounded-lg font-semibold text-[15px] flex items-center transition-colors"
+            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 sm:px-5 py-2 sm:py-3 rounded-lg font-semibold text-sm sm:text-[15px] flex items-center transition-colors"
           >
             <span className="mr-2">{showForm ? '✕' : '+'}</span>
             {showForm ? 'Cancel' : 'Add new income'}
@@ -146,7 +146,7 @@ const Income = () => {
 
       {/* Source Breakdown - 24px padding cards */}
       {Object.keys(sourceTotals).length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 mb-12">
           {Object.entries(sourceTotals).map(([source, total]) => (
             <div key={source} className="glass-light rounded-xl p-6 border border-gray-700/50">
               <p className="text-[12px] text-gray-400 mb-2 uppercase tracking-[0.08em]" style={{ opacity: 0.7 }}>

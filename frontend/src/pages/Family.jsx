@@ -81,15 +81,15 @@ const Family = () => {
         <Logo size="default" showText={true} className="mb-4" />
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-5xl font-bold text-white mb-2 flex items-center">
-              <FamilyIcon className="w-8 h-8 mr-3 text-pink-400" />
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 flex items-center">
+              <FamilyIcon className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-pink-400" />
               Family & Groups
             </h1>
             <p className="text-gray-400">Share expenses with family and friends</p>
           </div>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white px-6 py-3 rounded-lg font-medium flex items-center"
+            className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium flex items-center text-sm sm:text-base"
           >
             <span className="mr-2">{showCreateForm ? '✕' : '+'}</span>
             {showCreateForm ? 'Cancel' : 'Create Group'}

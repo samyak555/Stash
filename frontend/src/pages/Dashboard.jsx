@@ -229,14 +229,14 @@ const Dashboard = () => {
         <Logo size="large" showText={true} className="mb-4" />
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-5xl font-bold text-white mb-2">Dashboard</h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2">Dashboard</h1>
             <p className="text-gray-400">Comprehensive overview of your financial activity</p>
           </div>
-          <div className="mt-4 sm:mt-0 flex gap-3">
+          <div className="mt-4 sm:mt-0 flex flex-wrap gap-2 sm:gap-3">
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white"
+              className="px-3 sm:px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm sm:text-base"
             >
               <option value="month">Monthly</option>
               <option value="week">Weekly</option>
@@ -245,7 +245,7 @@ const Dashboard = () => {
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white"
+              className="px-3 sm:px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm sm:text-base"
             >
               {Array.from({ length: 12 }, (_, i) => (
                 <option key={i + 1} value={i + 1}>
@@ -256,7 +256,7 @@ const Dashboard = () => {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white"
+              className="px-3 sm:px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm sm:text-base"
             >
               {Array.from({ length: 5 }, (_, i) => {
                 const year = new Date().getFullYear() - 2 + i;

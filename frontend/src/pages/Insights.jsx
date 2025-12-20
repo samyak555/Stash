@@ -33,8 +33,8 @@ const Insights = () => {
       <div className="mb-6">
         <Logo size="default" showText={true} className="mb-4" />
         <div>
-          <h1 className="text-5xl font-bold text-white mb-2 flex items-center">
-            <InsightsIcon className="w-8 h-8 mr-3 text-purple-400" />
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 flex items-center">
+            <InsightsIcon className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-purple-400" />
             AI Insights
           </h1>
           <p className="text-gray-400">Smart financial analysis and recommendations</p>
