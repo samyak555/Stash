@@ -51,22 +51,12 @@ const Login = ({ setUser }) => {
       <div className="flex-1 flex items-center justify-center py-4 sm:py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-sm w-full space-y-6 sm:space-y-8 animate-fade-in">
           <div className="text-center animate-slide-up">
-            <div className="relative inline-block mb-4 sm:mb-6">
-              {/* Responsive Logo */}
-              <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-72 md:h-72 mx-auto">
-                <img
-                  src="/logo.png"
-                  alt="Stash"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            </div>
-            <h2 className="mt-4 sm:mt-6 text-center text-2xl sm:text-3xl font-bold text-white">
+            <h2 className="text-center text-2xl sm:text-3xl font-bold text-white mb-3">
               <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                 Welcome Back
               </span>
             </h2>
-            <p className="mt-2 sm:mt-3 text-center text-sm sm:text-base text-slate-400 px-4 font-medium">
+            <p className="text-center text-sm sm:text-base text-slate-400 px-4 font-medium">
               Sign in to your account to continue your financial journey
             </p>
           </div>
