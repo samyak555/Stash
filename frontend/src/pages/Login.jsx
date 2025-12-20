@@ -49,7 +49,7 @@ const Login = ({ setUser }) => {
       
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center py-4 sm:py-12 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-sm w-full space-y-6 sm:space-y-8 animate-fade-in">
+        <div className="max-w-xs w-full space-y-5 sm:space-y-6 animate-fade-in">
           <div className="text-center animate-slide-up">
             <h2 className="text-center text-2xl sm:text-3xl font-bold text-white mb-3">
               <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -61,7 +61,7 @@ const Login = ({ setUser }) => {
             </p>
           </div>
           
-          <form className="mt-6 sm:mt-8 space-y-5 sm:space-y-6 glass-light p-6 sm:p-8 rounded-2xl shadow-2xl border border-slate-700/30 backdrop-blur-xl" onSubmit={handleSubmit}>
+          <form className="mt-4 sm:mt-6 space-y-4 sm:space-y-5 glass-light p-5 sm:p-6 rounded-2xl shadow-2xl border border-slate-700/30 backdrop-blur-xl" onSubmit={handleSubmit}>
             <div className="space-y-5">
               <div>
                 <label htmlFor="email" className="block text-sm font-semibold text-slate-200 mb-2.5">
