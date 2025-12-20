@@ -85,7 +85,7 @@ const Family = () => {
               <FamilyIcon className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-pink-400" />
               Family & Groups
             </h1>
-            <p className="text-gray-400">Share expenses with family and friends</p>
+            <p className="text-slate-400">Share expenses with family and friends</p>
           </div>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
@@ -102,23 +102,23 @@ const Family = () => {
           <h2 className="text-xl font-bold text-white mb-4">Create New Group</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Group Name</label>
+              <label className="block text-sm font-medium text-slate-200 mb-2">Group Name</label>
               <input
                 type="text"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="w-full px-4 py-2 bg-slate-900/60 border border-slate-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
                 placeholder="e.g., Family Budget"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Description</label>
+              <label className="block text-sm font-medium text-slate-200 mb-2">Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows="3"
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="w-full px-4 py-2 bg-slate-900/60 border border-slate-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
                 placeholder="Describe the group..."
               />
             </div>
@@ -132,29 +132,29 @@ const Family = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {groups.length === 0 ? (
           <div className="col-span-full glass-light rounded-xl p-12 text-center">
-            <FamilyIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400 text-lg">No groups created yet</p>
-            <p className="text-gray-500 text-sm mt-2">Create a group to start sharing expenses!</p>
+            <FamilyIcon className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+            <p className="text-slate-400 text-lg">No groups created yet</p>
+            <p className="text-slate-500 text-sm mt-2">Create a group to start sharing expenses!</p>
           </div>
         ) : (
           groups.map((group) => (
-            <div key={group._id} className="glass-light rounded-xl p-6 border border-gray-700">
+            <div key={group._id} className="glass-light rounded-xl p-6 border border-slate-700/50">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-xl font-bold text-white mb-1">{group.name}</h3>
                   {group.description && (
-                    <p className="text-sm text-gray-400">{group.description}</p>
+                    <p className="text-sm text-slate-400">{group.description}</p>
                   )}
                 </div>
               </div>
 
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Members:</span>
+                  <span className="text-slate-400">Members:</span>
                   <span className="text-white">{group.members?.length || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Pending Invites:</span>
+                  <span className="text-slate-400">Pending Invites:</span>
                   <span className="text-yellow-400">{group.invitations?.length || 0}</span>
                 </div>
               </div>
@@ -166,17 +166,17 @@ const Family = () => {
                 >
                   Invite
                 </button>
-                <button className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                <button className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
                   View
                 </button>
               </div>
 
               {showInviteForm === group._id && (
-                <div className="mt-4 p-4 bg-gray-800/50 rounded-lg">
+                <div className="mt-4 p-4 bg-slate-800/50 rounded-lg">
                   <select
                     value={selectedUserId}
                     onChange={(e) => setSelectedUserId(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm mb-2"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-600/50 rounded-lg text-white text-sm mb-2"
                   >
                     <option value="">Select a user</option>
                     {users.filter(u => !group.members?.includes(u._id)).map(user => (
@@ -195,7 +195,7 @@ const Family = () => {
                         setShowInviteForm(null);
                         setSelectedUserId('');
                       }}
-                      className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm"
+                      className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-3 py-1 rounded text-sm"
                     >
                       Cancel
                     </button>

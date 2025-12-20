@@ -37,7 +37,7 @@ const Insights = () => {
             <InsightsIcon className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-purple-400" />
             AI Insights
           </h1>
-          <p className="text-gray-400">Smart financial analysis and recommendations</p>
+          <p className="text-slate-400">Smart financial analysis and recommendations</p>
         </div>
       </div>
 
@@ -80,8 +80,8 @@ const Insights = () => {
                 <h3 className="text-xl font-bold text-white mb-4">Recommendations</h3>
                 <div className="space-y-3">
                   {insights.recommendations.map((rec, index) => (
-                    <div key={index} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                      <p className="text-gray-300">{rec}</p>
+                    <div key={index} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
+                      <p className="text-slate-300">{rec}</p>
                     </div>
                   ))}
                 </div>
@@ -93,8 +93,8 @@ const Insights = () => {
                 <h3 className="text-xl font-bold text-white mb-4">Key Insights</h3>
                 <div className="space-y-3">
                   {insights.insights.map((insight, index) => (
-                    <div key={index} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                      <p className="text-gray-300">{insight}</p>
+                    <div key={index} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
+                      <p className="text-slate-300">{insight}</p>
                     </div>
                   ))}
                 </div>
@@ -103,9 +103,9 @@ const Insights = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <InsightsIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400 text-lg">No insights available yet</p>
-            <p className="text-gray-500 text-sm mt-2">Add expenses and income to get AI-powered insights</p>
+            <InsightsIcon className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+            <p className="text-slate-400 text-lg">No insights available yet</p>
+            <p className="text-slate-500 text-sm mt-2">Add expenses and income to get AI-powered insights</p>
           </div>
         )}
       </div>

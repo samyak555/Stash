@@ -117,7 +117,7 @@ const Income = () => {
               <IncomeIcon className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-green-400 opacity-70" />
               Income
             </h1>
-            <p className="text-[15px] text-gray-400" style={{ lineHeight: '1.75', opacity: 0.7 }}>
+            <p className="text-[15px] text-slate-400" style={{ lineHeight: '1.75', opacity: 0.7 }}>
               A clear overview of all your income streams
             </p>
           </div>
@@ -135,7 +135,7 @@ const Income = () => {
       <div className="glass-light rounded-xl p-8 mb-12 border border-green-500/10">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[14px] text-gray-400 mb-3 uppercase tracking-[0.08em] font-medium" style={{ opacity: 0.7 }}>
+            <p className="text-[14px] text-slate-400 mb-3 uppercase tracking-[0.08em] font-medium" style={{ opacity: 0.7 }}>
               Total income this period
             </p>
             <p className="text-[48px] font-bold text-green-400 leading-tight">₹{totalIncome.toFixed(2)}</p>
@@ -148,8 +148,8 @@ const Income = () => {
       {Object.keys(sourceTotals).length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 mb-12">
           {Object.entries(sourceTotals).map(([source, total]) => (
-            <div key={source} className="glass-light rounded-xl p-6 border border-gray-700/50">
-              <p className="text-[12px] text-gray-400 mb-2 uppercase tracking-[0.08em]" style={{ opacity: 0.7 }}>
+            <div key={source} className="glass-light rounded-xl p-6 border border-slate-700/50">
+              <p className="text-[12px] text-slate-400 mb-2 uppercase tracking-[0.08em]" style={{ opacity: 0.7 }}>
                 {source}
               </p>
               <p className="text-[20px] font-semibold text-white leading-tight">₹{total.toFixed(2)}</p>
@@ -166,7 +166,7 @@ const Income = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-[14px] font-medium text-gray-300 mb-2.5" style={{ lineHeight: '1.6' }}>
+              <label className="block text-[14px] font-medium text-slate-200 mb-2.5" style={{ lineHeight: '1.6' }}>
                 Amount (₹)
               </label>
               <input
@@ -175,19 +175,19 @@ const Income = () => {
                 required
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                className="w-full px-5 py-3 bg-gray-900/50 border border-gray-700/50 rounded-lg text-[15px] text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
+                className="w-full px-5 py-3 bg-slate-900/60 border border-slate-600/50 rounded-lg text-[15px] text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
                 style={{ lineHeight: '1.6' }}
                 placeholder="0.00"
               />
             </div>
             <div>
-              <label className="block text-[14px] font-medium text-gray-300 mb-2.5" style={{ lineHeight: '1.6' }}>
+              <label className="block text-[14px] font-medium text-slate-200 mb-2.5" style={{ lineHeight: '1.6' }}>
                 Source
               </label>
               <select
                 value={formData.source}
                 onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-                className="w-full px-5 py-3 bg-gray-900/50 border border-gray-700/50 rounded-lg text-[15px] text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
+                className="w-full px-5 py-3 bg-slate-900/60 border border-slate-600/50 rounded-lg text-[15px] text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
                 style={{ lineHeight: '1.6' }}
               >
                 {sources.map(source => (
@@ -196,7 +196,7 @@ const Income = () => {
               </select>
             </div>
             <div>
-              <label className="block text-[14px] font-medium text-gray-300 mb-2.5" style={{ lineHeight: '1.6' }}>
+              <label className="block text-[14px] font-medium text-slate-200 mb-2.5" style={{ lineHeight: '1.6' }}>
                 Date
               </label>
               <input
@@ -204,19 +204,19 @@ const Income = () => {
                 required
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-5 py-3 bg-gray-900/50 border border-gray-700/50 rounded-lg text-[15px] text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
+                className="w-full px-5 py-3 bg-slate-900/60 border border-slate-600/50 rounded-lg text-[15px] text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
                 style={{ lineHeight: '1.6' }}
               />
             </div>
             <div>
-              <label className="block text-[14px] font-medium text-gray-300 mb-2.5" style={{ lineHeight: '1.6' }}>
-                Note <span className="text-gray-500 font-normal">(optional)</span>
+              <label className="block text-[14px] font-medium text-slate-200 mb-2.5" style={{ lineHeight: '1.6' }}>
+                Note <span className="text-slate-500 font-normal">(optional)</span>
               </label>
               <input
                 type="text"
                 value={formData.note}
                 onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                className="w-full px-5 py-3 bg-gray-900/50 border border-gray-700/50 rounded-lg text-[15px] text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
+                className="w-full px-5 py-3 bg-slate-900/60 border border-slate-600/50 rounded-lg text-[15px] text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
                 style={{ lineHeight: '1.6' }}
                 placeholder="Add a note..."
               />
@@ -247,19 +247,19 @@ const Income = () => {
         <table className="min-w-full">
           <thead className="bg-gray-800/30">
             <tr>
-              <th className="px-8 py-4 text-left text-[12px] font-medium text-gray-400 uppercase tracking-[0.08em]" style={{ lineHeight: '1.6' }}>
+              <th className="px-8 py-4 text-left text-[12px] font-medium text-slate-400 uppercase tracking-[0.08em]" style={{ lineHeight: '1.6' }}>
                 Date
               </th>
-              <th className="px-8 py-4 text-left text-[12px] font-medium text-gray-400 uppercase tracking-[0.08em]" style={{ lineHeight: '1.6' }}>
+              <th className="px-8 py-4 text-left text-[12px] font-medium text-slate-400 uppercase tracking-[0.08em]" style={{ lineHeight: '1.6' }}>
                 Source
               </th>
-              <th className="px-8 py-4 text-left text-[12px] font-medium text-gray-400 uppercase tracking-[0.08em]" style={{ lineHeight: '1.6' }}>
+              <th className="px-8 py-4 text-left text-[12px] font-medium text-slate-400 uppercase tracking-[0.08em]" style={{ lineHeight: '1.6' }}>
                 Amount
               </th>
-              <th className="px-8 py-4 text-left text-[12px] font-medium text-gray-400 uppercase tracking-[0.08em]" style={{ lineHeight: '1.6' }}>
+              <th className="px-8 py-4 text-left text-[12px] font-medium text-slate-400 uppercase tracking-[0.08em]" style={{ lineHeight: '1.6' }}>
                 Note
               </th>
-              <th className="px-8 py-4 text-left text-[12px] font-medium text-gray-400 uppercase tracking-[0.08em]" style={{ lineHeight: '1.6' }}>
+              <th className="px-8 py-4 text-left text-[12px] font-medium text-slate-400 uppercase tracking-[0.08em]" style={{ lineHeight: '1.6' }}>
                 Actions
               </th>
             </tr>
@@ -270,10 +270,10 @@ const Income = () => {
                 <td colSpan="5" className="px-8 py-16 text-center">
                   <div className="flex flex-col items-center">
                     <IncomeIcon className="w-12 h-12 text-gray-600 mb-4 opacity-50" />
-                    <p className="text-[15px] text-gray-400 mb-1" style={{ lineHeight: '1.75' }}>
+                    <p className="text-[15px] text-slate-400 mb-1" style={{ lineHeight: '1.75' }}>
                       No income recorded yet
                     </p>
-                    <p className="text-[14px] text-gray-500" style={{ lineHeight: '1.6', opacity: 0.7 }}>
+                    <p className="text-[14px] text-slate-500" style={{ lineHeight: '1.6', opacity: 0.7 }}>
                       Start by adding your first entry
                     </p>
                   </div>
@@ -282,16 +282,16 @@ const Income = () => {
             ) : (
               incomes.map((income) => (
                 <tr key={income._id} className="hover:bg-gray-800/20 transition-colors" style={{ minHeight: '56px' }}>
-                  <td className="px-8 py-4 text-[15px] text-gray-300" style={{ lineHeight: '1.75' }}>
+                  <td className="px-8 py-4 text-[15px] text-slate-200" style={{ lineHeight: '1.75' }}>
                     {new Date(income.date).toLocaleDateString()}
                   </td>
-                  <td className="px-8 py-4 text-[15px] text-gray-300" style={{ lineHeight: '1.75' }}>
+                  <td className="px-8 py-4 text-[15px] text-slate-200" style={{ lineHeight: '1.75' }}>
                     {income.source}
                   </td>
                   <td className="px-8 py-4 text-[15px] text-white font-semibold" style={{ lineHeight: '1.75' }}>
                     ₹{parseFloat(income.amount).toFixed(2)}
                   </td>
-                  <td className="px-8 py-4 text-[15px] text-gray-400" style={{ lineHeight: '1.75', opacity: 0.7 }}>
+                  <td className="px-8 py-4 text-[15px] text-slate-400" style={{ lineHeight: '1.75', opacity: 0.7 }}>
                     {income.note || '-'}
                   </td>
                   <td className="px-8 py-4 text-[15px]">

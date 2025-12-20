@@ -126,7 +126,7 @@ const Goals = () => {
               <GoalsIcon className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-yellow-400" />
               Goals
             </h1>
-            <p className="text-gray-400">Set and achieve your financial goals</p>
+            <p className="text-slate-400">Set and achieve your financial goals</p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
@@ -145,47 +145,47 @@ const Goals = () => {
           </h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Goal Title</label>
+              <label className="block text-sm font-medium text-slate-200 mb-2">Goal Title</label>
               <input
                 type="text"
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                className="w-full px-4 py-2 bg-slate-900/60 border border-slate-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                 placeholder="e.g., New Laptop"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Target Amount (₹)</label>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Target Amount (₹)</label>
                 <input
                   type="number"
                   step="0.01"
                   required
                   value={formData.targetAmount}
                   onChange={(e) => setFormData({ ...formData, targetAmount: e.target.value })}
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  className="w-full px-4 py-2 bg-slate-900/60 border border-slate-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                   placeholder="0.00"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Deadline</label>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Deadline</label>
                 <input
                   type="date"
                   required
                   value={formData.deadline}
                   onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  className="w-full px-4 py-2 bg-slate-900/60 border border-slate-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Description (Optional)</label>
+              <label className="block text-sm font-medium text-slate-200 mb-2">Description (Optional)</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows="3"
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                className="w-full px-4 py-2 bg-slate-900/60 border border-slate-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                 placeholder="Describe your goal..."
               />
             </div>
@@ -195,7 +195,7 @@ const Goals = () => {
               {editingGoal ? 'Update' : 'Create'} Goal
             </button>
             {editingGoal && (
-              <button type="button" onClick={resetForm} className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium">
+              <button type="button" onClick={resetForm} className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-2 rounded-lg font-medium">
                 Cancel
               </button>
             )}
@@ -206,9 +206,9 @@ const Goals = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {goals.length === 0 ? (
           <div className="col-span-full glass-light rounded-xl p-12 text-center">
-            <GoalsIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400 text-lg">No goals created yet</p>
-            <p className="text-gray-500 text-sm mt-2">Create your first savings goal!</p>
+            <GoalsIcon className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+            <p className="text-slate-400 text-lg">No goals created yet</p>
+            <p className="text-slate-500 text-sm mt-2">Create your first savings goal!</p>
           </div>
         ) : (
           goals.map((goal) => {
@@ -222,14 +222,14 @@ const Goals = () => {
                 className={`glass-light rounded-xl p-6 border ${
                   status.status === 'completed' ? 'border-green-500/50' :
                   status.status === 'expired' ? 'border-red-500/50' :
-                  'border-gray-700'
+                  'border-slate-700/50'
                 }`}
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="text-xl font-bold text-white mb-1">{goal.title}</h3>
                     {goal.description && (
-                      <p className="text-sm text-gray-400">{goal.description}</p>
+                      <p className="text-sm text-slate-400">{goal.description}</p>
                     )}
                   </div>
                   <span className={`px-2 py-1 text-xs font-bold rounded ${status.color === 'green' ? 'bg-green-500/20 text-green-400' : status.color === 'red' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'}`}>
@@ -239,22 +239,22 @@ const Goals = () => {
 
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Target:</span>
+                    <span className="text-slate-400">Target:</span>
                     <span className="font-bold text-white">₹{parseFloat(goal.targetAmount).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Saved:</span>
+                    <span className="text-slate-400">Saved:</span>
                     <span className="font-bold text-green-400">₹{(goal.currentAmount || 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Remaining:</span>
+                    <span className="text-slate-400">Remaining:</span>
                     <span className="font-bold text-yellow-400">
                       ₹{(parseFloat(goal.targetAmount) - (goal.currentAmount || 0)).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Deadline:</span>
-                    <span className="text-gray-300">{new Date(goal.deadline).toLocaleDateString()}</span>
+                    <span className="text-slate-400">Deadline:</span>
+                    <span className="text-slate-200">{new Date(goal.deadline).toLocaleDateString()}</span>
                   </div>
                 </div>
 
@@ -269,7 +269,7 @@ const Goals = () => {
                       style={{ width: `${Math.min(progress, 100)}%` }}
                     ></div>
                   </div>
-                  <div className="flex justify-between text-xs text-gray-400">
+                  <div className="flex justify-between text-xs text-slate-400">
                     <span>Progress</span>
                     <span>{progress.toFixed(1)}%</span>
                   </div>
