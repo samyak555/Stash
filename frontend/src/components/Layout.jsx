@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useState } from 'react';
 import Logo from './Logo';
 import Footer from './Footer';
-import { DashboardIcon, ExpensesIcon, IncomeIcon, BudgetsIcon, GoalsIcon, FamilyIcon, InsightsIcon } from './Icons';
+import { DashboardIcon, ExpensesIcon, IncomeIcon, BudgetsIcon, GoalsIcon, FamilyIcon, InsightsIcon, SettingsIcon } from './Icons';
 
 const Layout = ({ children, user, setUser }) => {
   const location = useLocation();
@@ -29,6 +29,7 @@ const Layout = ({ children, user, setUser }) => {
     { path: '/goals', label: 'Goals', Icon: GoalsIcon },
     { path: '/family', label: 'Family', Icon: FamilyIcon },
     { path: '/insights', label: 'AI Insights', Icon: InsightsIcon },
+    { path: '/settings', label: 'Settings', Icon: SettingsIcon },
   ];
 
   return (

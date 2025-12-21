@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { dashboardAPI, expenseAPI, incomeAPI } from '../services/api';
+import { dashboardAPI, expenseAPI, incomeAPI, transactionAPI } from '../services/api';
+import { Link } from 'react-router-dom';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
 import toast from 'react-hot-toast';
 import { DashboardIcon, ExpensesIcon, IncomeIcon, BudgetsIcon, GoalsIcon, FoodIcon, TravelIcon, MovieIcon, ClothesIcon, ShoppingIcon } from '../components/Icons';
@@ -13,12 +14,23 @@ const Dashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [timeRange, setTimeRange] = useState('month'); // month, week, year
+  const [syncStatus, setSyncStatus] = useState(null);
 
   useEffect(() => {
     fetchDashboard();
     fetchExpenses();
     fetchIncomes();
+    fetchSyncStatus();
   }, [selectedMonth, selectedYear, timeRange]);
+
+  const fetchSyncStatus = async () => {
+    try {
+      const res = await transactionAPI.getSyncStatus();
+      setSyncStatus(res.data);
+    } catch (error) {
+      // Silently fail - not critical
+    }
+  };
 
   const fetchDashboard = async () => {
     try {
@@ -224,6 +236,31 @@ const Dashboard = () => {
 
   return (
     <div className="px-4 py-6 animate-fade-in">
+      {/* Sync Status Banner */}
+      {syncStatus?.connected && (
+        <div className="mb-4 glass-light rounded-xl p-4 border border-green-500/30 bg-green-500/5">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center space-x-3">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <div>
+                <p className="text-green-400 font-semibold text-sm sm:text-base">
+                  Auto-Sync Active
+                </p>
+                <p className="text-slate-400 text-xs sm:text-sm">
+                  {syncStatus.email} • Last sync: {syncStatus.lastSync ? new Date(syncStatus.lastSync).toLocaleString() : 'Never'}
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/settings"
+              className="text-xs sm:text-sm text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+            >
+              Manage Settings →
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Header with Logo */}
       <div className="mb-8">
         <Logo size="large" showText={true} className="mb-4" />

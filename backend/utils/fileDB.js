@@ -74,6 +74,17 @@ export default {
     return db.users.find(u => u._id === id);
   },
   
+  updateUser: (id, updateData) => {
+    const db = readDB();
+    const index = db.users.findIndex(u => u._id === id);
+    if (index !== -1) {
+      db.users[index] = { ...db.users[index], ...updateData, updatedAt: new Date().toISOString() };
+      writeDB(db);
+      return db.users[index];
+    }
+    return null;
+  },
+  
   // Expenses
   createExpense: (expenseData) => {
     const db = readDB();

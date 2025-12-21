@@ -10,6 +10,7 @@ import Budgets from './pages/Budgets';
 import Goals from './pages/Goals';
 import Insights from './pages/Insights';
 import Family from './pages/Family';
+import Settings from './pages/Settings';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -119,6 +120,16 @@ function App() {
             <ProtectedRoute>
               <Layout user={user} setUser={setUser}>
                 <Family />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Layout user={user} setUser={setUser}>
+                <Settings />
               </Layout>
             </ProtectedRoute>
           }

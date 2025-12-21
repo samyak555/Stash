@@ -11,6 +11,8 @@ import dashboardRoutes from './routes/dashboardRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import groupRoutes from './routes/groupRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import transactionRoutes from './routes/transactionRoutes.js';
+import transactionScheduler from './services/scheduler.js';
 
 dotenv.config();
 
@@ -19,6 +21,9 @@ const PORT = process.env.PORT || 5000;
 
 // Connect to database
 connectDB();
+
+// Start transaction scheduler
+transactionScheduler.startScheduler();
 
 // Middleware
 app.use(cors());
@@ -35,6 +40,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/transactions', transactionRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

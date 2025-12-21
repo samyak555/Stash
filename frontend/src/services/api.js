@@ -90,6 +90,13 @@ export const userAPI = {
   getAll: () => api.get('/users'),
 };
 
+export const transactionAPI = {
+  connectEmail: (data) => api.post('/transactions/connect-email', data),
+  disconnectEmail: () => api.post('/transactions/disconnect-email'),
+  syncNow: () => api.post('/transactions/sync-now'),
+  getSyncStatus: () => api.get('/transactions/sync-status'),
+};
+
 export default api;
 
 
