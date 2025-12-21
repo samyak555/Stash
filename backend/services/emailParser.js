@@ -1,4 +1,6 @@
-import Imap from 'imap';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const Imap = require('node-imap');
 import { simpleParser } from 'mailparser';
 import fileDB from '../utils/fileDB.js';
 
