@@ -42,6 +42,25 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/transactions', transactionRoutes);
 
+// API root endpoint
+app.get('/api', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'Stash Finance API is running',
+    version: '1.0.0',
+    endpoints: {
+      auth: '/api/auth',
+      expenses: '/api/expenses',
+      income: '/api/income',
+      budgets: '/api/budgets',
+      goals: '/api/goals',
+      dashboard: '/api/dashboard',
+      transactions: '/api/transactions',
+      health: '/api/health'
+    }
+  });
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
