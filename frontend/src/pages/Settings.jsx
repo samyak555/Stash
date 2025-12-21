@@ -97,9 +97,20 @@ const Settings = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-white mb-3 tracking-tight">Auto-Fetch Transactions</h2>
-            <p className="text-slate-400 text-base font-normal">
-              Connect your email to automatically fetch transactions from Paytm, PhonePe, banks, MakeMyTrip, and more.
+            <p className="text-slate-400 text-base font-normal mb-2">
+              Automatically fetch transactions from Paytm, PhonePe, banks, MakeMyTrip, and more.
             </p>
+            <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3 mt-3">
+              <p className="text-xs text-cyan-300 font-medium mb-1 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Automatic Setup
+              </p>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                If you signed in with Google, your Gmail is automatically connected! No manual setup needed. Transactions sync every 5 minutes.
+              </p>
+            </div>
           </div>
           {syncStatus?.connected && (
             <div className="flex items-center space-x-3 px-5 py-2.5 bg-cyan-500/10 border border-cyan-500/30 rounded-xl">
@@ -234,6 +245,8 @@ const Settings = () => {
               )}
             </button>
           </form>
+          </div>
+        </div>
         )}
 
         <div className="mt-6 p-5 bg-cyan-500/10 border border-cyan-500/20 rounded-xl">

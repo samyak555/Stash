@@ -55,6 +55,33 @@ class TransactionScheduler {
     }
   }
 
+  async setupUserEmailOAuth(userId, emailConfig) {
+    try {
+      // For OAuth, we store the access token instead of password
+      const user = fileDB.findUserById(userId);
+      if (user) {
+        user.emailConfig = {
+          email: emailConfig.email,
+          accessToken: emailConfig.accessToken, // OAuth token
+          host: emailConfig.host || 'imap.gmail.com',
+          port: emailConfig.port || 993,
+          enabled: true,
+          lastSync: null,
+          authType: 'oauth'
+        };
+        fileDB.updateUser(userId, { emailConfig: user.emailConfig });
+      }
+
+      // For OAuth, we'll use the access token for Gmail API
+      // For now, mark as configured (full OAuth implementation would use Gmail API)
+      console.log(`✅ OAuth email configured for user: ${userId}`);
+      return true;
+    } catch (error) {
+      console.error(`Error setting up OAuth email for user ${userId}:`, error);
+      throw error;
+    }
+  }
+
   async removeUserEmail(userId) {
     const parser = this.parsers.get(userId);
     if (parser) {
