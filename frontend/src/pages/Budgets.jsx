@@ -135,7 +135,7 @@ const Budgets = () => {
           <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Set Monthly Budget</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">Category</label>
+              <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Category</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -147,7 +147,7 @@ const Budgets = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">Amount (₹)</label>
+              <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Amount (₹)</label>
               <input
                 type="number"
                 step="0.01"
@@ -159,7 +159,7 @@ const Budgets = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">Month</label>
+              <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Month</label>
               <input
                 type="month"
                 required

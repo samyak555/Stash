@@ -146,7 +146,7 @@ const Goals = () => {
           </h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">Goal Title</label>
+              <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Goal Title</label>
               <input
                 type="text"
                 required
@@ -158,7 +158,7 @@ const Goals = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">Target Amount (₹)</label>
+                <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Target Amount (₹)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -170,7 +170,7 @@ const Goals = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">Deadline</label>
+                <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Deadline</label>
                 <input
                   type="date"
                   required
@@ -181,7 +181,7 @@ const Goals = () => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">Description (Optional)</label>
+              <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Description (Optional)</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -191,12 +191,12 @@ const Goals = () => {
               />
             </div>
           </div>
-          <div className="flex gap-3 mt-4">
-            <button type="submit" className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-lg font-medium">
+          <div className="flex gap-3 mt-6">
+            <button type="submit" className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold">
               {editingGoal ? 'Update' : 'Create'} Goal
             </button>
             {editingGoal && (
-              <button type="button" onClick={resetForm} className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-2 rounded-lg font-medium">
+              <button type="button" onClick={resetForm} className="px-6 py-3.5 rounded-xl font-semibold text-slate-400 hover:text-white border border-white/10 hover:border-white/20 transition-all">
                 Cancel
               </button>
             )}
@@ -233,7 +233,7 @@ const Goals = () => {
                       <p className="text-sm text-slate-400">{goal.description}</p>
                     )}
                   </div>
-                  <span className={`px-2 py-1 text-xs font-bold rounded ${status.color === 'green' ? 'bg-green-500/20 text-green-400' : status.color === 'red' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                  <span className={`px-3 py-1.5 text-xs font-semibold rounded-lg ${status.color === 'green' ? 'bg-green-500/10 border border-green-500/30 text-green-400' : status.color === 'red' ? 'bg-red-500/10 border border-red-500/30 text-red-400' : 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-400'}`}>
                     {status.text}
                   </span>
                 </div>
