@@ -467,12 +467,12 @@ const Dashboard = () => {
               <p className="text-slate-500 text-sm">Add expenses to see category breakdown</p>
               <div className="mt-6 grid grid-cols-3 gap-4 w-full max-w-md">
                 {['Food', 'Travel', 'Shopping', 'Entertainment', 'Bills', 'Others'].map((cat, idx) => (
-                  <div key={cat} className="glass-light rounded-lg p-3 border border-slate-700/50 hover:border-indigo-500/30 transition-all">
-                    <div className="flex items-center justify-center mb-2">
+                  <div key={cat} className="glass-card rounded-xl p-4 border border-white/10 transition-all">
+                    <div className="flex items-center justify-center mb-3">
                       {categoryIcons[cat] || <ShoppingIcon className="w-5 h-5 text-slate-500" />}
                     </div>
-                    <p className="text-xs text-slate-400 text-center font-medium">{cat}</p>
-                    <p className="text-xs text-slate-600 text-center mt-1">₹0.00</p>
+                    <p className="text-xs text-slate-400 text-center font-normal uppercase tracking-wider">{cat}</p>
+                    <p className="text-xs text-slate-500 text-center mt-2 font-normal">₹0.00</p>
                   </div>
                 ))}
               </div>

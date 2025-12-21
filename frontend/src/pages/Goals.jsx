@@ -260,12 +260,12 @@ const Goals = () => {
                 </div>
 
                 <div className="mb-4">
-                  <div className="w-full bg-gray-700 rounded-full h-3 mb-2">
+                  <div className="w-full bg-white/5 rounded-full h-3 mb-3 border border-white/10 overflow-hidden">
                     <div
-                      className={`h-3 rounded-full ${
-                        status.status === 'completed' ? 'bg-green-500' :
-                        status.status === 'expired' ? 'bg-red-500' :
-                        'bg-yellow-500'
+                      className={`h-full rounded-full transition-all ${
+                        status.status === 'completed' ? 'bg-green-500/80' :
+                        status.status === 'expired' ? 'bg-red-500/80' :
+                        'bg-cyan-500/80'
                       }`}
                       style={{ width: `${Math.min(progress, 100)}%` }}
                     ></div>
@@ -283,13 +283,13 @@ const Goals = () => {
                 <div className="flex gap-2 mt-4">
                   <button
                     onClick={() => handleEdit(goal)}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                    className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-cyan-400 hover:text-cyan-300 border border-cyan-500/20 hover:border-cyan-500/40 transition-all"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(goal._id)}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                    className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-500/40 transition-all"
                   >
                     Delete
                   </button>
