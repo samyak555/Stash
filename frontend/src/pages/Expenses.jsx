@@ -110,20 +110,22 @@ const Expenses = () => {
   }
 
   return (
-    <div className="px-4 py-6 animate-fade-in">
-      <div className="mb-6">
-        <Logo size="default" showText={true} className="mb-4" />
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 flex items-center">
-              <ExpensesIcon className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-red-400" />
+    <div className="px-4 py-8 animate-fade-in">
+      {/* Header */}
+      <div className="mb-12">
+        <div className="flex justify-between items-start gap-6">
+          <div className="space-y-3">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight flex items-center">
+              <div className="p-2 rounded-lg bg-pink-500/10 border border-pink-500/20 mr-4">
+                <ExpensesIcon className="w-7 h-7 text-pink-400" />
+              </div>
               Expenses
             </h1>
-            <p className="text-slate-400 font-medium">Track and manage your spending</p>
+            <p className="text-slate-400 text-lg font-normal">Track and manage your spending</p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="btn-premium text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold flex items-center text-sm sm:text-base shadow-lg shadow-indigo-500/30"
+            className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold flex items-center text-base whitespace-nowrap"
           >
             <span className="mr-2">{showForm ? '✕' : '+'}</span>
             {showForm ? 'Cancel' : 'Add Expense'}
@@ -133,25 +135,25 @@ const Expenses = () => {
 
       {/* Category Summary Cards */}
       {Object.keys(categoryTotals).length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-10">
           {Object.entries(categoryTotals)
             .sort(([, a], [, b]) => b - a)
             .slice(0, 10)
             .map(([category, total]) => (
-              <div key={category} className="glass-light rounded-xl p-4 border border-slate-700/50 hover:border-indigo-500/30 transition-all shadow-lg">
-                <div className="flex items-center mb-2 text-slate-400">
+              <div key={category} className="glass-card rounded-xl p-5 border border-white/10 transition-all">
+                <div className="flex items-center mb-3 text-slate-400">
                   {categoryIcons[category] || <ShoppingIcon className="w-5 h-5" />}
                 </div>
-                <p className="text-xs text-slate-400 mb-1 font-medium">{category}</p>
-                <p className="text-lg font-bold text-white">₹{total.toFixed(2)}</p>
+                <p className="text-xs text-slate-400 mb-2 font-normal uppercase tracking-wider">{category}</p>
+                <p className="text-xl font-bold text-white tracking-tight">₹{total.toFixed(2)}</p>
               </div>
             ))}
         </div>
       )}
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="glass-light p-6 rounded-xl mb-6 shadow-xl border border-slate-700/30">
-          <h2 className="text-xl font-bold text-white mb-4">
+        <form onSubmit={handleSubmit} className="glass-card p-8 rounded-2xl mb-10 border border-white/10">
+          <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">
             {editingExpense ? 'Edit Expense' : 'Add New Expense'}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -163,7 +165,7 @@ const Expenses = () => {
                 required
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-900/60 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
                 placeholder="0.00"
               />
             </div>
@@ -172,7 +174,7 @@ const Expenses = () => {
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-900/60 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
               >
                 {categories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
@@ -186,7 +188,7 @@ const Expenses = () => {
                 required
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-900/60 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
               />
             </div>
             <div>
@@ -195,17 +197,17 @@ const Expenses = () => {
                 type="text"
                 value={formData.note}
                 onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-900/60 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
                 placeholder="Add a note..."
               />
             </div>
           </div>
           <div className="flex gap-3 mt-4">
-            <button type="submit" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all">
+            <button type="submit" className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold">
               {editingExpense ? 'Update' : 'Add'} Expense
             </button>
             {editingExpense && (
-              <button type="button" onClick={resetForm} className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-2.5 rounded-lg font-semibold transition-all">
+              <button type="button" onClick={resetForm} className="px-6 py-3.5 rounded-xl font-semibold text-slate-400 hover:text-white border border-white/10 hover:border-white/20 transition-all">
                 Cancel
               </button>
             )}
@@ -213,44 +215,48 @@ const Expenses = () => {
         </form>
       )}
 
-      <div className="glass-light rounded-xl overflow-hidden">
+      <div className="glass-card rounded-2xl overflow-hidden border border-white/10">
         <table className="min-w-full">
-          <thead className="bg-gray-800">
+          <thead className="bg-white/5">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Category</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Amount</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Note</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Date</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Category</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Amount</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Note</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-700">
+          <tbody className="divide-y divide-white/5">
             {expenses.length === 0 ? (
               <tr>
-                <td colSpan="5" className="px-6 py-8 text-center text-gray-400">
-                  No expenses yet. Add your first expense!
+                <td colSpan="5" className="px-6 py-12 text-center">
+                  <div className="flex flex-col items-center">
+                    <ExpensesIcon className="w-12 h-12 text-slate-500 mb-4 opacity-50" />
+                    <p className="text-slate-400 text-base font-normal mb-1">No expenses yet</p>
+                    <p className="text-slate-500 text-sm font-normal">Add your first expense to get started</p>
+                  </div>
                 </td>
               </tr>
             ) : (
               expenses.map((expense) => (
-                <tr key={expense._id} className="hover:bg-gray-800/50">
-                  <td className="px-6 py-4 text-sm text-slate-300">{new Date(expense.date).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 text-sm text-slate-300 flex items-center">
+                <tr key={expense._id} className="hover:bg-white/5 transition-colors">
+                  <td className="px-6 py-4 text-sm text-slate-300 font-normal">{new Date(expense.date).toLocaleDateString()}</td>
+                  <td className="px-6 py-4 text-sm text-slate-300 flex items-center font-normal">
                     {categoryIcons[expense.category] && <span className="mr-2">{categoryIcons[expense.category]}</span>}
                     {expense.category}
                   </td>
-                  <td className="px-6 py-4 text-sm text-white font-medium">₹{parseFloat(expense.amount).toFixed(2)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-400">{expense.note || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-white font-semibold">₹{parseFloat(expense.amount).toFixed(2)}</td>
+                  <td className="px-6 py-4 text-sm text-slate-400 font-normal">{expense.note || '-'}</td>
                   <td className="px-6 py-4 text-sm">
                     <button
                       onClick={() => handleEdit(expense)}
-                      className="text-blue-400 hover:text-blue-300 mr-4"
+                      className="text-cyan-400 hover:text-cyan-300 mr-4 font-medium transition-colors"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(expense._id)}
-                      className="text-red-400 hover:text-red-300"
+                      className="text-red-400 hover:text-red-300 font-medium transition-colors"
                     >
                       Delete
                     </button>

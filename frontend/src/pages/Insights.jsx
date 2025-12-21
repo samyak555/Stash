@@ -29,19 +29,20 @@ const Insights = () => {
   }
 
   return (
-    <div className="px-4 py-6 animate-fade-in">
-      <div className="mb-6">
-        <Logo size="default" showText={true} className="mb-4" />
-        <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 flex items-center">
-            <InsightsIcon className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-purple-400" />
+    <div className="px-4 py-8 animate-fade-in">
+      <div className="mb-12">
+        <div className="space-y-3">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight flex items-center">
+            <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 mr-4">
+              <InsightsIcon className="w-7 h-7 text-purple-400" />
+            </div>
             AI Insights
           </h1>
-          <p className="text-slate-400">Smart financial analysis and recommendations</p>
+          <p className="text-slate-400 text-lg font-normal">Smart financial analysis and recommendations</p>
         </div>
       </div>
 
-      <div className="glass-light rounded-xl p-6">
+      <div className="glass-card rounded-2xl p-8 border border-white/10">
         {insights ? (
           <div>
             <div className="mb-6">
@@ -80,8 +81,8 @@ const Insights = () => {
                 <h3 className="text-xl font-bold text-white mb-4">Recommendations</h3>
                 <div className="space-y-3">
                   {insights.recommendations.map((rec, index) => (
-                    <div key={index} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
-                      <p className="text-slate-300">{rec}</p>
+                    <div key={index} className="bg-white/5 rounded-xl p-5 border border-white/10">
+                      <p className="text-slate-300 font-normal">{rec}</p>
                     </div>
                   ))}
                 </div>
@@ -93,8 +94,8 @@ const Insights = () => {
                 <h3 className="text-xl font-bold text-white mb-4">Key Insights</h3>
                 <div className="space-y-3">
                   {insights.insights.map((insight, index) => (
-                    <div key={index} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
-                      <p className="text-slate-300">{insight}</p>
+                    <div key={index} className="bg-white/5 rounded-xl p-5 border border-white/10">
+                      <p className="text-slate-300 font-normal">{insight}</p>
                     </div>
                   ))}
                 </div>
@@ -103,9 +104,9 @@ const Insights = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <InsightsIcon className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400 text-lg">No insights available yet</p>
-            <p className="text-slate-500 text-sm mt-2">Add expenses and income to get AI-powered insights</p>
+            <InsightsIcon className="w-16 h-16 text-slate-500 mx-auto mb-4" />
+            <p className="text-slate-400 text-lg font-normal">No insights available yet</p>
+            <p className="text-slate-500 text-sm mt-2 font-normal">Add expenses and income to get AI-powered insights</p>
           </div>
         )}
       </div>

@@ -107,49 +107,50 @@ const Income = () => {
   }
 
   return (
-    <div className="px-4 py-12 animate-fade-in">
-      {/* Header Section - 64px spacing */}
-      <div className="mb-16">
-        <Logo size="default" showText={true} className="mb-6" />
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl sm:text-4xl md:text-[40px] font-bold text-white mb-3 flex items-center leading-tight">
-              <IncomeIcon className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-green-400 opacity-70" />
+    <div className="px-4 py-8 animate-fade-in">
+      {/* Header */}
+      <div className="mb-12">
+        <div className="flex justify-between items-start gap-6">
+          <div className="space-y-3">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight flex items-center">
+              <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 mr-4">
+                <IncomeIcon className="w-7 h-7 text-cyan-400" />
+              </div>
               Income
             </h1>
-            <p className="text-[15px] text-slate-400" style={{ lineHeight: '1.75', opacity: 0.7 }}>
-              A clear overview of all your income streams
-            </p>
+            <p className="text-slate-400 text-lg font-normal">A clear overview of all your income streams</p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 sm:px-5 py-2 sm:py-3 rounded-lg font-semibold text-sm sm:text-[15px] flex items-center transition-colors"
+            className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold flex items-center text-base whitespace-nowrap"
           >
             <span className="mr-2">{showForm ? '✕' : '+'}</span>
-            {showForm ? 'Cancel' : 'Add new income'}
+            {showForm ? 'Cancel' : 'Add Income'}
           </button>
         </div>
       </div>
 
-      {/* Total Income Card - 32px padding */}
-      <div className="glass-light rounded-xl p-8 mb-12 border border-green-500/10">
+      {/* Total Income Card */}
+      <div className="glass-card rounded-2xl p-8 mb-10 border border-white/10">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[14px] text-slate-400 mb-3 uppercase tracking-[0.08em] font-medium" style={{ opacity: 0.7 }}>
+            <p className="text-sm text-slate-400 mb-4 uppercase tracking-wider font-normal">
               Total income this period
             </p>
-            <p className="text-[48px] font-bold text-green-400 leading-tight">₹{totalIncome.toFixed(2)}</p>
+            <p className="text-5xl font-bold text-gradient-cyan-pink tracking-tight">₹{totalIncome.toFixed(2)}</p>
           </div>
-          <IncomeIcon className="w-16 h-16 text-green-400 opacity-30" />
+          <div className="p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+            <IncomeIcon className="w-12 h-12 text-cyan-400" />
+          </div>
         </div>
       </div>
 
-      {/* Source Breakdown - 24px padding cards */}
+      {/* Source Breakdown */}
       {Object.keys(sourceTotals).length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 mb-12">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-10">
           {Object.entries(sourceTotals).map(([source, total]) => (
-            <div key={source} className="glass-light rounded-xl p-6 border border-slate-700/50">
-              <p className="text-[12px] text-slate-400 mb-2 uppercase tracking-[0.08em]" style={{ opacity: 0.7 }}>
+            <div key={source} className="glass-card rounded-xl p-6 border border-white/10">
+              <p className="text-xs text-slate-400 mb-3 uppercase tracking-wider font-normal">
                 {source}
               </p>
               <p className="text-[20px] font-semibold text-white leading-tight">₹{total.toFixed(2)}</p>
@@ -158,11 +159,11 @@ const Income = () => {
         </div>
       )}
 
-      {/* Form Section - 32px padding */}
+      {/* Form Section */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="glass-light p-8 rounded-xl mb-12 border border-gray-700/30">
-          <h2 className="text-[18px] font-semibold text-white mb-6">
-            {editingIncome ? 'Edit income entry' : 'Add new income'}
+        <form onSubmit={handleSubmit} className="glass-card p-8 rounded-2xl mb-10 border border-white/10">
+          <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">
+            {editingIncome ? 'Edit Income Entry' : 'Add New Income'}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -175,8 +176,7 @@ const Income = () => {
                 required
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                className="w-full px-5 py-3 bg-slate-900/60 border border-slate-600/50 rounded-lg text-[15px] text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
-                style={{ lineHeight: '1.6' }}
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
                 placeholder="0.00"
               />
             </div>
@@ -187,8 +187,7 @@ const Income = () => {
               <select
                 value={formData.source}
                 onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-                className="w-full px-5 py-3 bg-slate-900/60 border border-slate-600/50 rounded-lg text-[15px] text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
-                style={{ lineHeight: '1.6' }}
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
               >
                 {sources.map(source => (
                   <option key={source} value={source}>{source}</option>
@@ -204,8 +203,7 @@ const Income = () => {
                 required
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-5 py-3 bg-slate-900/60 border border-slate-600/50 rounded-lg text-[15px] text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
-                style={{ lineHeight: '1.6' }}
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
               />
             </div>
             <div>
@@ -216,8 +214,7 @@ const Income = () => {
                 type="text"
                 value={formData.note}
                 onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                className="w-full px-5 py-3 bg-slate-900/60 border border-slate-600/50 rounded-lg text-[15px] text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all"
-                style={{ lineHeight: '1.6' }}
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
                 placeholder="Add a note..."
               />
             </div>
@@ -225,15 +222,15 @@ const Income = () => {
           <div className="flex gap-3 mt-6">
             <button 
               type="submit" 
-              className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-lg font-semibold text-[15px] transition-colors"
+              className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold"
             >
-              {editingIncome ? 'Update income' : 'Add income'}
+              {editingIncome ? 'Update Income' : 'Add Income'}
             </button>
             {editingIncome && (
               <button 
                 type="button" 
                 onClick={resetForm} 
-                className="bg-gray-700/50 hover:bg-gray-700 text-white px-5 py-3 rounded-lg font-medium text-[15px] transition-colors"
+                className="px-6 py-3.5 rounded-xl font-semibold text-slate-400 hover:text-white border border-white/10 hover:border-white/20 transition-all"
               >
                 Cancel
               </button>
@@ -242,10 +239,10 @@ const Income = () => {
         </form>
       )}
 
-      {/* Table Section - Premium spacing */}
-      <div className="glass-light rounded-xl overflow-hidden border border-gray-700/30">
+      {/* Table Section */}
+      <div className="glass-card rounded-2xl overflow-hidden border border-white/10">
         <table className="min-w-full">
-          <thead className="bg-gray-800/30">
+          <thead className="bg-white/5">
             <tr>
               <th className="px-8 py-4 text-left text-[12px] font-medium text-slate-400 uppercase tracking-[0.08em]" style={{ lineHeight: '1.6' }}>
                 Date
@@ -264,18 +261,14 @@ const Income = () => {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-700/30">
+          <tbody className="divide-y divide-white/5">
             {incomes.length === 0 ? (
               <tr>
                 <td colSpan="5" className="px-8 py-16 text-center">
                   <div className="flex flex-col items-center">
-                    <IncomeIcon className="w-12 h-12 text-gray-600 mb-4 opacity-50" />
-                    <p className="text-[15px] text-slate-400 mb-1" style={{ lineHeight: '1.75' }}>
-                      No income recorded yet
-                    </p>
-                    <p className="text-[14px] text-slate-500" style={{ lineHeight: '1.6', opacity: 0.7 }}>
-                      Start by adding your first entry
-                    </p>
+                    <IncomeIcon className="w-12 h-12 text-slate-500 mb-4 opacity-50" />
+                    <p className="text-base text-slate-400 mb-1 font-normal">No income recorded yet</p>
+                    <p className="text-sm text-slate-500 font-normal">Start by adding your first entry</p>
                   </div>
                 </td>
               </tr>
@@ -298,7 +291,7 @@ const Income = () => {
                     <div className="flex gap-4">
                       <button
                         onClick={() => handleEdit(income)}
-                        className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
+                        className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium"
                       >
                         Edit
                       </button>

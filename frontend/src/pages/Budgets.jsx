@@ -108,20 +108,21 @@ const Budgets = () => {
   }
 
   return (
-    <div className="px-4 py-6 animate-fade-in">
-      <div className="mb-6">
-        <Logo size="default" showText={true} className="mb-4" />
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 flex items-center">
-              <BudgetsIcon className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-purple-400" />
+    <div className="px-4 py-8 animate-fade-in">
+      <div className="mb-12">
+        <div className="flex justify-between items-start gap-6">
+          <div className="space-y-3">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight flex items-center">
+              <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 mr-4">
+                <BudgetsIcon className="w-7 h-7 text-purple-400" />
+              </div>
               Budgets
             </h1>
-            <p className="text-slate-400">Set and track your spending limits</p>
+            <p className="text-slate-400 text-lg font-normal">Set and track your spending limits</p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium flex items-center text-sm sm:text-base"
+            className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold flex items-center text-base whitespace-nowrap"
           >
             <span className="mr-2">{showForm ? '✕' : '+'}</span>
             {showForm ? 'Cancel' : 'Set Budget'}
@@ -130,15 +131,15 @@ const Budgets = () => {
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="glass-light p-6 rounded-xl mb-6">
-          <h2 className="text-xl font-bold text-white mb-4">Set Monthly Budget</h2>
+        <form onSubmit={handleSubmit} className="glass-card p-8 rounded-2xl mb-10 border border-white/10">
+          <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Set Monthly Budget</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-200 mb-2">Category</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-4 py-2 bg-slate-900/60 border border-slate-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
               >
                 {categories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
@@ -153,7 +154,7 @@ const Budgets = () => {
                 required
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                className="w-full px-4 py-2 bg-slate-900/60 border border-slate-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
                 placeholder="0.00"
               />
             </div>
@@ -164,7 +165,7 @@ const Budgets = () => {
                 required
                 value={formData.month}
                 onChange={(e) => setFormData({ ...formData, month: e.target.value })}
-                className="w-full px-4 py-2 bg-slate-900/60 border border-slate-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
               />
             </div>
           </div>
@@ -176,17 +177,17 @@ const Budgets = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {budgetsWithSpending.length === 0 ? (
-          <div className="col-span-full glass-light rounded-xl p-12 text-center">
-            <BudgetsIcon className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400 text-lg">No budgets set for this month</p>
+          <div className="col-span-full glass-card rounded-2xl p-12 text-center border border-white/10">
+            <BudgetsIcon className="w-16 h-16 text-slate-500 mx-auto mb-4" />
+            <p className="text-slate-400 text-lg font-normal">No budgets set for this month</p>
             <p className="text-slate-500 text-sm mt-2">Set your first budget to get started!</p>
           </div>
         ) : (
           budgetsWithSpending.map((budget) => (
             <div
               key={budget._id}
-              className={`glass-light rounded-xl p-6 border ${
-                budget.isExceeded ? 'border-red-500/50' : 'border-slate-700/50'
+              className={`glass-card rounded-2xl p-6 border ${
+                budget.isExceeded ? 'border-red-500/30' : 'border-white/10'
               }`}
             >
               <div className="flex justify-between items-start mb-4">

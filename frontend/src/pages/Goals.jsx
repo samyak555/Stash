@@ -117,20 +117,21 @@ const Goals = () => {
   }
 
   return (
-    <div className="px-4 py-6 animate-fade-in">
-      <div className="mb-6">
-        <Logo size="default" showText={true} className="mb-4" />
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 flex items-center">
-              <GoalsIcon className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-yellow-400" />
+    <div className="px-4 py-8 animate-fade-in">
+      <div className="mb-12">
+        <div className="flex justify-between items-start gap-6">
+          <div className="space-y-3">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight flex items-center">
+              <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mr-4">
+                <GoalsIcon className="w-7 h-7 text-yellow-400" />
+              </div>
               Goals
             </h1>
-            <p className="text-slate-400">Set and achieve your financial goals</p>
+            <p className="text-slate-400 text-lg font-normal">Set and achieve your financial goals</p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium flex items-center text-sm sm:text-base"
+            className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold flex items-center text-base whitespace-nowrap"
           >
             <span className="mr-2">{showForm ? '✕' : '+'}</span>
             {showForm ? 'Cancel' : 'Create Goal'}
@@ -139,8 +140,8 @@ const Goals = () => {
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="glass-light p-6 rounded-xl mb-6">
-          <h2 className="text-xl font-bold text-white mb-4">
+        <form onSubmit={handleSubmit} className="glass-card p-8 rounded-2xl mb-10 border border-white/10">
+          <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">
             {editingGoal ? 'Edit Goal' : 'Create New Goal'}
           </h2>
           <div className="space-y-4">
@@ -151,7 +152,7 @@ const Goals = () => {
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-2 bg-slate-900/60 border border-slate-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
                 placeholder="e.g., New Laptop"
               />
             </div>
@@ -164,7 +165,7 @@ const Goals = () => {
                   required
                   value={formData.targetAmount}
                   onChange={(e) => setFormData({ ...formData, targetAmount: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-900/60 border border-slate-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
                   placeholder="0.00"
                 />
               </div>
@@ -175,7 +176,7 @@ const Goals = () => {
                   required
                   value={formData.deadline}
                   onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-900/60 border border-slate-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
                 />
               </div>
             </div>
@@ -185,7 +186,7 @@ const Goals = () => {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows="3"
-                className="w-full px-4 py-2 bg-slate-900/60 border border-slate-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
                 placeholder="Describe your goal..."
               />
             </div>
@@ -205,9 +206,9 @@ const Goals = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {goals.length === 0 ? (
-          <div className="col-span-full glass-light rounded-xl p-12 text-center">
-            <GoalsIcon className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400 text-lg">No goals created yet</p>
+          <div className="col-span-full glass-card rounded-2xl p-12 text-center border border-white/10">
+            <GoalsIcon className="w-16 h-16 text-slate-500 mx-auto mb-4" />
+            <p className="text-slate-400 text-lg font-normal">No goals created yet</p>
             <p className="text-slate-500 text-sm mt-2">Create your first savings goal!</p>
           </div>
         ) : (
@@ -219,10 +220,10 @@ const Goals = () => {
             return (
               <div
                 key={goal._id}
-                className={`glass-light rounded-xl p-6 border ${
-                  status.status === 'completed' ? 'border-green-500/50' :
-                  status.status === 'expired' ? 'border-red-500/50' :
-                  'border-slate-700/50'
+                className={`glass-card rounded-2xl p-6 border ${
+                  status.status === 'completed' ? 'border-green-500/30' :
+                  status.status === 'expired' ? 'border-red-500/30' :
+                  'border-white/10'
                 }`}
               >
                 <div className="flex justify-between items-start mb-4">

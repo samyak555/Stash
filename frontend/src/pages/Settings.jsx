@@ -85,40 +85,41 @@ const Settings = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Settings</h1>
-        <p className="text-slate-400">Manage your account and transaction sync settings</p>
+    <div className="max-w-4xl mx-auto px-4 py-8 space-y-10 animate-fade-in">
+      {/* Header */}
+      <div className="space-y-3">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight">Settings</h1>
+        <p className="text-slate-400 text-lg font-normal">Manage your account and transaction sync settings</p>
       </div>
 
       {/* Auto-Fetch Transactions Card */}
-      <div className="glass-light p-6 sm:p-8 rounded-2xl shadow-xl border border-slate-700/30">
-        <div className="flex items-center justify-between mb-6">
+      <div className="glass-card p-8 sm:p-10 rounded-2xl border border-white/10">
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-semibold text-white mb-2">Auto-Fetch Transactions</h2>
-            <p className="text-slate-400 text-sm sm:text-base">
+            <h2 className="text-2xl font-bold text-white mb-3 tracking-tight">Auto-Fetch Transactions</h2>
+            <p className="text-slate-400 text-base font-normal">
               Connect your email to automatically fetch transactions from Paytm, PhonePe, banks, MakeMyTrip, and more.
             </p>
           </div>
           {syncStatus?.connected && (
-            <div className="flex items-center space-x-2 px-4 py-2 bg-green-500/20 border border-green-500/50 rounded-lg">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-green-400 text-sm font-medium">Connected</span>
+            <div className="flex items-center space-x-3 px-5 py-2.5 bg-cyan-500/10 border border-cyan-500/30 rounded-xl">
+              <div className="w-2.5 h-2.5 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
+              <span className="text-cyan-400 text-sm font-semibold">Connected</span>
             </div>
           )}
         </div>
 
         {syncStatus?.connected ? (
           <div className="space-y-4">
-            <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-slate-300 font-medium">Connected Email:</span>
-                <span className="text-white">{syncStatus.email}</span>
+            <div className="p-5 bg-white/5 rounded-xl border border-white/10">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-slate-400 font-normal text-sm">Connected Email:</span>
+                <span className="text-white font-medium">{syncStatus.email}</span>
               </div>
               {syncStatus.lastSync && (
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-300 font-medium">Last Sync:</span>
-                  <span className="text-slate-400 text-sm">
+                  <span className="text-slate-400 font-normal text-sm">Last Sync:</span>
+                  <span className="text-slate-400 text-sm font-normal">
                     {new Date(syncStatus.lastSync).toLocaleString()}
                   </span>
                 </div>
@@ -146,7 +147,7 @@ const Settings = () => {
               <button
                 onClick={handleDisconnect}
                 disabled={loading}
-                className="px-6 py-3 bg-red-600/20 hover:bg-red-600/30 border border-red-600/50 text-red-400 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-3 rounded-xl font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/20 hover:border-red-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Disconnect
               </button>
@@ -155,7 +156,7 @@ const Settings = () => {
         ) : (
           <form onSubmit={handleConnectEmail} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-slate-200 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">
                 Email Address
               </label>
               <input
@@ -164,13 +165,13 @@ const Settings = () => {
                 placeholder="your-email@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-slate-200 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">
                 App Password
               </label>
               <input
@@ -179,7 +180,7 @@ const Settings = () => {
                 placeholder="Enter app password (not your regular password)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
                 required
               />
               <p className="mt-2 text-xs text-slate-500">
@@ -189,7 +190,7 @@ const Settings = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="host" className="block text-sm font-semibold text-slate-200 mb-2">
+                <label htmlFor="host" className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">
                   IMAP Host
                 </label>
                 <input
@@ -197,12 +198,12 @@ const Settings = () => {
                   type="text"
                   value={host}
                   onChange={(e) => setHost(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
                 />
               </div>
 
               <div>
-                <label htmlFor="port" className="block text-sm font-semibold text-slate-200 mb-2">
+                <label htmlFor="port" className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">
                   Port
                 </label>
                 <input
@@ -210,7 +211,7 @@ const Settings = () => {
                   type="number"
                   value={port}
                   onChange={(e) => setPort(parseInt(e.target.value))}
-                  className="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
                 />
               </div>
             </div>
@@ -235,9 +236,9 @@ const Settings = () => {
           </form>
         )}
 
-        <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-          <h3 className="text-blue-400 font-semibold mb-2">✨ Supported Services:</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm text-slate-300">
+        <div className="mt-6 p-5 bg-cyan-500/10 border border-cyan-500/20 rounded-xl">
+          <h3 className="text-cyan-400 font-semibold mb-3 text-base">✨ Supported Services:</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm text-slate-300 font-normal">
             <div>• Paytm</div>
             <div>• PhonePe</div>
             <div>• MakeMyTrip</div>
@@ -247,31 +248,31 @@ const Settings = () => {
             <div>• Uber</div>
             <div>• Ola</div>
           </div>
-          <p className="mt-3 text-xs text-slate-400">
+          <p className="mt-4 text-xs text-slate-400 font-normal">
             Transactions are automatically categorized and synced every 5 minutes. You can also trigger a manual sync anytime.
           </p>
         </div>
       </div>
 
       {/* How It Works */}
-      <div className="glass-light p-6 sm:p-8 rounded-2xl shadow-xl border border-slate-700/30">
-        <h2 className="text-xl font-semibold text-white mb-4">How It Works</h2>
-        <div className="space-y-3 text-slate-300">
-          <div className="flex items-start space-x-3">
-            <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 border border-blue-500/50 rounded-full flex items-center justify-center text-blue-400 font-semibold text-sm">1</span>
-            <p>Connect your email that receives transaction notifications from banks and payment apps.</p>
+      <div className="glass-card p-8 rounded-2xl border border-white/10">
+        <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">How It Works</h2>
+        <div className="space-y-4 text-slate-300">
+          <div className="flex items-start space-x-4">
+            <span className="flex-shrink-0 w-7 h-7 bg-cyan-500/10 border border-cyan-500/30 rounded-full flex items-center justify-center text-cyan-400 font-semibold text-sm">1</span>
+            <p className="font-normal">Connect your email that receives transaction notifications from banks and payment apps.</p>
           </div>
-          <div className="flex items-start space-x-3">
-            <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 border border-blue-500/50 rounded-full flex items-center justify-center text-blue-400 font-semibold text-sm">2</span>
-            <p>Our system automatically reads transaction emails and extracts details (amount, merchant, date).</p>
+          <div className="flex items-start space-x-4">
+            <span className="flex-shrink-0 w-7 h-7 bg-cyan-500/10 border border-cyan-500/30 rounded-full flex items-center justify-center text-cyan-400 font-semibold text-sm">2</span>
+            <p className="font-normal">Our system automatically reads transaction emails and extracts details (amount, merchant, date).</p>
           </div>
-          <div className="flex items-start space-x-3">
-            <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 border border-blue-500/50 rounded-full flex items-center justify-center text-blue-400 font-semibold text-sm">3</span>
-            <p>Transactions are automatically categorized and added to your expense tracker.</p>
+          <div className="flex items-start space-x-4">
+            <span className="flex-shrink-0 w-7 h-7 bg-cyan-500/10 border border-cyan-500/30 rounded-full flex items-center justify-center text-cyan-400 font-semibold text-sm">3</span>
+            <p className="font-normal">Transactions are automatically categorized and added to your expense tracker.</p>
           </div>
-          <div className="flex items-start space-x-3">
-            <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 border border-blue-500/50 rounded-full flex items-center justify-center text-blue-400 font-semibold text-sm">4</span>
-            <p>Sync happens every 5 minutes automatically, or trigger a manual sync anytime.</p>
+          <div className="flex items-start space-x-4">
+            <span className="flex-shrink-0 w-7 h-7 bg-cyan-500/10 border border-cyan-500/30 rounded-full flex items-center justify-center text-cyan-400 font-semibold text-sm">4</span>
+            <p className="font-normal">Sync happens every 5 minutes automatically, or trigger a manual sync anytime.</p>
           </div>
         </div>
       </div>
