@@ -33,8 +33,8 @@ const Layout = ({ children, user, setUser }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <nav className="glass-light shadow-xl border-b border-slate-700/30 sticky top-0 z-50 backdrop-blur-xl">
+    <div className="min-h-screen bg-black">
+      <nav className="glass-light shadow-xl border-b border-white/10 sticky top-0 z-50 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -47,10 +47,10 @@ const Layout = ({ children, user, setUser }) => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center ${
+                    className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 flex items-center tracking-tight ${
                       location.pathname === item.path
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30'
-                        : 'text-slate-300 hover:bg-slate-800/50 hover:text-white hover:translate-x-1'
+                        ? 'bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 text-white shadow-lg shadow-cyan-500/20'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
                     }`}
                   >
                     <item.Icon className="w-5 h-5 mr-2" />
@@ -61,11 +61,11 @@ const Layout = ({ children, user, setUser }) => {
             </div>
             
             {/* Desktop User Info */}
-            <div className="hidden md:flex items-center space-x-4">
-              <span className="text-slate-300 text-sm font-medium">Hello, <span className="text-indigo-400">{user?.name}</span></span>
+            <div className="hidden md:flex items-center space-x-5">
+              <span className="text-slate-400 text-sm font-normal">Hello, <span className="text-white font-medium">{user?.name}</span></span>
               <button
                 onClick={handleLogout}
-                className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all duration-200 hover:scale-105"
+                className="px-5 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 border border-red-500/20 hover:border-red-500/40"
               >
                 Logout
               </button>
@@ -129,7 +129,7 @@ const Layout = ({ children, user, setUser }) => {
         )}
       </nav>
 
-      <main className="max-w-7xl mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
         {children}
         <Footer />
       </main>

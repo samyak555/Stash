@@ -43,82 +43,90 @@ const Register = ({ setUser }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-indigo-950/20 to-slate-950 relative overflow-hidden">
-      {/* Full Page Logo Background - Bigger and Less Transparent */}
+    <div className="min-h-screen flex flex-col bg-black relative overflow-hidden">
+      {/* Full Page Logo Background */}
       <Logo fullPage={true} />
       
-      <div className="flex-1 flex items-center justify-center py-4 sm:py-12 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-md w-full space-y-6 sm:space-y-8 animate-fade-in">
-        <div className="text-center animate-slide-up">
-          <div className="relative inline-block mb-4 sm:mb-6">
-            <Logo size="xl" showText={true} className="justify-center" />
-          </div>
-          <h2 className="mt-4 sm:mt-6 text-center text-2xl sm:text-4xl font-bold text-white">
-            <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+      <div className="flex-1 flex items-center justify-center py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="w-full max-w-[440px] space-y-8 animate-fade-in">
+          {/* Header */}
+          <div className="text-center animate-slide-up space-y-3">
+            <h1 className="text-4xl sm:text-5xl font-bold gradient-text tracking-tight">
               Create your account
-            </span>
-          </h2>
-          <p className="mt-2 text-center text-xs sm:text-sm text-slate-400 px-4 font-medium">
-            Sign up to get started
-          </p>
-        </div>
-        <form className="mt-6 sm:mt-8 space-y-5 sm:space-y-6 glass-light p-6 sm:p-8 rounded-2xl shadow-2xl border border-slate-700/30 backdrop-blur-xl" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-semibold text-slate-200 mb-2.5">
-                Full Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                className="appearance-none relative block w-full px-4 py-3.5 border border-slate-600/50 rounded-xl bg-slate-900/60 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-base focus:bg-slate-900/80"
-                placeholder="Enter your name"
-                value={formData.name}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-slate-200 mb-2.5">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="appearance-none relative block w-full px-4 py-3.5 border border-slate-600/50 rounded-xl bg-slate-900/60 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-base focus:bg-slate-900/80"
-                placeholder="you@example.com"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
+            </h1>
+            <p className="text-slate-400 text-base font-normal">
+              Start managing your finances with Stash
+            </p>
           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-premium group relative w-full flex justify-center py-3.5 px-4 text-sm sm:text-base font-semibold rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/30"
-            >
-              {loading ? 'Creating account...' : 'Sign up'}
-            </button>
-          </div>
+          {/* Auth Card */}
+          <form 
+            className="glass-light p-8 sm:p-10 rounded-2xl space-y-6 animate-scale-in" 
+            onSubmit={handleSubmit}
+            style={{ animationDelay: '0.1s' }}
+          >
+            <div className="space-y-6">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">
+                  Full Name
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
+                  className="w-full px-4 py-4 border border-white/10 rounded-xl bg-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
+                  placeholder="John Doe"
+                  value={formData.name}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">
+                  Email address
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  className="w-full px-4 py-4 border border-white/10 rounded-xl bg-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
+                  placeholder="you@example.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
 
-          <div className="text-center">
-            <Link
-              to="/login"
-              className="font-medium text-indigo-400 hover:text-indigo-300 text-sm sm:text-base transition-colors"
-            >
-              Already have an account? Sign in
-            </Link>
-          </div>
-        </form>
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-premium w-full py-4 px-6 text-base font-semibold rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none"
+              >
+                {loading ? 'Creating account...' : 'Sign up'}
+              </button>
+            </div>
+
+            <div className="text-center pt-4 border-t border-white/5">
+              <p className="text-sm text-slate-400">
+                Already have an account?{' '}
+                <Link
+                  to="/login"
+                  className="font-medium text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center"
+                >
+                  Sign in
+                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </p>
+            </div>
+          </form>
         </div>
       </div>
       
-      {/* Footer at the bottom */}
+      {/* Footer */}
       <div className="relative z-10 mt-auto">
         <Footer />
       </div>

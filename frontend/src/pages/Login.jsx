@@ -43,28 +43,32 @@ const Login = ({ setUser }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-indigo-950/20 to-slate-950 relative overflow-hidden">
-      {/* Full Page Logo Background - Covering the entire page */}
+    <div className="min-h-screen flex flex-col bg-black relative overflow-hidden">
+      {/* Full Page Logo Background */}
       <Logo fullPage={true} />
       
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center py-4 sm:py-12 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-[280px] w-full space-y-4 sm:space-y-5 animate-fade-in">
-          <div className="text-center animate-slide-up">
-            <h2 className="text-center text-xl sm:text-2xl font-bold text-white mb-2">
-              <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Welcome Back
-              </span>
-            </h2>
-            <p className="text-center text-xs sm:text-sm text-slate-400 px-2 font-medium">
-              Sign in to your account
+      <div className="flex-1 flex items-center justify-center py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="w-full max-w-[400px] space-y-8 animate-fade-in">
+          {/* Header */}
+          <div className="text-center animate-slide-up space-y-3">
+            <h1 className="text-4xl sm:text-5xl font-bold gradient-text tracking-tight">
+              Welcome Back
+            </h1>
+            <p className="text-slate-400 text-base font-normal">
+              Sign in to continue managing your finances
             </p>
           </div>
           
-          <form className="mt-3 sm:mt-4 space-y-3 sm:space-y-4 glass-light p-4 sm:p-5 rounded-xl shadow-2xl border border-slate-700/30 backdrop-blur-xl" onSubmit={handleSubmit}>
-            <div className="space-y-5">
+          {/* Auth Card */}
+          <form 
+            className="glass-light p-8 sm:p-10 rounded-2xl space-y-6 animate-scale-in" 
+            onSubmit={handleSubmit}
+            style={{ animationDelay: '0.1s' }}
+          >
+            <div className="space-y-6">
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-slate-200 mb-2.5">
+                <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">
                   Email address
                 </label>
                 <input
@@ -72,22 +76,22 @@ const Login = ({ setUser }) => {
                   name="email"
                   type="email"
                   required
-                  className="appearance-none relative block w-full px-4 py-3.5 border border-slate-600/50 rounded-xl bg-slate-900/60 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-base focus:bg-slate-900/80"
-                  placeholder="Enter your email"
+                  className="w-full px-4 py-4 border border-white/10 rounded-xl bg-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
+                  placeholder="you@example.com"
                   value={formData.email}
                   onChange={handleChange}
                 />
               </div>
             </div>
 
-            <div>
+            <div className="pt-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-premium group relative w-full flex justify-center py-3.5 px-4 text-sm sm:text-base font-semibold rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/30"
+                className="btn-premium w-full py-4 px-6 text-base font-semibold rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none"
               >
                 {loading ? (
-                  <span className="flex items-center">
+                  <span className="flex items-center justify-center">
                     <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -100,21 +104,26 @@ const Login = ({ setUser }) => {
               </button>
             </div>
 
-            <div className="text-center pt-2">
-              <Link
-                to="/register"
-                className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors inline-flex items-center text-sm sm:text-base"
-              >
-                Don't have an account? 
-                <span className="ml-1 underline">Sign up</span>
-              </Link>
+            <div className="text-center pt-4 border-t border-white/5">
+              <p className="text-sm text-slate-400">
+                Don't have an account?{' '}
+                <Link
+                  to="/register"
+                  className="font-medium text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center"
+                >
+                  Sign up
+                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </p>
             </div>
           </form>
         </div>
       </div>
 
-      {/* Footer at the bottom */}
-      <div className="relative z-10">
+      {/* Footer */}
+      <div className="relative z-10 mt-auto">
         <Footer />
       </div>
     </div>

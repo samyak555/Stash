@@ -238,42 +238,44 @@ const Dashboard = () => {
     <div className="px-4 py-6 animate-fade-in">
       {/* Sync Status Banner */}
       {syncStatus?.connected && (
-        <div className="mb-4 glass-light rounded-xl p-4 border border-green-500/30 bg-green-500/5">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+        <div className="mb-6 glass-card rounded-xl p-5 border border-cyan-500/20 bg-cyan-500/5">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center space-x-4">
+              <div className="w-2.5 h-2.5 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
               <div>
-                <p className="text-green-400 font-semibold text-sm sm:text-base">
+                <p className="text-cyan-400 font-semibold text-sm tracking-tight">
                   Auto-Sync Active
                 </p>
-                <p className="text-slate-400 text-xs sm:text-sm">
+                <p className="text-slate-400 text-xs font-normal mt-0.5">
                   {syncStatus.email} • Last sync: {syncStatus.lastSync ? new Date(syncStatus.lastSync).toLocaleString() : 'Never'}
                 </p>
               </div>
             </div>
             <Link
               to="/settings"
-              className="text-xs sm:text-sm text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+              className="text-xs font-medium text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-1"
             >
-              Manage Settings →
+              Manage Settings
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </Link>
           </div>
         </div>
       )}
 
-      {/* Header with Logo */}
-      <div className="mb-8">
-        <Logo size="large" showText={true} className="mb-4" />
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2">Dashboard</h1>
-            <p className="text-slate-400 font-medium">Comprehensive overview of your financial activity</p>
+      {/* Header */}
+      <div className="mb-12">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+          <div className="space-y-3">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight">Dashboard</h1>
+            <p className="text-slate-400 text-lg font-normal">Your financial overview at a glance</p>
           </div>
-          <div className="mt-4 sm:mt-0 flex flex-wrap gap-2 sm:gap-3">
+          <div className="flex flex-wrap gap-3">
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="px-3 sm:px-4 py-2 bg-slate-800/60 border border-slate-600/50 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+              className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-normal focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all backdrop-blur-sm"
             >
               <option value="month">Monthly</option>
               <option value="week">Weekly</option>
@@ -282,7 +284,7 @@ const Dashboard = () => {
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              className="px-3 sm:px-4 py-2 bg-slate-800/60 border border-slate-600/50 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+              className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-normal focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all backdrop-blur-sm"
             >
               {Array.from({ length: 12 }, (_, i) => (
                 <option key={i + 1} value={i + 1}>
@@ -293,7 +295,7 @@ const Dashboard = () => {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="px-3 sm:px-4 py-2 bg-slate-800/60 border border-slate-600/50 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+              className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-normal focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all backdrop-blur-sm"
             >
               {Array.from({ length: 5 }, (_, i) => {
                 const year = new Date().getFullYear() - 2 + i;
@@ -304,96 +306,104 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Financial Health Score Card */}
-      <div className="glass-light rounded-xl p-6 mb-8 border border-indigo-500/20 shadow-xl">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="text-center">
-            <div className="inline-block relative w-24 h-24 mb-3">
-              <svg className="transform -rotate-90 w-24 h-24">
-                <circle cx="48" cy="48" r="40" stroke="#374151" strokeWidth="8" fill="none" />
-                <circle
-                  cx="48"
-                  cy="48"
-                  r="40"
-                  stroke={savingsRate >= 20 ? '#10b981' : savingsRate >= 10 ? '#f59e0b' : '#ef4444'}
-                  strokeWidth="8"
-                  fill="none"
-                  strokeDasharray={`${(Math.min(Math.max(savingsRate, 0), 100) * 2.51)} 251`}
-                  strokeLinecap="round"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xl font-bold text-white">{savingsRate}%</span>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className="glass-card rounded-2xl p-8 border border-white/10">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                <IncomeIcon className="w-5 h-5 text-cyan-400" />
               </div>
+              <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Total Income</h3>
             </div>
-            <p className="text-sm text-slate-400 font-medium">Savings Rate</p>
+            <div>
+              <p className="text-4xl font-bold text-white mb-1 tracking-tight">₹{totalIncome.toFixed(2)}</p>
+              <p className="text-xs text-slate-500 font-normal">{incomes.length} entries</p>
+            </div>
           </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-blue-400 mb-1">₹{avgDailySpending}</p>
-            <p className="text-sm text-slate-400 font-medium">Avg Daily Spending</p>
+        </div>
+        <div className="glass-card rounded-2xl p-8 border border-white/10">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-pink-500/10 border border-pink-500/20">
+                <ExpensesIcon className="w-5 h-5 text-pink-400" />
+              </div>
+              <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Total Expenses</h3>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-white mb-1 tracking-tight">₹{totalExpenses.toFixed(2)}</p>
+              <p className="text-xs text-slate-500 font-normal">{expenses.length} entries</p>
+            </div>
           </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-purple-400 mb-1">₹{spendingVelocity}</p>
-            <p className="text-sm text-slate-400 font-medium">Spending Velocity/Day</p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-green-400 mb-1">{expenses.length}</p>
-            <p className="text-sm text-slate-400 font-medium">Total Transactions</p>
+        </div>
+        <div className="glass-card rounded-2xl p-8 border border-white/10">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className={`p-3 rounded-xl ${balance >= 0 ? 'bg-purple-500/10 border-purple-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                <DashboardIcon className={`w-5 h-5 ${balance >= 0 ? 'text-purple-400' : 'text-red-400'}`} />
+              </div>
+              <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Balance</h3>
+            </div>
+            <div>
+              <p className={`text-4xl font-bold mb-1 tracking-tight ${balance >= 0 ? 'text-gradient-blue-purple' : 'text-red-400'}`}>
+                ₹{balance.toFixed(2)}
+              </p>
+              <p className="text-xs text-slate-500 font-normal">{balance >= 0 ? 'Positive' : 'Negative'} balance</p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="glass-light rounded-xl p-6 border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300 shadow-lg hover:shadow-emerald-500/10">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center mb-2">
-                <IncomeIcon className="w-5 h-5 text-emerald-400 mr-2" />
-                <h3 className="text-slate-300 text-sm font-semibold">Total Income</h3>
+      {/* Financial Health Metrics */}
+      <div className="glass-card rounded-2xl p-8 mb-10 border border-white/10">
+        <h2 className="text-xl font-bold text-white mb-6 tracking-tight">Financial Health</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="text-center">
+            <div className="inline-block relative w-28 h-28 mb-4">
+              <svg className="transform -rotate-90 w-28 h-28">
+                <circle cx="56" cy="56" r="48" stroke="rgba(255,255,255,0.1)" strokeWidth="6" fill="none" />
+                <circle
+                  cx="56"
+                  cy="56"
+                  r="48"
+                  stroke={savingsRate >= 20 ? '#10b981' : savingsRate >= 10 ? '#f59e0b' : '#ef4444'}
+                  strokeWidth="6"
+                  fill="none"
+                  strokeDasharray={`${(Math.min(Math.max(savingsRate, 0), 100) * 3.02)} 302`}
+                  strokeLinecap="round"
+                  className="transition-all duration-500"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-2xl font-bold text-white">{savingsRate}%</span>
               </div>
-              <p className="text-3xl font-bold text-emerald-400">₹{totalIncome.toFixed(2)}</p>
-              <p className="text-xs text-slate-500 mt-1 font-medium">{incomes.length} income entries</p>
             </div>
+            <p className="text-sm text-slate-400 font-normal">Savings Rate</p>
           </div>
-        </div>
-        <div className="glass-light rounded-xl p-6 border border-rose-500/20 hover:border-rose-500/40 transition-all duration-300 shadow-lg hover:shadow-rose-500/10">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center mb-2">
-                <ExpensesIcon className="w-5 h-5 text-rose-400 mr-2" />
-                <h3 className="text-slate-300 text-sm font-semibold">Total Expenses</h3>
-              </div>
-              <p className="text-3xl font-bold text-rose-400">₹{totalExpenses.toFixed(2)}</p>
-              <p className="text-xs text-slate-500 mt-1 font-medium">{expenses.length} expense entries</p>
-            </div>
+          <div className="text-center">
+            <p className="text-3xl font-bold text-blue-400 mb-2 tracking-tight">₹{avgDailySpending}</p>
+            <p className="text-sm text-slate-400 font-normal">Avg Daily Spending</p>
           </div>
-        </div>
-        <div className="glass-light rounded-xl p-6 border border-indigo-500/20 hover:border-indigo-500/40 transition-all duration-300 shadow-lg hover:shadow-indigo-500/10">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center mb-2">
-                <DashboardIcon className="w-5 h-5 text-indigo-400 mr-2" />
-                <h3 className="text-slate-300 text-sm font-semibold">Balance</h3>
-              </div>
-              <p className={`text-3xl font-bold ${balance >= 0 ? 'text-indigo-400' : 'text-rose-400'}`}>
-                ₹{balance.toFixed(2)}
-              </p>
-              <p className="text-xs text-slate-500 mt-1 font-medium">
-                {balance >= 0 ? 'Positive balance' : 'Negative balance'}
-              </p>
-            </div>
+          <div className="text-center">
+            <p className="text-3xl font-bold text-purple-400 mb-2 tracking-tight">₹{spendingVelocity}</p>
+            <p className="text-sm text-slate-400 font-normal">Spending Velocity</p>
+          </div>
+          <div className="text-center">
+            <p className="text-3xl font-bold text-cyan-400 mb-2 tracking-tight">{expenses.length}</p>
+            <p className="text-sm text-slate-400 font-normal">Transactions</p>
           </div>
         </div>
       </div>
 
       {/* Charts Row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
         {/* Income vs Expenses Trend */}
-        <div className="glass-light rounded-xl p-6 shadow-lg border border-slate-700/30">
-          <div className="flex items-center mb-4">
-            <DashboardIcon className="w-5 h-5 text-blue-400 mr-2" />
-            <h3 className="text-xl font-bold text-white">Income vs Expenses Trend</h3>
+        <div className="glass-card rounded-2xl p-8 border border-white/10">
+          <div className="flex items-center mb-6">
+            <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 mr-3">
+              <DashboardIcon className="w-5 h-5 text-blue-400" />
+            </div>
+            <h3 className="text-xl font-bold text-white tracking-tight">Income vs Expenses</h3>
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={trendData}>
@@ -420,10 +430,12 @@ const Dashboard = () => {
         </div>
 
         {/* Category Breakdown Pie Chart */}
-        <div className="glass-light rounded-xl p-6 shadow-lg border border-slate-700/30">
-          <div className="flex items-center mb-4">
-            <ShoppingIcon className="w-5 h-5 text-purple-400 mr-2" />
-            <h3 className="text-xl font-bold text-white">Category Breakdown</h3>
+        <div className="glass-card rounded-2xl p-8 border border-white/10">
+          <div className="flex items-center mb-6">
+            <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 mr-3">
+              <ShoppingIcon className="w-5 h-5 text-purple-400" />
+            </div>
+            <h3 className="text-xl font-bold text-white tracking-tight">Category Breakdown</h3>
           </div>
           {categoryData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
@@ -472,10 +484,12 @@ const Dashboard = () => {
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Monthly Spending Bar Chart */}
-        <div className="glass-light rounded-xl p-6 shadow-lg border border-slate-700/30">
-          <div className="flex items-center mb-4">
-            <ExpensesIcon className="w-5 h-5 text-red-400 mr-2" />
-            <h3 className="text-xl font-bold text-white">Monthly Spending</h3>
+        <div className="glass-card rounded-2xl p-8 border border-white/10">
+          <div className="flex items-center mb-6">
+            <div className="p-2 rounded-lg bg-pink-500/10 border border-pink-500/20 mr-3">
+              <ExpensesIcon className="w-5 h-5 text-pink-400" />
+            </div>
+            <h3 className="text-xl font-bold text-white tracking-tight">Monthly Spending</h3>
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={monthlyChartData}>
@@ -586,11 +600,11 @@ const Dashboard = () => {
                   {categoryIcons[item.category] || <ShoppingIcon className="w-5 h-5" />}
                 </div>
               </div>
-              <p className="text-xs text-gray-400 mb-1">{item.category}</p>
-              <p className="text-lg font-bold text-white">₹{item.amount.toFixed(2)}</p>
-              <div className="mt-2 h-1 bg-gray-700 rounded-full overflow-hidden">
+              <p className="text-xs text-slate-400 mb-2 font-normal">{item.category}</p>
+              <p className="text-xl font-bold text-white mb-3 tracking-tight">₹{item.amount.toFixed(2)}</p>
+              <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-purple-600"
+                  className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 transition-all duration-500"
                   style={{ width: `${categoryData[0] ? (item.amount / categoryData[0].amount) * 100 : 0}%` }}
                 ></div>
               </div>
@@ -600,36 +614,44 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="glass-light rounded-xl p-6 border border-purple-500/20">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="glass-card rounded-2xl p-6 border border-white/10">
           <div className="flex items-center mb-4">
-            <BudgetsIcon className="w-5 h-5 text-purple-400 mr-2" />
-            <h3 className="text-lg font-bold text-white">Active Budgets</h3>
+            <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 mr-3">
+              <BudgetsIcon className="w-5 h-5 text-purple-400" />
+            </div>
+            <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Active Budgets</h3>
           </div>
-          <p className="text-3xl font-bold text-purple-400">{dashboardData.budgets || 0}</p>
+          <p className="text-3xl font-bold text-white tracking-tight">{dashboardData.budgets || 0}</p>
         </div>
-        <div className="glass-light rounded-xl p-6 border border-yellow-500/20">
+        <div className="glass-card rounded-2xl p-6 border border-white/10">
           <div className="flex items-center mb-4">
-            <GoalsIcon className="w-5 h-5 text-yellow-400 mr-2" />
-            <h3 className="text-lg font-bold text-white">Active Goals</h3>
+            <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mr-3">
+              <GoalsIcon className="w-5 h-5 text-yellow-400" />
+            </div>
+            <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Active Goals</h3>
           </div>
-          <p className="text-3xl font-bold text-yellow-400">{dashboardData.activeGoals || 0}</p>
+          <p className="text-3xl font-bold text-white tracking-tight">{dashboardData.activeGoals || 0}</p>
         </div>
-        <div className="glass-light rounded-xl p-6 border border-green-500/20">
+        <div className="glass-card rounded-2xl p-6 border border-white/10">
           <div className="flex items-center mb-4">
-            <IncomeIcon className="w-5 h-5 text-green-400 mr-2" />
-            <h3 className="text-lg font-bold text-white">Income Sources</h3>
+            <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20 mr-3">
+              <IncomeIcon className="w-5 h-5 text-green-400" />
+            </div>
+            <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Income Sources</h3>
           </div>
-          <p className="text-3xl font-bold text-green-400">
+          <p className="text-3xl font-bold text-white tracking-tight">
             {new Set(incomes.map(i => i.source)).size}
           </p>
         </div>
-        <div className="glass-light rounded-xl p-6 border border-blue-500/20">
+        <div className="glass-card rounded-2xl p-6 border border-white/10">
           <div className="flex items-center mb-4">
-            <ExpensesIcon className="w-5 h-5 text-blue-400 mr-2" />
-            <h3 className="text-lg font-bold text-white">Categories Used</h3>
+            <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 mr-3">
+              <ExpensesIcon className="w-5 h-5 text-blue-400" />
+            </div>
+            <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Categories</h3>
           </div>
-          <p className="text-3xl font-bold text-blue-400">{categoryData.length}</p>
+          <p className="text-3xl font-bold text-white tracking-tight">{categoryData.length}</p>
         </div>
       </div>
     </div>
