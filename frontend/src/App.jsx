@@ -17,22 +17,46 @@ import ProtectedRoute from './components/ProtectedRoute';
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-    
-    if (token && userData) {
-      try {
-        setUser(JSON.parse(userData));
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+    try {
+      const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('user');
+      
+      if (token && userData) {
+        try {
+          setUser(JSON.parse(userData));
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
       }
+      setLoading(false);
+    } catch (err) {
+      console.error('App initialization error:', err);
+      setError(err.message);
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="text-center text-white p-8">
+          <h1 className="text-2xl font-bold mb-4">Error</h1>
+          <p className="text-gray-400 mb-6">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg text-white font-medium"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -45,11 +69,10 @@ function App() {
     );
   }
 
-  try {
-    return (
-      <Router>
-        <Toaster position="top-right" />
-        <Routes>
+  return (
+    <Router>
+      <Toaster position="top-right" />
+      <Routes>
         <Route
           path="/login"
           element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />}
@@ -141,24 +164,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
-    );
-  } catch (error) {
-    console.error('App render error:', error);
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="text-center text-white p-8">
-          <h1 className="text-2xl font-bold mb-4">Something went wrong</h1>
-          <p className="text-gray-400 mb-6">Please refresh the page</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg text-white font-medium"
-          >
-            Refresh Page
-          </button>
-        </div>
-      </div>
-    );
-  }
+  );
 }
 
 export default App;
