@@ -67,8 +67,12 @@ const Dashboard = () => {
     }
   };
 
+  // Safe data access
+  const safeExpenses = expenses || [];
+  const safeIncomes = incomes || [];
+
   // Calculate category breakdown
-  const categoryBreakdown = expenses.reduce((acc, expense) => {
+  const categoryBreakdown = safeExpenses.reduce((acc, expense) => {
     const cat = expense.category || 'Others';
     acc[cat] = (acc[cat] || 0) + parseFloat(expense.amount || 0);
     return acc;
@@ -80,7 +84,7 @@ const Dashboard = () => {
   })).sort((a, b) => b.amount - a.amount);
 
   // Calculate monthly spending - Proper monthly comparison
-  const monthlyData = expenses.reduce((acc, expense) => {
+  const monthlyData = safeExpenses.reduce((acc, expense) => {
     const date = new Date(expense.date);
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     const monthLabel = date.toLocaleString('default', { month: 'short', year: 'numeric' });
@@ -111,7 +115,7 @@ const Dashboard = () => {
   }));
 
   // Weekly spending breakdown
-  const weeklyData = expenses.reduce((acc, expense) => {
+  const weeklyData = safeExpenses.reduce((acc, expense) => {
     const date = new Date(expense.date);
     const week = `Week ${Math.ceil(date.getDate() / 7)}`;
     acc[week] = (acc[week] || 0) + parseFloat(expense.amount || 0);
@@ -124,7 +128,7 @@ const Dashboard = () => {
   }));
 
   // Daily spending trend (last 30 days)
-  const dailyData = expenses.reduce((acc, expense) => {
+  const dailyData = safeExpenses.reduce((acc, expense) => {
     const date = new Date(expense.date);
     const today = new Date();
     const diffTime = Math.abs(today - date);
@@ -143,17 +147,17 @@ const Dashboard = () => {
     .slice(-30);
 
   // Calculate financial metrics
-  const totalIncome = incomes.reduce((sum, i) => sum + parseFloat(i.amount || 0), 0);
-  const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+  const totalIncome = safeIncomes.reduce((sum, i) => sum + parseFloat(i.amount || 0), 0);
+  const totalExpenses = safeExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
   const balance = totalIncome - totalExpenses;
   const savingsRate = totalIncome > 0 ? ((balance / totalIncome) * 100).toFixed(1) : 0;
   
   // Average daily spending
-  const daysWithExpenses = new Set(expenses.map(e => new Date(e.date).toDateString())).size;
+  const daysWithExpenses = new Set(safeExpenses.map(e => new Date(e.date).toDateString())).size;
   const avgDailySpending = daysWithExpenses > 0 ? (totalExpenses / daysWithExpenses).toFixed(2) : 0;
 
   // Spending velocity (expenses per day)
-  const firstExpense = expenses.length > 0 ? new Date(Math.min(...expenses.map(e => new Date(e.date)))) : new Date();
+  const firstExpense = safeExpenses.length > 0 ? new Date(Math.min(...safeExpenses.map(e => new Date(e.date)))) : new Date();
   const daysSinceFirst = Math.max(1, Math.ceil((new Date() - firstExpense) / (1000 * 60 * 60 * 24)));
   const spendingVelocity = (totalExpenses / daysSinceFirst).toFixed(2);
 
@@ -161,7 +165,7 @@ const Dashboard = () => {
   const generateInsights = () => {
     const insights = [];
     
-    if (expenses.length === 0) {
+    if (safeExpenses.length === 0) {
       return ['Add your first expense to see insights about your spending patterns'];
     }
 
@@ -173,14 +177,14 @@ const Dashboard = () => {
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
     // Insight 1: Week-over-week spending comparison
-    const thisWeekExpenses = expenses
+    const thisWeekExpenses = safeExpenses
       .filter(e => {
         const expenseDate = new Date(e.date);
         return expenseDate >= oneWeekAgo && expenseDate < today;
       })
       .reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
 
-    const lastWeekExpenses = expenses
+    const lastWeekExpenses = safeExpenses
       .filter(e => {
         const expenseDate = new Date(e.date);
         return expenseDate >= twoWeeksAgo && expenseDate < oneWeekAgo;
@@ -209,7 +213,7 @@ const Dashboard = () => {
 
     // Insight 3: Day of week pattern
     const dayOfWeekSpending = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }; // Sun-Sat
-    expenses.forEach(expense => {
+    safeExpenses.forEach(expense => {
       const day = new Date(expense.date).getDay();
       dayOfWeekSpending[day] += parseFloat(expense.amount || 0);
     });
@@ -228,7 +232,7 @@ const Dashboard = () => {
     }
 
     // Insight 4: Today's spending vs average
-    const todayExpenses = expenses
+    const todayExpenses = safeExpenses
       .filter(e => {
         const expenseDate = new Date(e.date);
         return expenseDate.toDateString() === today.toDateString();
@@ -258,13 +262,13 @@ const Dashboard = () => {
     return insights.slice(0, 3);
   };
 
-  const insights = generateInsights();
+  const insights = generateInsights() || [];
 
   // Calculate Stash Score for Guided Coach
   const calculateStashScore = () => {
-    if (expenses.length === 0) return 50;
-    const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
-    const totalIncome = incomes.reduce((sum, i) => sum + parseFloat(i.amount || 0), 0);
+    if (safeExpenses.length === 0) return 50;
+    const totalExpenses = safeExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+    const totalIncome = safeIncomes.reduce((sum, i) => sum + parseFloat(i.amount || 0), 0);
     const balance = totalIncome - totalExpenses;
     const savingsRate = totalIncome > 0 ? ((balance / totalIncome) * 100) : 0;
     let score = 50;
@@ -379,7 +383,7 @@ const Dashboard = () => {
   // Income vs Expenses trend - Last 12 months
   const incomeExpenseTrend = {};
   
-  expenses.forEach(expense => {
+  safeExpenses.forEach(expense => {
     const date = new Date(expense.date);
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     const monthLabel = date.toLocaleString('default', { month: 'short', year: 'numeric' });
@@ -389,7 +393,7 @@ const Dashboard = () => {
     incomeExpenseTrend[monthKey].expenses += parseFloat(expense.amount || 0);
   });
 
-  incomes.forEach(income => {
+  safeIncomes.forEach(income => {
     const date = new Date(income.date);
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     const monthLabel = date.toLocaleString('default', { month: 'short', year: 'numeric' });
