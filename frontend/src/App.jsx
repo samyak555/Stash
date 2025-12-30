@@ -74,20 +74,17 @@ function App() {
     );
   }
 
-  // Helper to check if user is logged in
-  const isAuthenticated = user !== null && user !== undefined;
-
   return (
     <Router>
       <Toaster position="top-right" />
       <Routes>
         <Route
           path="/login"
-          element={isAuthenticated ? <Navigate to="/" replace /> : <Login setUser={setUser} />}
+          element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />}
         />
         <Route
           path="/register"
-          element={isAuthenticated ? <Navigate to="/" replace /> : <Register setUser={setUser} />}
+          element={user ? <Navigate to="/" replace /> : <Register setUser={setUser} />}
         />
         <Route
           path="/"

@@ -164,9 +164,9 @@ const Dashboard = () => {
   const daysSinceFirst = Math.max(1, Math.ceil((new Date() - firstExpense) / (1000 * 60 * 60 * 24)));
   const spendingVelocity = (totalExpenses / daysSinceFirst).toFixed(2);
 
-  // Generate insights
-  const generateInsights = () => {
-    const insights = [];
+  // Generate insights - moved after all calculations
+  const insights = (() => {
+    const insightsList = [];
     
     if (safeExpenses.length === 0) {
       return ['Add your first expense to see insights about your spending patterns'];
@@ -198,19 +198,19 @@ const Dashboard = () => {
       const changePercent = ((thisWeekExpenses - lastWeekExpenses) / lastWeekExpenses) * 100;
       if (Math.abs(changePercent) >= 10) {
         if (changePercent > 0) {
-          insights.push(`Your spending increased this week by ${Math.abs(changePercent).toFixed(0)}% compared to last week`);
+          insightsList.push(`Your spending increased this week by ${Math.abs(changePercent).toFixed(0)}% compared to last week`);
         } else {
-          insights.push(`Your spending decreased this week by ${Math.abs(changePercent).toFixed(0)}% compared to last week`);
+          insightsList.push(`Your spending decreased this week by ${Math.abs(changePercent).toFixed(0)}% compared to last week`);
         }
       }
     }
 
     // Insight 2: Top category analysis
-    if (categoryData.length > 0) {
+    if (categoryData.length > 0 && totalExpenses > 0) {
       const topCategory = categoryData[0];
       const topCategoryPercent = (topCategory.amount / totalExpenses) * 100;
       if (topCategoryPercent >= 30) {
-        insights.push(`Most of your spending (${topCategoryPercent.toFixed(0)}%) is on ${topCategory.category}`);
+        insightsList.push(`Most of your spending (${topCategoryPercent.toFixed(0)}%) is on ${topCategory.category}`);
       }
     }
 
@@ -228,9 +228,9 @@ const Dashboard = () => {
     if (totalWeekSpending > 0) {
       const weekendPercent = (weekendSpending / totalWeekSpending) * 100;
       if (weekendPercent >= 40) {
-        insights.push(`Most of your expenses happen on weekends`);
+        insightsList.push(`Most of your expenses happen on weekends`);
       } else if (weekendPercent <= 20) {
-        insights.push(`Most of your expenses happen on weekdays`);
+        insightsList.push(`Most of your expenses happen on weekdays`);
       }
     }
 
@@ -245,27 +245,25 @@ const Dashboard = () => {
     if (todayExpenses > 0 && parseFloat(avgDailySpending) > 0) {
       const todayVsAvg = (todayExpenses / parseFloat(avgDailySpending)) * 100;
       if (todayVsAvg < 70) {
-        insights.push(`You spent less than your usual daily average today`);
+        insightsList.push(`You spent less than your usual daily average today`);
       } else if (todayVsAvg > 130) {
-        insights.push(`You spent more than your usual daily average today`);
+        insightsList.push(`You spent more than your usual daily average today`);
       }
     }
 
     // If we don't have enough insights, add general ones
-    if (insights.length === 0) {
+    if (insightsList.length === 0) {
       if (categoryData.length > 0) {
-        insights.push(`Your top spending category is ${categoryData[0].category}`);
+        insightsList.push(`Your top spending category is ${categoryData[0].category}`);
       }
       if (parseFloat(avgDailySpending) > 0) {
-        insights.push(`Your average daily spending is ₹${avgDailySpending}`);
+        insightsList.push(`Your average daily spending is ₹${avgDailySpending}`);
       }
     }
 
     // Return 2-3 insights
-    return insights.slice(0, 3);
-  };
-
-  const insights = generateInsights() || [];
+    return insightsList.slice(0, 3);
+  })();
 
   // Calculate Stash Score for Guided Coach
   const calculateStashScore = () => {
