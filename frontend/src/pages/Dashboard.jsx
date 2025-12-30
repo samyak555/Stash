@@ -5,6 +5,8 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Toolti
 import toast from 'react-hot-toast';
 import { DashboardIcon, ExpensesIcon, IncomeIcon, BudgetsIcon, GoalsIcon, FoodIcon, TravelIcon, MovieIcon, ClothesIcon, ShoppingIcon } from '../components/Icons';
 import Logo from '../components/Logo';
+import StashScore from '../components/StashScore';
+import GuidedCoach from '../components/GuidedCoach';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -258,6 +260,119 @@ const Dashboard = () => {
 
   const insights = generateInsights();
 
+  // Calculate Stash Score for Guided Coach
+  const calculateStashScore = () => {
+    if (expenses.length === 0) return 50;
+    const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+    const totalIncome = incomes.reduce((sum, i) => sum + parseFloat(i.amount || 0), 0);
+    const balance = totalIncome - totalExpenses;
+    const savingsRate = totalIncome > 0 ? ((balance / totalIncome) * 100) : 0;
+    let score = 50;
+    if (savingsRate >= 30) score += 40;
+    else if (savingsRate >= 20) score += 30;
+    else if (savingsRate >= 10) score += 20;
+    else if (savingsRate >= 0) score += 10;
+    else score -= 20;
+    if (balance > 0) score += 10;
+    else if (balance < 0) score -= 10;
+    return Math.max(0, Math.min(100, Math.round(score)));
+  };
+
+  const stashScore = calculateStashScore();
+
+  // Generate chart explanations
+  const getChartExplanations = () => {
+    const explanations = {};
+
+    // Income vs Expenses explanation
+    if (trendData.length >= 2) {
+      const latest = trendData[trendData.length - 1];
+      const previous = trendData[trendData.length - 2];
+      const incomeChange = latest.income > 0 && previous.income > 0 
+        ? ((latest.income - previous.income) / previous.income) * 100 
+        : 0;
+      const expenseChange = latest.expenses > 0 && previous.expenses > 0
+        ? ((latest.expenses - previous.expenses) / previous.expenses) * 100
+        : 0;
+      
+      if (Math.abs(expenseChange) < 5 && Math.abs(incomeChange) < 5) {
+        explanations.incomeVsExpenses = "Your income and expenses have been relatively stable recently.";
+      } else if (expenseChange > 10) {
+        explanations.incomeVsExpenses = "Your expenses increased this month compared to last month.";
+      } else if (expenseChange < -10) {
+        explanations.incomeVsExpenses = "Your expenses decreased this month, which is great for savings.";
+      } else {
+        explanations.incomeVsExpenses = "Your income and expenses are tracking well together.";
+      }
+    } else {
+      explanations.incomeVsExpenses = "Keep tracking to see income and expense trends over time.";
+    }
+
+    // Category Breakdown explanation
+    if (categoryData.length > 0) {
+      const topCategory = categoryData[0];
+      const topPercent = (topCategory.amount / totalExpenses) * 100;
+      if (topPercent >= 40) {
+        explanations.categoryBreakdown = `${topCategory.category} spending is your largest category at ${topPercent.toFixed(0)}% of total expenses.`;
+      } else if (categoryData.length <= 3) {
+        explanations.categoryBreakdown = "Your spending is spread across a few main categories.";
+      } else {
+        explanations.categoryBreakdown = "Your spending is well-distributed across multiple categories.";
+      }
+    } else {
+      explanations.categoryBreakdown = "Add expenses to see your category breakdown.";
+    }
+
+    // Monthly Spending explanation
+    if (monthlyChartData.length >= 2) {
+      const latest = monthlyChartData[monthlyChartData.length - 1];
+      const previous = monthlyChartData[monthlyChartData.length - 2];
+      if (previous.amount > 0) {
+        const change = ((latest.amount - previous.amount) / previous.amount) * 100;
+        if (Math.abs(change) < 5) {
+          explanations.monthlySpending = "This month's spending is similar to last month, showing consistency.";
+        } else if (change > 0) {
+          explanations.monthlySpending = `This month's spending is ${change.toFixed(0)}% higher than last month.`;
+        } else {
+          explanations.monthlySpending = `This month's spending is ${Math.abs(change).toFixed(0)}% lower than last month.`;
+        }
+      } else {
+        explanations.monthlySpending = "Your monthly spending pattern is developing.";
+      }
+    } else {
+      explanations.monthlySpending = "Track expenses over multiple months to see spending trends.";
+    }
+
+    // Daily Spending Trend explanation
+    if (dailyChartData.length >= 7) {
+      const recent7Days = dailyChartData.slice(-7);
+      const previous7Days = dailyChartData.slice(-14, -7);
+      const recentAvg = recent7Days.reduce((sum, d) => sum + d.amount, 0) / 7;
+      const previousAvg = previous7Days.length > 0 
+        ? previous7Days.reduce((sum, d) => sum + d.amount, 0) / previous7Days.length 
+        : 0;
+      
+      if (previousAvg > 0) {
+        const change = ((recentAvg - previousAvg) / previousAvg) * 100;
+        if (Math.abs(change) < 10) {
+          explanations.dailyTrend = "Your daily spending has been relatively stable over the past week.";
+        } else if (change > 0) {
+          explanations.dailyTrend = `Your daily spending increased by ${change.toFixed(0)}% compared to the previous week.`;
+        } else {
+          explanations.dailyTrend = `Your daily spending decreased by ${Math.abs(change).toFixed(0)}% compared to the previous week.`;
+        }
+      } else {
+        explanations.dailyTrend = "Your daily spending pattern is developing as you track more expenses.";
+      }
+    } else {
+      explanations.dailyTrend = "Keep tracking daily expenses to see spending patterns emerge.";
+    }
+
+    return explanations;
+  };
+
+  const chartExplanations = getChartExplanations();
+
   // Top spending categories
   const topCategories = categoryData.slice(0, 5);
 
@@ -431,6 +546,12 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* Stash Score and Guided Coach Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+        <StashScore expenses={expenses} incomes={incomes} />
+        <GuidedCoach expenses={expenses} incomes={incomes} stashScore={stashScore} />
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <div className="glass-card rounded-2xl p-8 border border-white/10">
@@ -552,6 +673,11 @@ const Dashboard = () => {
               <Area type="monotone" dataKey="expenses" stackId="2" stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} />
             </AreaChart>
           </ResponsiveContainer>
+          {chartExplanations.incomeVsExpenses && (
+            <p className="text-sm text-slate-400 font-normal mt-4 text-center">
+              {chartExplanations.incomeVsExpenses}
+            </p>
+          )}
         </div>
 
         {/* Category Breakdown Pie Chart */}
@@ -585,7 +711,13 @@ const Dashboard = () => {
                 />
               </PieChart>
             </ResponsiveContainer>
-          ) : (
+          ) : null}
+          {categoryData.length > 0 && chartExplanations.categoryBreakdown && (
+            <p className="text-sm text-slate-400 font-normal mt-4 text-center">
+              {chartExplanations.categoryBreakdown}
+            </p>
+          )}
+          {categoryData.length === 0 && (
             <div className="flex flex-col items-center justify-center h-[300px] text-center">
               <ShoppingIcon className="w-16 h-16 text-gray-600 mb-4" />
               <p className="text-slate-400 text-lg mb-2 font-medium">No expenses yet</p>
@@ -628,6 +760,11 @@ const Dashboard = () => {
               <Bar dataKey="amount" fill="#3b82f6" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
+          {chartExplanations.monthlySpending && (
+            <p className="text-sm text-slate-400 font-normal mt-4 text-center">
+              {chartExplanations.monthlySpending}
+            </p>
+          )}
         </div>
 
         {/* Daily Spending Trend */}
@@ -649,7 +786,13 @@ const Dashboard = () => {
                 <Line type="monotone" dataKey="amount" stroke="#f59e0b" strokeWidth={2} dot={{ fill: '#f59e0b', r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
-          ) : (
+          ) : null}
+          {dailyChartData.length > 0 && chartExplanations.dailyTrend && (
+            <p className="text-sm text-slate-400 font-normal mt-4 text-center">
+              {chartExplanations.dailyTrend}
+            </p>
+          )}
+          {dailyChartData.length === 0 && (
             <div className="flex flex-col items-center justify-center h-[300px] text-center px-4 overflow-hidden">
               <DashboardIcon className="w-12 h-12 text-gray-600 mb-3" />
               <p className="text-gray-400 text-base mb-1">No spending data for last 30 days</p>
@@ -777,6 +920,40 @@ const Dashboard = () => {
             <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Categories</h3>
           </div>
           <p className="text-3xl font-bold text-white tracking-tight">{categoryData.length}</p>
+        </div>
+      </div>
+
+      {/* Bank Sync Coming Soon */}
+      <div className="glass-card rounded-2xl p-8 mb-10 border border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-blue-500/5">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                <DashboardIcon className="w-5 h-5 text-cyan-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white tracking-tight">Connect Bank</h3>
+              <span className="px-2 py-1 text-xs font-medium text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+                Coming Soon
+              </span>
+            </div>
+            <p className="text-slate-300 text-base font-normal leading-relaxed">
+              Automatically sync your bank transactions and never miss tracking an expense. Get real-time updates and smarter insights.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              const interested = localStorage.getItem('bankSyncInterest');
+              if (!interested) {
+                localStorage.setItem('bankSyncInterest', 'true');
+                toast.success('We\'ll notify you when bank sync is available!');
+              } else {
+                toast('You\'re already on the waitlist!', { icon: '✅' });
+              }
+            }}
+            className="px-6 py-3 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 rounded-xl text-cyan-400 font-medium text-sm transition-all hover:scale-105"
+          >
+            Notify Me
+          </button>
         </div>
       </div>
     </div>

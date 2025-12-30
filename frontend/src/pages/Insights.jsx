@@ -1,26 +1,48 @@
 import { useState, useEffect } from 'react';
-import { aiAPI } from '../services/api';
+import { aiAPI, expenseAPI, incomeAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { InsightsIcon } from '../components/Icons';
 import Logo from '../components/Logo';
+import AICoach from '../components/AICoach';
 
 const Insights = () => {
   const [insights, setInsights] = useState(null);
+  const [expenses, setExpenses] = useState([]);
+  const [incomes, setIncomes] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchInsights();
+    fetchExpenses();
+    fetchIncomes();
   }, []);
 
   const fetchInsights = async () => {
     try {
-      setLoading(true);
       const response = await aiAPI.getInsights();
       setInsights(response.data);
     } catch (error) {
       console.error('Failed to load insights:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchExpenses = async () => {
+    try {
+      const response = await expenseAPI.getAll();
+      setExpenses(response.data || []);
+    } catch (error) {
+      console.error('Failed to fetch expenses:', error);
+    }
+  };
+
+  const fetchIncomes = async () => {
+    try {
+      const response = await incomeAPI.getAll();
+      setIncomes(response.data || []);
+    } catch (error) {
+      console.error('Failed to fetch incomes:', error);
     }
   };
 
@@ -40,6 +62,11 @@ const Insights = () => {
           </h1>
           <p className="text-slate-400 text-lg font-normal">Smart financial analysis and recommendations</p>
         </div>
+      </div>
+
+      {/* AI Coach Component */}
+      <div className="mb-10">
+        <AICoach expenses={expenses} incomes={incomes} />
       </div>
 
       <div className="glass-card rounded-2xl p-8 border border-white/10">
@@ -115,3 +142,4 @@ const Insights = () => {
 };
 
 export default Insights;
+
