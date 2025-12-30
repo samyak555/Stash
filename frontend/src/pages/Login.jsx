@@ -47,56 +47,88 @@ const Login = ({ setUser }) => {
     setGoogleLoading(true);
     
     try {
-      // Use Google Identity Services (gsi) for OAuth
-      if (window.google) {
-        window.google.accounts.oauth2.initTokenClient({
-          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
-          scope: 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
-          callback: async (response) => {
-            if (response.access_token) {
-              try {
-                // Get user info from Google
-                const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-                  headers: {
-                    'Authorization': `Bearer ${response.access_token}`
-                  }
-                });
-                const userInfo = await userInfoResponse.json();
-
-                // Send to backend
-                const authResponse = await authAPI.googleAuth({
-                  accessToken: response.access_token,
-                  email: userInfo.email,
-                  name: userInfo.name
-                });
-
-                const { token, ...userData } = authResponse.data;
-                localStorage.setItem('token', token);
-                localStorage.setItem('user', JSON.stringify(userData));
-                setUser(userData);
-
-                if (userData.emailAutoConnected) {
-                  toast.success('Signed in with Google! Email sync automatically configured.', { duration: 6000 });
-                } else {
-                  toast.success('Signed in with Google!');
-                }
-                navigate('/');
-              } catch (error) {
-                console.error('Google auth error:', error);
-                toast.error('Failed to complete Google sign-in');
-              }
-            }
-            setGoogleLoading(false);
-          }
-        }).requestAccessToken();
-      } else {
-        // Fallback: Show instructions if Google OAuth not configured
-        toast.error('Google Sign-In not configured. Please use email login or configure Google OAuth.', { duration: 8000 });
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      
+      // Check if Google OAuth is configured
+      if (!clientId) {
+        toast.error('Google Sign-In is not configured. Please use email login.', { duration: 5000 });
         setGoogleLoading(false);
+        return;
       }
+
+      // Wait for Google script to load
+      if (!window.google) {
+        // Wait up to 3 seconds for Google script to load
+        let attempts = 0;
+        while (!window.google && attempts < 30) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+        }
+        
+        if (!window.google) {
+          toast.error('Google Sign-In script not loaded. Please refresh the page.', { duration: 5000 });
+          setGoogleLoading(false);
+          return;
+        }
+      }
+
+      // Use Google Identity Services (gsi) for OAuth
+      window.google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+        callback: async (response) => {
+          if (response.error) {
+            console.error('Google OAuth error:', response.error);
+            toast.error('Google sign-in was cancelled or failed');
+            setGoogleLoading(false);
+            return;
+          }
+
+          if (response.access_token) {
+            try {
+              // Get user info from Google
+              const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                headers: {
+                  'Authorization': `Bearer ${response.access_token}`
+                }
+              });
+              
+              if (!userInfoResponse.ok) {
+                throw new Error('Failed to fetch user info from Google');
+              }
+              
+              const userInfo = await userInfoResponse.json();
+
+              // Send to backend
+              const authResponse = await authAPI.googleAuth({
+                accessToken: response.access_token,
+                email: userInfo.email,
+                name: userInfo.name || userInfo.email
+              });
+
+              const { token, ...userData } = authResponse.data;
+              localStorage.setItem('token', token);
+              localStorage.setItem('user', JSON.stringify(userData));
+              setUser(userData);
+
+              if (userData.emailAutoConnected) {
+                toast.success('Signed in with Google! Email sync automatically configured.', { duration: 6000 });
+              } else {
+                toast.success('Signed in with Google!');
+              }
+              navigate('/');
+            } catch (error) {
+              console.error('Google auth error:', error);
+              const errorMessage = error.response?.data?.message || error.message || 'Failed to complete Google sign-in';
+              toast.error(errorMessage);
+            }
+          }
+          setGoogleLoading(false);
+        }
+      }).requestAccessToken();
     } catch (error) {
       console.error('Google sign-in error:', error);
-      toast.error('Failed to sign in with Google');
+      toast.error('Failed to sign in with Google. Please try email login.');
       setGoogleLoading(false);
     }
   };

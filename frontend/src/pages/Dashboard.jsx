@@ -41,9 +41,10 @@ const Dashboard = () => {
         month: selectedMonth,
         year: selectedYear,
       });
-      setDashboardData(response.data);
+      setDashboardData(response.data || {});
     } catch (error) {
       console.error('Dashboard error:', error);
+      setDashboardData({}); // Set empty object on error to prevent blank screen
     } finally {
       setLoading(false);
     }
@@ -55,6 +56,7 @@ const Dashboard = () => {
       setExpenses(response.data || []);
     } catch (error) {
       console.error('Failed to fetch expenses:', error);
+      setExpenses([]); // Set to empty array on error
     }
   };
 
@@ -64,12 +66,13 @@ const Dashboard = () => {
       setIncomes(response.data || []);
     } catch (error) {
       console.error('Failed to fetch incomes:', error);
+      setIncomes([]); // Set to empty array on error
     }
   };
 
-  // Safe data access
-  const safeExpenses = expenses || [];
-  const safeIncomes = incomes || [];
+  // Safe data access - ensure arrays exist (moved before calculations)
+  const safeExpenses = Array.isArray(expenses) ? expenses : [];
+  const safeIncomes = Array.isArray(incomes) ? incomes : [];
 
   // Calculate category breakdown
   const categoryBreakdown = safeExpenses.reduce((acc, expense) => {
