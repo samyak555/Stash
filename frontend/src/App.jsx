@@ -20,25 +20,30 @@ function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    try {
-      const token = localStorage.getItem('token');
-      const userData = localStorage.getItem('user');
-      
-      if (token && userData) {
-        try {
-          setUser(JSON.parse(userData));
-        } catch (error) {
-          console.error('Error parsing user data:', error);
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+    const initializeApp = () => {
+      try {
+        const token = localStorage.getItem('token');
+        const userData = localStorage.getItem('user');
+        
+        if (token && userData) {
+          try {
+            const parsedUser = JSON.parse(userData);
+            setUser(parsedUser);
+          } catch (parseError) {
+            console.error('Error parsing user data:', parseError);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+          }
         }
+        setLoading(false);
+      } catch (err) {
+        console.error('App initialization error:', err);
+        setError(err.message || 'Failed to initialize app');
+        setLoading(false);
       }
-      setLoading(false);
-    } catch (err) {
-      console.error('App initialization error:', err);
-      setError(err.message);
-      setLoading(false);
-    }
+    };
+    
+    initializeApp();
   }, []);
 
   if (error) {
@@ -69,17 +74,20 @@ function App() {
     );
   }
 
+  // Helper to check if user is logged in
+  const isAuthenticated = user !== null && user !== undefined;
+
   return (
     <Router>
       <Toaster position="top-right" />
       <Routes>
         <Route
           path="/login"
-          element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />}
+          element={isAuthenticated ? <Navigate to="/" replace /> : <Login setUser={setUser} />}
         />
         <Route
           path="/register"
-          element={user ? <Navigate to="/" replace /> : <Register setUser={setUser} />}
+          element={isAuthenticated ? <Navigate to="/" replace /> : <Register setUser={setUser} />}
         />
         <Route
           path="/"
