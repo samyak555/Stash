@@ -442,18 +442,15 @@ const Dashboard = () => {
     );
   }
 
-  if (!dashboardData) {
-    return (
-      <div className="text-center py-12">
-        <Logo size="xl" showText={true} className="justify-center mb-6" />
-        <h2 className="text-3xl font-bold text-white mb-4">Welcome to Stash</h2>
-        <p className="text-gray-400">Start adding expenses and income to see your dashboard</p>
-      </div>
-    );
-  }
-
   return (
     <div className="px-4 py-6 animate-fade-in">
+      {!dashboardData && (
+        <div className="text-center py-12 mb-10">
+          <Logo size="xl" showText={true} className="justify-center mb-6" />
+          <h2 className="text-3xl font-bold text-white mb-4">Welcome to Stash</h2>
+          <p className="text-gray-400">Start adding expenses and income to see your dashboard</p>
+        </div>
+      )}
       {/* Sync Status Banner */}
       {syncStatus?.connected && (
         <div className="mb-6 glass-card rounded-xl p-5 border border-cyan-500/20 bg-cyan-500/5">
@@ -546,10 +543,10 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Stash Score and Guided Coach Row */}
+      {/* Stash Score and Guided Coach Row - Always visible */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-        <StashScore expenses={expenses} incomes={incomes} />
-        <GuidedCoach expenses={expenses} incomes={incomes} stashScore={stashScore} />
+        <StashScore expenses={expenses || []} incomes={incomes || []} />
+        <GuidedCoach expenses={expenses || []} incomes={incomes || []} stashScore={stashScore || 50} />
       </div>
 
       {/* Summary Cards */}
