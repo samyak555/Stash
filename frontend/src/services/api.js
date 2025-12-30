@@ -27,10 +27,19 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+    // Only redirect on 401 if we're not already on login page
+    if (error.response?.status === 401 && !window.location.pathname.includes('/login')) {
+      try {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      } catch (e) {
+        console.error('Error handling 401:', e);
+      }
+    }
+    // Don't reject network errors in production - let components handle them
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      console.warn('Network error - backend may be unavailable');
     }
     return Promise.reject(error);
   }
