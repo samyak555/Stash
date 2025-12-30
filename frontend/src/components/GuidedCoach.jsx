@@ -128,8 +128,9 @@ const GuidedCoach = ({ expenses = [], incomes = [], stashScore = 50 }) => {
             tone: "supportive"
           };
         } else {
+          const balanceMessage = balance < 0 ? 'You\'re spending more than you earn.' : 'Focus on building savings and reducing unnecessary expenses.';
           return {
-            message: `Your Stash Score is ${stashScore}, which suggests there's room for improvement. ${balance < 0 ? 'You're spending more than you earn.' : 'Focus on building savings and reducing unnecessary expenses.'} Start small and track your progress.`,
+            message: `Your Stash Score is ${stashScore}, which suggests there's room for improvement. ${balanceMessage} Start small and track your progress.`,
             tone: "gentle"
           };
         }
