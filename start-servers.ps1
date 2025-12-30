@@ -19,3 +19,5 @@ Write-Host ""
 Write-Host "Press any key to exit this script (servers will keep running)..." -ForegroundColor Gray
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
+
+

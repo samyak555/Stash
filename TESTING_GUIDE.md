@@ -238,3 +238,5 @@ If you encounter any issues, check:
 2. Browser console (F12) for frontend errors
 3. Database file for saved transactions
 
+
+

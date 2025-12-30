@@ -165,7 +165,17 @@ const Settings = () => {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleConnectEmail} className="space-y-4">
+          <div className="space-y-6">
+            <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-5">
+              <p className="text-sm text-slate-300 font-medium mb-2">💡 Prefer Automatic Setup?</p>
+              <p className="text-xs text-slate-400 leading-relaxed mb-3">
+                Sign out and sign in again using "Continue with Google" on the login page. Your Gmail will be automatically connected - no passwords needed!
+              </p>
+            </div>
+            
+            <div className="border-t border-white/10 pt-6">
+              <p className="text-sm text-slate-400 font-medium mb-4">Manual Setup (Alternative)</p>
+              <form onSubmit={handleConnectEmail} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">
                 Email Address

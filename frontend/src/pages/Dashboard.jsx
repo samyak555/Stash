@@ -155,6 +155,109 @@ const Dashboard = () => {
   const daysSinceFirst = Math.max(1, Math.ceil((new Date() - firstExpense) / (1000 * 60 * 60 * 24)));
   const spendingVelocity = (totalExpenses / daysSinceFirst).toFixed(2);
 
+  // Generate insights
+  const generateInsights = () => {
+    const insights = [];
+    
+    if (expenses.length === 0) {
+      return ['Add your first expense to see insights about your spending patterns'];
+    }
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const oneWeekAgo = new Date(today);
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const twoWeeksAgo = new Date(today);
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+    // Insight 1: Week-over-week spending comparison
+    const thisWeekExpenses = expenses
+      .filter(e => {
+        const expenseDate = new Date(e.date);
+        return expenseDate >= oneWeekAgo && expenseDate < today;
+      })
+      .reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+
+    const lastWeekExpenses = expenses
+      .filter(e => {
+        const expenseDate = new Date(e.date);
+        return expenseDate >= twoWeeksAgo && expenseDate < oneWeekAgo;
+      })
+      .reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+
+    if (lastWeekExpenses > 0 && thisWeekExpenses > 0) {
+      const changePercent = ((thisWeekExpenses - lastWeekExpenses) / lastWeekExpenses) * 100;
+      if (Math.abs(changePercent) >= 10) {
+        if (changePercent > 0) {
+          insights.push(`Your spending increased this week by ${Math.abs(changePercent).toFixed(0)}% compared to last week`);
+        } else {
+          insights.push(`Your spending decreased this week by ${Math.abs(changePercent).toFixed(0)}% compared to last week`);
+        }
+      }
+    }
+
+    // Insight 2: Top category analysis
+    if (categoryData.length > 0) {
+      const topCategory = categoryData[0];
+      const topCategoryPercent = (topCategory.amount / totalExpenses) * 100;
+      if (topCategoryPercent >= 30) {
+        insights.push(`Most of your spending (${topCategoryPercent.toFixed(0)}%) is on ${topCategory.category}`);
+      }
+    }
+
+    // Insight 3: Day of week pattern
+    const dayOfWeekSpending = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }; // Sun-Sat
+    expenses.forEach(expense => {
+      const day = new Date(expense.date).getDay();
+      dayOfWeekSpending[day] += parseFloat(expense.amount || 0);
+    });
+
+    const weekendSpending = dayOfWeekSpending[0] + dayOfWeekSpending[6]; // Sun + Sat
+    const weekdaySpending = dayOfWeekSpending[1] + dayOfWeekSpending[2] + dayOfWeekSpending[3] + dayOfWeekSpending[4] + dayOfWeekSpending[5];
+    const totalWeekSpending = weekendSpending + weekdaySpending;
+
+    if (totalWeekSpending > 0) {
+      const weekendPercent = (weekendSpending / totalWeekSpending) * 100;
+      if (weekendPercent >= 40) {
+        insights.push(`Most of your expenses happen on weekends`);
+      } else if (weekendPercent <= 20) {
+        insights.push(`Most of your expenses happen on weekdays`);
+      }
+    }
+
+    // Insight 4: Today's spending vs average
+    const todayExpenses = expenses
+      .filter(e => {
+        const expenseDate = new Date(e.date);
+        return expenseDate.toDateString() === today.toDateString();
+      })
+      .reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+
+    if (todayExpenses > 0 && parseFloat(avgDailySpending) > 0) {
+      const todayVsAvg = (todayExpenses / parseFloat(avgDailySpending)) * 100;
+      if (todayVsAvg < 70) {
+        insights.push(`You spent less than your usual daily average today`);
+      } else if (todayVsAvg > 130) {
+        insights.push(`You spent more than your usual daily average today`);
+      }
+    }
+
+    // If we don't have enough insights, add general ones
+    if (insights.length === 0) {
+      if (categoryData.length > 0) {
+        insights.push(`Your top spending category is ${categoryData[0].category}`);
+      }
+      if (parseFloat(avgDailySpending) > 0) {
+        insights.push(`Your average daily spending is ₹${avgDailySpending}`);
+      }
+    }
+
+    // Return 2-3 insights
+    return insights.slice(0, 3);
+  };
+
+  const insights = generateInsights();
+
   // Top spending categories
   const topCategories = categoryData.slice(0, 5);
 
@@ -305,6 +408,28 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Insights Summary Card */}
+      {insights.length > 0 && (
+        <div className="glass-card rounded-2xl p-8 mb-10 border border-white/10 bg-gradient-to-br from-blue-500/5 to-purple-500/5">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+              <DashboardIcon className="w-6 h-6 text-blue-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">Insights Summary</h2>
+          </div>
+          <div className="space-y-4">
+            {insights.map((insight, index) => (
+              <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 transition-all">
+                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-400 mt-2"></div>
+                <p className="text-base text-slate-200 font-normal leading-relaxed flex-1">
+                  {insight}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
