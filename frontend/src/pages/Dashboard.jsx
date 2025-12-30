@@ -285,6 +285,50 @@ const Dashboard = () => {
 
   const stashScore = calculateStashScore();
 
+  // Income vs Expenses trend - Last 12 months (moved before getChartExplanations)
+  const incomeExpenseTrend = {};
+  
+  safeExpenses.forEach(expense => {
+    const date = new Date(expense.date);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthLabel = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+    if (!incomeExpenseTrend[monthKey]) {
+      incomeExpenseTrend[monthKey] = { income: 0, expenses: 0, month: monthLabel, key: monthKey };
+    }
+    incomeExpenseTrend[monthKey].expenses += parseFloat(expense.amount || 0);
+  });
+
+  safeIncomes.forEach(income => {
+    const date = new Date(income.date);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthLabel = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+    if (!incomeExpenseTrend[monthKey]) {
+      incomeExpenseTrend[monthKey] = { income: 0, expenses: 0, month: monthLabel, key: monthKey };
+    }
+    incomeExpenseTrend[monthKey].income += parseFloat(income.amount || 0);
+  });
+
+  // Get last 12 months for trend
+  const trend12Months = [];
+  for (let i = 11; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthLabel = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+    trend12Months.push({
+      month: monthLabel,
+      income: incomeExpenseTrend[monthKey]?.income || 0,
+      expenses: incomeExpenseTrend[monthKey]?.expenses || 0,
+      key: monthKey
+    });
+  }
+
+  const trendData = trend12Months.map(item => ({
+    month: item.month,
+    income: parseFloat(item.income.toFixed(2)),
+    expenses: parseFloat(item.expenses.toFixed(2)),
+  }));
+
   // Generate chart explanations
   const getChartExplanations = () => {
     const explanations = {};
@@ -380,50 +424,6 @@ const Dashboard = () => {
 
   // Top spending categories
   const topCategories = categoryData.slice(0, 5);
-
-  // Income vs Expenses trend - Last 12 months
-  const incomeExpenseTrend = {};
-  
-  safeExpenses.forEach(expense => {
-    const date = new Date(expense.date);
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    const monthLabel = date.toLocaleString('default', { month: 'short', year: 'numeric' });
-    if (!incomeExpenseTrend[monthKey]) {
-      incomeExpenseTrend[monthKey] = { income: 0, expenses: 0, month: monthLabel, key: monthKey };
-    }
-    incomeExpenseTrend[monthKey].expenses += parseFloat(expense.amount || 0);
-  });
-
-  safeIncomes.forEach(income => {
-    const date = new Date(income.date);
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    const monthLabel = date.toLocaleString('default', { month: 'short', year: 'numeric' });
-    if (!incomeExpenseTrend[monthKey]) {
-      incomeExpenseTrend[monthKey] = { income: 0, expenses: 0, month: monthLabel, key: monthKey };
-    }
-    incomeExpenseTrend[monthKey].income += parseFloat(income.amount || 0);
-  });
-
-  // Get last 12 months for trend
-  const trend12Months = [];
-  for (let i = 11; i >= 0; i--) {
-    const date = new Date();
-    date.setMonth(date.getMonth() - i);
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    const monthLabel = date.toLocaleString('default', { month: 'short', year: 'numeric' });
-    trend12Months.push({
-      month: monthLabel,
-      income: incomeExpenseTrend[monthKey]?.income || 0,
-      expenses: incomeExpenseTrend[monthKey]?.expenses || 0,
-      key: monthKey
-    });
-  }
-
-  const trendData = trend12Months.map(item => ({
-    month: item.month,
-    income: parseFloat(item.income.toFixed(2)),
-    expenses: parseFloat(item.expenses.toFixed(2)),
-  }));
 
   // Category icons mapping
   const categoryIcons = {
