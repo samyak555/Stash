@@ -44,10 +44,7 @@ const Register = ({ setUser }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-black relative overflow-hidden">
-      {/* Full Page Logo Background */}
-      <Logo fullPage={true} />
-      
+    <div className="min-h-screen flex flex-col bg-app-bg relative overflow-hidden">
       <div className="flex-1 flex items-center justify-center py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="w-full max-w-[440px] space-y-8 animate-fade-in">
           {/* Header */}

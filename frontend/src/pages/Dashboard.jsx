@@ -525,8 +525,8 @@ const Dashboard = () => {
       {!dashboardData && (
         <div className="text-center py-12 mb-8">
           <Logo size="xl" showText={true} className="justify-center mb-6" />
-          <h2 className="text-3xl font-bold text-white mb-4">Welcome to Stash</h2>
-          <p className="text-gray-400">Start adding expenses and income to see your dashboard</p>
+          <h2 className="text-3xl font-bold text-text-primary mb-4">Welcome to Stash</h2>
+          <p className="text-text-secondary">Start adding expenses and income to see your dashboard</p>
         </div>
       )}
       {/* Sync Status Banner */}
