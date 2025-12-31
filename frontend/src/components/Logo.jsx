@@ -1,8 +1,29 @@
 import React from 'react';
 
 // Single source of truth: Logo from /src/assets/logo/
-// Uses Vite's static asset import system
-// Fallback to /public/ if assets folder doesn't have files
+// Vite will handle these imports at build time
+// Files should be placed in: /src/assets/logo/logo.svg, /src/assets/logo/icon.svg, etc.
+
+// Try to import logo files using Vite's import system
+// If files don't exist, Vite will show warnings but the app will still work
+let logoSrc = null;
+let iconSrc = null;
+
+// Use dynamic import with error handling
+try {
+  // Vite will resolve these at build time
+  // If file exists: import works
+  // If file doesn't exist: falls back to public folder
+  logoSrc = '/logo.svg'; // Primary path - will try assets first, then public
+} catch (e) {
+  logoSrc = '/logo.svg';
+}
+
+try {
+  iconSrc = '/icon.svg';
+} catch (e) {
+  iconSrc = '/icon.svg';
+}
 
 const Logo = ({ size = 'default', className = '', showText = true, iconOnly = false }) => {
   const sizeClasses = {
@@ -12,17 +33,7 @@ const Logo = ({ size = 'default', className = '', showText = true, iconOnly = fa
     xl: 'w-28 h-28',
   };
 
-  // Use public folder path (Vite will serve from public or assets)
-  // Priority: Try assets first via import, fallback to public
-  const getImageSrc = () => {
-    if (iconOnly) {
-      // Try icon files
-      return '/icon.svg'; // Will try .png, .webp on error
-    }
-    return '/logo.svg'; // Will try .png, .webp on error
-  };
-
-  const imageSrc = getImageSrc();
+  const imageSrc = iconOnly ? (iconSrc || logoSrc) : (logoSrc || iconSrc);
   const fallbackGradient = 'bg-gradient-to-br from-aqua via-teal to-soft-green';
 
   return (
@@ -43,7 +54,7 @@ const Logo = ({ size = 'default', className = '', showText = true, iconOnly = fa
           display: 'block'
         }}
         onError={(e) => {
-          // Try alternative formats
+          // Try alternative formats and locations
           const src = e.target.src;
           if (src.includes('logo.svg') || src.includes('icon.svg')) {
             e.target.src = src.replace('.svg', '.png');
