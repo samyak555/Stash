@@ -28,12 +28,12 @@ const Layout = ({ children, user, setUser }) => {
       <div 
         className="fixed inset-0 w-full h-full pointer-events-none z-0"
         style={{
-          backgroundImage: 'url(/logo.svg)',
+          backgroundImage: 'url(/logo.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          opacity: 0.03,
-          filter: 'grayscale(100%)',
+          opacity: 0.04,
+          filter: 'grayscale(100%) brightness(0.5)',
         }}
       />
       

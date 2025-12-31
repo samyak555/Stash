@@ -49,12 +49,12 @@ const Register = ({ setUser }) => {
       <div 
         className="fixed inset-0 w-full h-full pointer-events-none z-0"
         style={{
-          backgroundImage: 'url(/logo.svg)',
+          backgroundImage: 'url(/logo.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          opacity: 0.03,
-          filter: 'grayscale(100%)',
+          opacity: 0.04,
+          filter: 'grayscale(100%) brightness(0.5)',
         }}
       />
       <div className="flex-1 flex items-center justify-center py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative z-10">
