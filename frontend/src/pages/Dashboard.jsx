@@ -446,8 +446,26 @@ const Dashboard = () => {
     );
   }
 
+  // Fetch recent transactions for Transaction History section
+  const [recentTransactions, setRecentTransactions] = useState([]);
+  
+  useEffect(() => {
+    const fetchRecentTransactions = async () => {
+      try {
+        const response = await transactionAPI.getAll();
+        const transactions = response.data || [];
+        // Get last 5 transactions
+        setRecentTransactions(transactions.slice(0, 5));
+      } catch (error) {
+        console.error('Failed to fetch transactions:', error);
+        setRecentTransactions([]);
+      }
+    };
+    fetchRecentTransactions();
+  }, []);
+
   return (
-    <div className="px-4 py-6 animate-fade-in max-w-7xl mx-auto">
+    <div className="space-y-8">
       {!dashboardData && (
         <div className="text-center py-12 mb-8">
           <Logo size="xl" showText={true} className="justify-center mb-6" />
@@ -953,8 +971,64 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* Transaction History Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-1">Recent Transactions</h2>
+            <p className="text-slate-400 text-sm">Your latest financial activity</p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => window.location.href = '/transactions'}>
+            View All
+          </Button>
+        </div>
+        <div className="glass-card rounded-2xl border border-white/10 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-white/5">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Description</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Category</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {recentTransactions.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-8 text-center">
+                      <p className="text-slate-400 text-sm">No recent transactions</p>
+                    </td>
+                  </tr>
+                ) : (
+                  recentTransactions.map((transaction) => (
+                    <tr key={transaction._id} className="hover:bg-white/5 transition-colors">
+                      <td className="px-6 py-4 text-sm text-slate-300 font-normal">
+                        {new Date(transaction.date || transaction.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-white font-medium">
+                        {transaction.merchant || transaction.description || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-400 font-normal">
+                        {transaction.category || 'Uncategorized'}
+                      </td>
+                      <td className={`px-6 py-4 text-sm font-semibold ${
+                        transaction.type === 'income' ? 'text-green-400' : 'text-red-400'
+                      }`}>
+                        {transaction.type === 'income' ? '+' : '-'}
+                        {formatExpense(Math.abs(transaction.amount || 0))}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       {/* Guided Coach - Full width - Moved to bottom */}
-      <div className="mb-8">
+      <div>
         <GuidedCoach expenses={expenses || []} incomes={incomes || []} stashScore={stashScore || 50} />
       </div>
     </div>

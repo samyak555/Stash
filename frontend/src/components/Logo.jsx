@@ -50,13 +50,7 @@ const Logo = ({ size = 'default', className = '', showText = true, fullPage = fa
       </div>
       
       {showText && (
-        <div className="flex flex-col">
-          <span className="text-2xl font-extrabold leading-tight">
-            <span className="text-blue-400">Stas</span>
-            <span className="text-purple-400">h</span>
-          </span>
-          <span className="text-xs font-bold text-gray-400 -mt-0.5 tracking-wide">FINANCE</span>
-        </div>
+        <span className="text-lg font-medium text-white lowercase tracking-tight">stash</span>
       )}
     </div>
   );

@@ -101,6 +101,7 @@ export const userAPI = {
 };
 
 export const transactionAPI = {
+  getAll: () => api.get('/transactions'),
   connectEmail: (data) => api.post('/transactions/connect-email', data),
   disconnectEmail: () => api.post('/transactions/disconnect-email'),
   syncNow: () => api.post('/transactions/sync-now'),

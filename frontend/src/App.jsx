@@ -5,6 +5,8 @@ import { ExpenseProvider } from './contexts/ExpenseContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Cards from './pages/Cards';
+import Transactions from './pages/Transactions';
 import Expenses from './pages/Expenses';
 import Income from './pages/Income';
 import Budgets from './pages/Budgets';
@@ -94,6 +96,26 @@ function App() {
             <ProtectedRoute>
               <Layout user={user} setUser={setUser}>
                 <Dashboard />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cards"
+          element={
+            <ProtectedRoute>
+              <Layout user={user} setUser={setUser}>
+                <Cards />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions"
+          element={
+            <ProtectedRoute>
+              <Layout user={user} setUser={setUser}>
+                <Transactions />
               </Layout>
             </ProtectedRoute>
           }
