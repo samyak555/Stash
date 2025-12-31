@@ -5,7 +5,6 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Toolti
 import toast from 'react-hot-toast';
 import { DashboardIcon, ExpensesIcon, IncomeIcon, BudgetsIcon, GoalsIcon, FoodIcon, TravelIcon, MovieIcon, ClothesIcon, ShoppingIcon } from '../components/Icons';
 import Logo from '../components/Logo';
-import StashScore from '../components/StashScore';
 import GuidedCoach from '../components/GuidedCoach';
 
 const Dashboard = () => {
@@ -265,7 +264,7 @@ const Dashboard = () => {
     return insightsList.slice(0, 3);
   })();
 
-  // Calculate Stash Score for Guided Coach
+  // Calculate Stash Score for Guided Coach (simplified)
   const calculateStashScore = () => {
     if (safeExpenses.length === 0) return 50;
     const totalExpenses = safeExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
@@ -448,9 +447,9 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="px-4 py-6 animate-fade-in">
+    <div className="px-4 py-6 animate-fade-in max-w-7xl mx-auto">
       {!dashboardData && (
-        <div className="text-center py-12 mb-10">
+        <div className="text-center py-12 mb-8">
           <Logo size="xl" showText={true} className="justify-center mb-6" />
           <h2 className="text-3xl font-bold text-white mb-4">Welcome to Stash</h2>
           <p className="text-gray-400">Start adding expenses and income to see your dashboard</p>
@@ -528,7 +527,7 @@ const Dashboard = () => {
 
       {/* Insights Summary Card */}
       {insights.length > 0 && (
-        <div className="glass-card rounded-2xl p-8 mb-10 border border-white/10 bg-gradient-to-br from-blue-500/5 to-purple-500/5">
+        <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10 bg-gradient-to-br from-blue-500/5 to-purple-500/5">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
               <DashboardIcon className="w-6 h-6 text-blue-400" />
@@ -548,14 +547,13 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Stash Score and Guided Coach Row - Always visible */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-        <StashScore expenses={expenses || []} incomes={incomes || []} />
+      {/* Guided Coach - Full width */}
+      <div className="mb-8">
         <GuidedCoach expenses={expenses || []} incomes={incomes || []} stashScore={stashScore || 50} />
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="glass-card rounded-2xl p-8 border border-white/10">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
@@ -603,7 +601,7 @@ const Dashboard = () => {
       </div>
 
       {/* Financial Health Metrics */}
-      <div className="glass-card rounded-2xl p-8 mb-10 border border-white/10">
+      <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10">
         <h2 className="text-xl font-bold text-white mb-6 tracking-tight">Financial Health</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="text-center">
@@ -644,7 +642,7 @@ const Dashboard = () => {
       </div>
 
       {/* Charts Row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Income vs Expenses Trend */}
         <div className="glass-card rounded-2xl p-8 border border-white/10">
           <div className="flex items-center mb-6">
@@ -884,7 +882,7 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="glass-card rounded-2xl p-6 border border-white/10">
           <div className="flex items-center mb-4">
             <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 mr-3">
@@ -926,7 +924,7 @@ const Dashboard = () => {
       </div>
 
       {/* Bank Sync Coming Soon */}
-      <div className="glass-card rounded-2xl p-8 mb-10 border border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-blue-500/5">
+      <div className="glass-card rounded-2xl p-8 mb-8 border border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-blue-500/5">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-3">
