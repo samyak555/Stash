@@ -61,10 +61,10 @@ const Register = ({ setUser }) => {
         <div className="w-full max-w-[440px] space-y-8 animate-fade-in">
           {/* Header */}
           <div className="text-center animate-slide-up space-y-3">
-            <h1 className="text-4xl sm:text-5xl font-bold gradient-text tracking-tight">
+            <h1 className="text-4xl sm:text-5xl font-bold text-gradient-brand tracking-tight">
               Create your account
             </h1>
-            <p className="text-slate-400 text-base font-normal">
+            <p className="text-text-secondary text-base font-normal">
               Start managing your finances with Stash
             </p>
           </div>
