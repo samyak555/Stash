@@ -52,7 +52,7 @@ const Logo = ({ size = 'default', className = '', showText = true }) => {
       </div>
       
       {showText && (
-        <span className="text-lg font-semibold text-text-primary lowercase tracking-tight">stash</span>
+        <span className="text-lg font-semibold text-teal tracking-tight">Stash</span>
       )}
     </div>
   );
