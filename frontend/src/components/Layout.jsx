@@ -1,6 +1,27 @@
+import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
+import Onboarding from './Onboarding';
 
 const Layout = ({ children, user, setUser }) => {
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+
+  useEffect(() => {
+    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+    if (!onboardingCompleted && user) {
+      setShowOnboarding(true);
+    }
+    setCheckingOnboarding(false);
+  }, [user]);
+
+  if (checkingOnboarding) {
+    return null; // Or a loading state
+  }
+
+  if (showOnboarding) {
+    return <Onboarding onComplete={() => setShowOnboarding(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-black relative flex">
       {/* Background Watermark - Subtle, non-intrusive */}

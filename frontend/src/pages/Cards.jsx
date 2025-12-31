@@ -36,6 +36,13 @@ const Cards = () => {
         </Button>
       </div>
 
+      {/* Trust Message */}
+      <div className="glass-card rounded-xl p-4 border border-cyan-500/20 bg-cyan-500/5">
+        <p className="text-xs text-cyan-300 text-center leading-relaxed">
+          🔒 Manual tracking. No forced linking. Your data is never sold.
+        </p>
+      </div>
+
       {cards.length === 0 ? (
         <div className="glass-card rounded-2xl p-12 border border-white/10 text-center">
           <div className="max-w-md mx-auto">

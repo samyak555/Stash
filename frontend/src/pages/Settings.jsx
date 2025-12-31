@@ -302,6 +302,76 @@ const Settings = () => {
           </div>
         </div>
       </div>
+
+      {/* Privacy & Trust */}
+      <div className="glass-card p-8 rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-purple-500/5">
+        <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Privacy & Trust</h2>
+        <div className="space-y-4">
+          <div className="p-5 bg-white/5 rounded-xl border border-white/10">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-white mb-2">We do not access your bank account</h3>
+                <p className="text-slate-300 text-sm leading-relaxed">
+                  Stash only reads transaction emails you choose to connect. We never access your bank accounts, credit cards, or financial institutions directly.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 bg-white/5 rounded-xl border border-white/10">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-white mb-2">You stay in full control of your data</h3>
+                <p className="text-slate-300 text-sm leading-relaxed">
+                  All your financial data is stored securely. You can add, edit, or delete any entry at any time. Manual tracking means you decide what to share.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 bg-white/5 rounded-xl border border-white/10">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-white mb-2">Manual tracking. No forced linking.</h3>
+                <p className="text-slate-300 text-sm leading-relaxed">
+                  Email sync is optional. You can track expenses manually without connecting anything. We respect your choice.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 bg-white/5 rounded-xl border border-white/10">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-white mb-2">Your data is never sold</h3>
+                <p className="text-slate-300 text-sm leading-relaxed">
+                  We don't sell your financial data to third parties. Your privacy is our priority. Your information stays yours.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { dashboardAPI, expenseAPI, incomeAPI, transactionAPI } from '../services/api';
+import { dashboardAPI, expenseAPI, incomeAPI, transactionAPI, goalAPI } from '../services/api';
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
 import toast from 'react-hot-toast';
@@ -24,6 +24,8 @@ const Dashboard = () => {
   const [recentTransactions, setRecentTransactions] = useState([]);
   const { cards, addCard } = useCards();
   const [showAddCardModal, setShowAddCardModal] = useState(false);
+  const [goals, setGoals] = useState([]);
+  const [showSafeToSpendInfo, setShowSafeToSpendInfo] = useState(false);
 
   // Fetch expenses from context on mount
   useEffect(() => {
@@ -35,7 +37,18 @@ const Dashboard = () => {
     fetchDashboard();
     fetchIncomes();
     fetchSyncStatus();
+    fetchGoals();
   }, [selectedMonth, selectedYear, timeRange, refreshTrigger]);
+
+  const fetchGoals = async () => {
+    try {
+      const response = await goalAPI.getAll();
+      setGoals(response.data || []);
+    } catch (error) {
+      console.error('Failed to fetch goals:', error);
+      setGoals([]);
+    }
+  };
 
   // Fetch recent transactions for Transaction History section
   useEffect(() => {
@@ -174,6 +187,46 @@ const Dashboard = () => {
   const totalExpenses = safeExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
   const balance = totalIncome - totalExpenses;
   const savingsRate = totalIncome > 0 ? ((balance / totalIncome) * 100).toFixed(1) : 0;
+
+  // Calculate Safe-to-Spend Today
+  const calculateSafeToSpend = () => {
+    if (totalIncome === 0) return 0;
+    
+    const monthlyIncome = totalIncome;
+    const dailyIncome = monthlyIncome / 30;
+    
+    // Average daily expenses (based on historical data)
+    const daysWithExpenses = new Set(safeExpenses.map(e => new Date(e.date).toDateString())).size;
+    const avgDailyExpenses = daysWithExpenses > 0 ? (totalExpenses / daysWithExpenses) : 0;
+    
+    // Calculate daily goal savings
+    const activeGoals = Array.isArray(goals) ? goals.filter(g => {
+      if (!g.deadline) return false;
+      const deadline = new Date(g.deadline);
+      const today = new Date();
+      return deadline > today && (!g.achieved || g.achieved === false);
+    }) : [];
+    
+    let dailyGoalSavings = 0;
+    activeGoals.forEach(goal => {
+      const deadline = new Date(goal.deadline);
+      const today = new Date();
+      const daysUntilGoal = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+      const targetAmount = parseFloat(goal.targetAmount || 0);
+      const currentAmount = parseFloat(goal.currentAmount || 0);
+      const remaining = Math.max(0, targetAmount - currentAmount);
+      
+      if (daysUntilGoal > 0 && remaining > 0) {
+        dailyGoalSavings += remaining / daysUntilGoal;
+      }
+    });
+    
+    // Safe to spend = Daily income - Average daily expenses - Daily goal savings
+    const safeToday = Math.max(0, dailyIncome - avgDailyExpenses - dailyGoalSavings);
+    return safeToday;
+  };
+
+  const safeToSpendToday = calculateSafeToSpend();
   
   // Average daily spending
   const daysWithExpenses = new Set(safeExpenses.map(e => new Date(e.date).toDateString())).size;
@@ -503,6 +556,34 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Safe-to-Spend Today - Daily Anchor Metric */}
+      <div className="mb-8 glass-card rounded-2xl p-6 border border-cyan-500/20 bg-gradient-to-br from-cyan-500/10 to-purple-500/10">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-lg font-semibold text-slate-300">Safe to Spend Today</h2>
+              <button
+                onClick={() => setShowSafeToSpendInfo(!showSafeToSpendInfo)}
+                className="text-slate-400 hover:text-white transition-colors"
+                title="Learn more"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-4xl font-bold text-cyan-400 mb-1">
+              ₹{Math.round(safeToSpendToday).toLocaleString()}
+            </p>
+            {showSafeToSpendInfo && (
+              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                Based on your monthly income, average daily expenses, and active savings goals. This updates daily.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Header */}
       <div className="mb-12">
