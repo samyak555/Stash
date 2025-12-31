@@ -4,10 +4,10 @@
 
 @layer base {
   :root {
-    /* New STASH color system */
-    --stash-teal: #4FD1C5;
-    --stash-aqua: #5EEAD4;
-    --stash-soft-green: #6EE7B7;
+    /* New STASH color system - More Vibrant */
+    --stash-teal: #2DD4BF;
+    --stash-aqua: #34E0D1;
+    --stash-soft-green: #4ADE80;
     --stash-app-bg: #0E1116;
     --stash-sidebar-bg: #12161D;
     --stash-card-bg: #181D26;

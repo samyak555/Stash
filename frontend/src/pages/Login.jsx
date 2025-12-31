@@ -140,12 +140,12 @@ const Login = ({ setUser }) => {
       <div 
         className="fixed inset-0 w-full h-full pointer-events-none z-0"
         style={{
-          backgroundImage: 'url(/logo.png)',
+          backgroundImage: 'url(/logo/ChatGPT_Image_Dec_31__2025__11_43_49_PM-removebg-preview.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          opacity: 0.04,
-          filter: 'grayscale(100%) brightness(0.5)',
+          opacity: 0.05,
+          filter: 'grayscale(80%) brightness(0.4)',
         }}
       />
       {/* Main Content */}

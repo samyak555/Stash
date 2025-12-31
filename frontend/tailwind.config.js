@@ -7,9 +7,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary accent colors from logo
+        // Primary accent colors from logo - More Vibrant
         teal: {
-          DEFAULT: '#4FD1C5',
+          DEFAULT: '#2DD4BF',
           50: '#E6F9F7',
           100: '#CCF3EF',
           200: '#99E7DF',
@@ -22,7 +22,7 @@ export default {
           900: '#0B544D',
         },
         aqua: {
-          DEFAULT: '#5EEAD4',
+          DEFAULT: '#34E0D1',
           50: '#E6FBF8',
           100: '#CCF7F1',
           200: '#99EFE3',
@@ -35,7 +35,7 @@ export default {
           900: '#1A7C6A',
         },
         'soft-green': {
-          DEFAULT: '#6EE7B7',
+          DEFAULT: '#4ADE80',
           50: '#E6FBF3',
           100: '#CCF7E7',
           200: '#99EFCF',
