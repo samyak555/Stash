@@ -3,14 +3,15 @@ import { dashboardAPI, expenseAPI, incomeAPI, transactionAPI } from '../services
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
 import toast from 'react-hot-toast';
+import { useExpenses } from '../contexts/ExpenseContext';
 import { DashboardIcon, ExpensesIcon, IncomeIcon, BudgetsIcon, GoalsIcon, FoodIcon, TravelIcon, MovieIcon, ClothesIcon, ShoppingIcon } from '../components/Icons';
 import Logo from '../components/Logo';
 import GuidedCoach from '../components/GuidedCoach';
 import { formatIncome, formatExpense } from '../utils/formatDisplayValue';
 
 const Dashboard = () => {
+  const { expenses, refreshTrigger, fetchExpenses } = useExpenses();
   const [dashboardData, setDashboardData] = useState(null);
-  const [expenses, setExpenses] = useState([]);
   const [incomes, setIncomes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
@@ -18,12 +19,17 @@ const Dashboard = () => {
   const [timeRange, setTimeRange] = useState('month'); // month, week, year
   const [syncStatus, setSyncStatus] = useState(null);
 
+  // Fetch expenses from context on mount
+  useEffect(() => {
+    fetchExpenses();
+  }, [fetchExpenses]);
+
+  // Refetch dashboard data when expenses change (via refreshTrigger) or filters change
   useEffect(() => {
     fetchDashboard();
-    fetchExpenses();
     fetchIncomes();
     fetchSyncStatus();
-  }, [selectedMonth, selectedYear, timeRange]);
+  }, [selectedMonth, selectedYear, timeRange, refreshTrigger]);
 
   const fetchSyncStatus = async () => {
     try {
@@ -50,15 +56,7 @@ const Dashboard = () => {
     }
   };
 
-  const fetchExpenses = async () => {
-    try {
-      const response = await expenseAPI.getAll();
-      setExpenses(response.data || []);
-    } catch (error) {
-      console.error('Failed to fetch expenses:', error);
-      setExpenses([]); // Set to empty array on error
-    }
-  };
+  // Expenses are now managed by ExpenseContext - no local fetch needed
 
   const fetchIncomes = async () => {
     try {

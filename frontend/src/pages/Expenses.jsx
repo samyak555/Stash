@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { expenseAPI } from '../services/api';
 import toast from 'react-hot-toast';
+import { useExpenses } from '../contexts/ExpenseContext';
 import { ExpensesIcon, FoodIcon, TravelIcon, MovieIcon, ClothesIcon, ShoppingIcon } from '../components/Icons';
 import Logo from '../components/Logo';
 import { formatExpense } from '../utils/formatDisplayValue';
 
 const Expenses = () => {
-  const [expenses, setExpenses] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { expenses, loading, fetchExpenses, refetchExpenses } = useExpenses();
+  const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [formData, setFormData] = useState({
@@ -34,22 +35,11 @@ const Expenses = () => {
 
   useEffect(() => {
     fetchExpenses();
-  }, []);
-
-  const fetchExpenses = async () => {
-    try {
-      setLoading(true);
-      const response = await expenseAPI.getAll();
-      setExpenses(response.data || []);
-    } catch (error) {
-      toast.error('Failed to load expenses');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchExpenses]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
     try {
       if (editingExpense) {
         await expenseAPI.update(editingExpense._id, formData);
@@ -58,10 +48,13 @@ const Expenses = () => {
         await expenseAPI.create(formData);
         toast.success('Expense added successfully');
       }
-      fetchExpenses();
+      // Refetch expenses and trigger all dependent UI updates
+      await refetchExpenses();
       resetForm();
     } catch (error) {
       toast.error('Failed to save expense');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -81,7 +74,8 @@ const Expenses = () => {
       try {
         await expenseAPI.delete(id);
         toast.success('Expense deleted successfully');
-        fetchExpenses();
+        // Refetch expenses and trigger all dependent UI updates
+        await refetchExpenses();
       } catch (error) {
         toast.error('Failed to delete expense');
       }
@@ -204,8 +198,12 @@ const Expenses = () => {
             </div>
           </div>
           <div className="flex gap-3 mt-4">
-            <button type="submit" className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold">
-              {editingExpense ? 'Update' : 'Add'} Expense
+            <button 
+              type="submit" 
+              disabled={saving}
+              className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {saving ? 'Saving...' : editingExpense ? 'Update Expense' : 'Add Expense'}
             </button>
             {editingExpense && (
               <button type="button" onClick={resetForm} className="px-6 py-3.5 rounded-xl font-semibold text-slate-400 hover:text-white border border-white/10 hover:border-white/20 transition-all">
