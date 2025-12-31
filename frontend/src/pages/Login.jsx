@@ -256,7 +256,7 @@ const Login = ({ setUser }) => {
                 Don't have an account?{' '}
                 <Link
                   to="/register"
-                  className="font-medium text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center"
+                  className="font-medium text-gradient-brand hover:opacity-80 transition-opacity inline-flex items-center"
                 >
                   Sign up
                   <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
