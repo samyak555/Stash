@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { toast, Toaster } from 'react-hot-toast';
 import { ExpenseProvider } from './contexts/ExpenseContext';
+import { CardsProvider } from './contexts/CardsContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -79,9 +80,10 @@ function App() {
 
   return (
     <ExpenseProvider>
-      <Router>
-        <Toaster position="top-right" />
-        <Routes>
+      <CardsProvider>
+        <Router>
+          <Toaster position="top-right" />
+          <Routes>
         <Route
           path="/login"
           element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />}
@@ -191,8 +193,9 @@ function App() {
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
+          </Routes>
+        </Router>
+      </CardsProvider>
     </ExpenseProvider>
   );
 }

@@ -4,10 +4,12 @@ import { Link } from 'react-router-dom';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
 import toast from 'react-hot-toast';
 import { useExpenses } from '../contexts/ExpenseContext';
+import { useCards } from '../contexts/CardsContext';
 import { DashboardIcon, ExpensesIcon, IncomeIcon, BudgetsIcon, GoalsIcon, FoodIcon, TravelIcon, MovieIcon, ClothesIcon, ShoppingIcon } from '../components/Icons';
 import Logo from '../components/Logo';
 import GuidedCoach from '../components/GuidedCoach';
 import Button from '../components/ui/Button';
+import AddCardModal from '../components/AddCardModal';
 import { formatIncome, formatExpense } from '../utils/formatDisplayValue';
 
 const Dashboard = () => {
@@ -20,6 +22,8 @@ const Dashboard = () => {
   const [timeRange, setTimeRange] = useState('month'); // month, week, year
   const [syncStatus, setSyncStatus] = useState(null);
   const [recentTransactions, setRecentTransactions] = useState([]);
+  const { cards, addCard } = useCards();
+  const [showAddCardModal, setShowAddCardModal] = useState(false);
 
   // Fetch expenses from context on mount
   useEffect(() => {
@@ -549,59 +553,83 @@ const Dashboard = () => {
             <h2 className="text-2xl font-bold text-white mb-1">Cards</h2>
             <p className="text-slate-400 text-sm">Your saved payment cards</p>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => window.location.href = '/cards'}>
-            View All
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Sample Card 1 */}
-          <div className="glass-card rounded-xl p-5 border border-white/10 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-50"></div>
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                  Credit
-                </span>
-                <span className="text-xs text-slate-400">HDFC</span>
-              </div>
-              <p className="text-lg font-mono font-semibold text-white mb-4 tracking-wider">
-                •••• •••• •••• 1234
-              </p>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-slate-400 mb-1">Available</p>
-                  <p className="text-sm font-semibold text-white">₹55,000</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 mb-1">Expires</p>
-                  <p className="text-sm font-medium text-white">12/25</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          {/* Sample Card 2 */}
-          <div className="glass-card rounded-xl p-5 border border-white/10 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-cyan-500/20 opacity-50"></div>
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30">
-                  Debit
-                </span>
-                <span className="text-xs text-slate-400">ICICI</span>
-              </div>
-              <p className="text-lg font-mono font-semibold text-white mb-4 tracking-wider">
-                •••• •••• •••• 5678
-              </p>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-slate-400 mb-1">Balance</p>
-                  <p className="text-sm font-semibold text-white">₹1,25,000</p>
-                </div>
-              </div>
-            </div>
+          <div className="flex gap-2">
+            {cards.length > 0 && (
+              <Button variant="ghost" size="sm" onClick={() => window.location.href = '/cards'}>
+                View All
+              </Button>
+            )}
+            <Button variant="primary" size="sm" onClick={() => setShowAddCardModal(true)}>
+              ➕ Add Card
+            </Button>
           </div>
         </div>
+        
+        {cards.length === 0 ? (
+          <div className="glass-card rounded-xl p-8 border border-white/10 text-center">
+            <div className="max-w-sm mx-auto">
+              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
+                <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+              </div>
+              <p className="text-slate-400 text-sm mb-4">No cards added yet</p>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowAddCardModal(true)}
+              >
+                ➕ Add Card
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {cards.slice(0, 3).map((card) => (
+              <div
+                key={card.id}
+                className="glass-card rounded-xl p-5 border border-white/10 relative overflow-hidden"
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${
+                  card.type === 'Credit' 
+                    ? 'from-blue-500/20 to-purple-500/20' 
+                    : 'from-green-500/20 to-cyan-500/20'
+                } opacity-50`}></div>
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                      card.type === 'Credit'
+                        ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                        : 'bg-green-500/20 text-green-300 border border-green-500/30'
+                    }`}>
+                      {card.type}
+                    </span>
+                    <span className="text-xs text-slate-400">{card.bankName}</span>
+                  </div>
+                  <p className="text-lg font-mono font-semibold text-white mb-4 tracking-wider">
+                    •••• •••• •••• {card.last4Digits}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">Expires</p>
+                      <p className="text-sm font-medium text-white">{card.expiry}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      <AddCardModal
+        isOpen={showAddCardModal}
+        onClose={() => setShowAddCardModal(false)}
+        onAdd={(cardData) => {
+          addCard(cardData);
+          toast.success('Card added successfully');
+        }}
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
