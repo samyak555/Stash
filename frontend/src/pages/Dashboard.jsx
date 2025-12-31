@@ -19,6 +19,7 @@ const Dashboard = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [timeRange, setTimeRange] = useState('month'); // month, week, year
   const [syncStatus, setSyncStatus] = useState(null);
+  const [recentTransactions, setRecentTransactions] = useState([]);
 
   // Fetch expenses from context on mount
   useEffect(() => {
@@ -31,6 +32,22 @@ const Dashboard = () => {
     fetchIncomes();
     fetchSyncStatus();
   }, [selectedMonth, selectedYear, timeRange, refreshTrigger]);
+
+  // Fetch recent transactions for Transaction History section
+  useEffect(() => {
+    const fetchRecentTransactions = async () => {
+      try {
+        const response = await transactionAPI.getAll();
+        const transactions = response.data || [];
+        // Get last 5 transactions
+        setRecentTransactions(transactions.slice(0, 5));
+      } catch (error) {
+        console.error('Failed to fetch transactions:', error);
+        setRecentTransactions([]);
+      }
+    };
+    fetchRecentTransactions();
+  }, []);
 
   const fetchSyncStatus = async () => {
     try {
@@ -445,24 +462,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  // Fetch recent transactions for Transaction History section
-  const [recentTransactions, setRecentTransactions] = useState([]);
-  
-  useEffect(() => {
-    const fetchRecentTransactions = async () => {
-      try {
-        const response = await transactionAPI.getAll();
-        const transactions = response.data || [];
-        // Get last 5 transactions
-        setRecentTransactions(transactions.slice(0, 5));
-      } catch (error) {
-        console.error('Failed to fetch transactions:', error);
-        setRecentTransactions([]);
-      }
-    };
-    fetchRecentTransactions();
-  }, []);
 
   return (
     <div className="space-y-8">
