@@ -84,6 +84,7 @@ const Onboarding = ({ onComplete }) => {
         deadline: formData.goalDeadline,
         description: 'Onboarding goal',
       });
+      localStorage.setItem('hasGoalData', 'true');
       
       // Calculate safe-to-spend
       const monthlyIncome = parseFloat(formData.income);
