@@ -67,8 +67,8 @@ const Sidebar = ({ user, setUser }) => {
       {/* Logo Section */}
       <div className="p-6 border-b border-border">
         <Link to="/" className="flex items-center space-x-3">
-          <Logo size="small" showText={false} />
-          <span className="text-lg font-semibold text-teal tracking-tight">Stash</span>
+          <Logo size="small" showText={false} iconOnly={true} />
+          <span className="text-lg font-semibold bg-gradient-to-r from-aqua via-teal to-soft-green bg-clip-text text-transparent tracking-tight">Stash</span>
         </Link>
       </div>
 
