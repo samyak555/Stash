@@ -30,21 +30,21 @@ const Logo = ({ size = 'default', className = '', showText = true, fullPage = fa
   }
 
   return (
-    <div className={`flex items-center ${showText ? 'space-x-3' : ''} ${className}`}>
-      <div className={`relative ${sizeClasses[size] || sizeClasses.default}`}>
+    <div className={`flex items-center ${showText ? 'space-x-3' : ''} ${className}`} style={{ background: 'transparent' }}>
+      <div className={`${sizeClasses[size] || sizeClasses.default}`} style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
         <img
           src="/logo.png"
           alt="Stash"
           className="w-full h-full object-contain"
+          style={{ 
+            background: 'transparent',
+            border: 'none',
+            borderRadius: '0',
+            boxShadow: 'none',
+            outline: 'none'
+          }}
           onError={(e) => {
             e.target.style.display = 'none';
-            const parent = e.target.parentElement;
-            if (parent && !parent.querySelector('.fallback')) {
-              const fallback = document.createElement('div');
-              fallback.className = 'fallback w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center';
-              fallback.innerHTML = '<span class="text-2xl">💰</span>';
-              parent.appendChild(fallback);
-            }
           }}
         />
       </div>
