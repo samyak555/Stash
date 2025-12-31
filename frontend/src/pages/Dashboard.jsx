@@ -25,7 +25,6 @@ const Dashboard = () => {
   const { cards, addCard } = useCards();
   const [showAddCardModal, setShowAddCardModal] = useState(false);
   const [goals, setGoals] = useState([]);
-  const [showSafeToSpendInfo, setShowSafeToSpendInfo] = useState(false);
 
   // Fetch expenses from context on mount
   useEffect(() => {
@@ -188,46 +187,6 @@ const Dashboard = () => {
   const balance = totalIncome - totalExpenses;
   const savingsRate = totalIncome > 0 ? ((balance / totalIncome) * 100).toFixed(1) : 0;
 
-  // Calculate Safe-to-Spend Today
-  const calculateSafeToSpend = () => {
-    if (totalIncome === 0) return 0;
-    
-    const monthlyIncome = totalIncome;
-    const dailyIncome = monthlyIncome / 30;
-    
-    // Average daily expenses (based on historical data)
-    const daysWithExpenses = new Set(safeExpenses.map(e => new Date(e.date).toDateString())).size;
-    const avgDailyExpenses = daysWithExpenses > 0 ? (totalExpenses / daysWithExpenses) : 0;
-    
-    // Calculate daily goal savings
-    const activeGoals = Array.isArray(goals) ? goals.filter(g => {
-      if (!g.deadline) return false;
-      const deadline = new Date(g.deadline);
-      const today = new Date();
-      return deadline > today && (!g.achieved || g.achieved === false);
-    }) : [];
-    
-    let dailyGoalSavings = 0;
-    activeGoals.forEach(goal => {
-      const deadline = new Date(goal.deadline);
-      const today = new Date();
-      const daysUntilGoal = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
-      const targetAmount = parseFloat(goal.targetAmount || 0);
-      const currentAmount = parseFloat(goal.currentAmount || 0);
-      const remaining = Math.max(0, targetAmount - currentAmount);
-      
-      if (daysUntilGoal > 0 && remaining > 0) {
-        dailyGoalSavings += remaining / daysUntilGoal;
-      }
-    });
-    
-    // Safe to spend = Daily income - Average daily expenses - Daily goal savings
-    const safeToday = Math.max(0, dailyIncome - avgDailyExpenses - dailyGoalSavings);
-    return safeToday;
-  };
-
-  const safeToSpendToday = calculateSafeToSpend();
-  
   // Average daily spending
   const daysWithExpenses = new Set(safeExpenses.map(e => new Date(e.date).toDateString())).size;
   const avgDailySpending = daysWithExpenses > 0 ? (totalExpenses / daysWithExpenses).toFixed(2) : 0;
@@ -514,7 +473,7 @@ const Dashboard = () => {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-white">Loading dashboard...</p>
+          <p className="text-text-primary">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -539,7 +498,7 @@ const Dashboard = () => {
                 <p className="text-cyan-400 font-semibold text-sm tracking-tight">
                   Auto-Sync Active
                 </p>
-                <p className="text-slate-400 text-xs font-normal mt-0.5">
+                <p className="text-text-secondary text-xs font-normal mt-0.5">
                   {syncStatus.email} • Last sync: {syncStatus.lastSync ? new Date(syncStatus.lastSync).toLocaleString() : 'Never'}
                 </p>
               </div>
@@ -557,46 +516,18 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Safe-to-Spend Today - Daily Anchor Metric */}
-      <div className="mb-8 glass-card rounded-2xl p-6 border border-teal/20 bg-gradient-to-br from-aqua/10 via-teal/10 to-soft-green/10">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-xl font-semibold text-text-secondary">Safe to Spend Today</h2>
-              <button
-                onClick={() => setShowSafeToSpendInfo(!showSafeToSpendInfo)}
-                className="text-text-muted hover:text-text-primary transition-colors"
-                title="Learn more"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-            </div>
-            <p className="text-2xl font-semibold bg-gradient-to-r from-aqua via-teal to-soft-green bg-clip-text text-transparent mb-1">
-              ₹{Math.round(safeToSpendToday).toLocaleString()}
-            </p>
-            {showSafeToSpendInfo && (
-              <p className="text-xs text-text-muted mt-2 leading-relaxed">
-                Based on your monthly income, average daily expenses, and active savings goals. This updates daily.
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* Header */}
       <div className="mb-12">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
           <div className="space-y-3">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight">Dashboard</h1>
-            <p className="text-slate-400 text-lg font-normal">Your financial overview at a glance</p>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold bg-gradient-to-r from-aqua via-teal to-soft-green bg-clip-text text-transparent tracking-tight">Dashboard</h1>
+            <p className="text-text-secondary text-lg font-normal">Your financial overview at a glance</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-normal focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all backdrop-blur-sm"
+              className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-text-primary text-sm font-normal focus:outline-none focus:border-teal/50 focus:bg-white/8 transition-all backdrop-blur-sm"
             >
               <option value="month">Monthly</option>
               <option value="week">Weekly</option>
@@ -605,7 +536,7 @@ const Dashboard = () => {
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-normal focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all backdrop-blur-sm"
+              className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-text-primary text-sm font-normal focus:outline-none focus:border-teal/50 focus:bg-white/8 transition-all backdrop-blur-sm"
             >
               {Array.from({ length: 12 }, (_, i) => (
                 <option key={i + 1} value={i + 1}>
@@ -616,7 +547,7 @@ const Dashboard = () => {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-normal focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all backdrop-blur-sm"
+              className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-text-primary text-sm font-normal focus:outline-none focus:border-teal/50 focus:bg-white/8 transition-all backdrop-blur-sm"
             >
               {Array.from({ length: 5 }, (_, i) => {
                 const year = new Date().getFullYear() - 2 + i;
@@ -631,8 +562,8 @@ const Dashboard = () => {
       <div className="space-y-4 mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-white mb-1">Cards</h2>
-            <p className="text-slate-400 text-sm">Your saved payment cards</p>
+            <h2 className="text-2xl font-bold text-text-primary mb-1">Cards</h2>
+            <p className="text-text-secondary text-sm">Your saved payment cards</p>
           </div>
           <div className="flex gap-2">
             {cards.length > 0 && (
@@ -650,11 +581,11 @@ const Dashboard = () => {
           <div className="glass-card rounded-xl p-8 border border-white/10 text-center">
             <div className="max-w-sm mx-auto">
               <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
-                <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
               </div>
-              <p className="text-slate-400 text-sm mb-4">No cards added yet</p>
+              <p className="text-text-secondary text-sm mb-4">No cards added yet</p>
               <Button
                 variant="primary"
                 size="sm"
@@ -685,15 +616,15 @@ const Dashboard = () => {
                     }`}>
                       {card.type}
                     </span>
-                    <span className="text-xs text-slate-400">{card.bankName}</span>
+                    <span className="text-xs text-text-secondary">{card.bankName}</span>
                   </div>
-                  <p className="text-lg font-mono font-semibold text-white mb-4 tracking-wider">
+                  <p className="text-lg font-mono font-semibold text-text-primary mb-4 tracking-wider">
                     •••• •••• •••• {card.last4Digits}
                   </p>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-slate-400 mb-1">Expires</p>
-                      <p className="text-sm font-medium text-white">{card.expiry}</p>
+                      <p className="text-xs text-text-secondary mb-1">Expires</p>
+                      <p className="text-sm font-medium text-text-primary">{card.expiry}</p>
                     </div>
                   </div>
                 </div>
@@ -720,11 +651,11 @@ const Dashboard = () => {
               <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
                 <IncomeIcon className="w-5 h-5 text-cyan-400" />
               </div>
-              <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Total Income</h3>
+              <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Total Income</h3>
             </div>
             <div>
-              <p className="text-4xl font-bold text-white mb-1 tracking-tight">{formatIncome(totalIncome)}</p>
-              <p className="text-xs text-slate-500 font-normal">{incomes.length} entries</p>
+              <p className="text-4xl font-bold text-aqua mb-1 tracking-tight">{formatIncome(totalIncome)}</p>
+              <p className="text-xs text-text-muted font-normal">{incomes.length} entries</p>
             </div>
           </div>
         </div>
@@ -734,11 +665,11 @@ const Dashboard = () => {
               <div className="p-3 rounded-xl bg-pink-500/10 border border-pink-500/20">
                 <ExpensesIcon className="w-5 h-5 text-pink-400" />
               </div>
-              <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Total Expenses</h3>
+              <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Total Expenses</h3>
             </div>
             <div>
-              <p className="text-4xl font-bold text-white mb-1 tracking-tight">{formatExpense(totalExpenses)}</p>
-              <p className="text-xs text-slate-500 font-normal">{expenses.length} entries</p>
+              <p className="text-4xl font-bold text-soft-green mb-1 tracking-tight">{formatExpense(totalExpenses)}</p>
+              <p className="text-xs text-text-muted font-normal">{expenses.length} entries</p>
             </div>
           </div>
         </div>
@@ -748,13 +679,13 @@ const Dashboard = () => {
               <div className={`p-3 rounded-xl ${balance >= 0 ? 'bg-purple-500/10 border-purple-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
                 <DashboardIcon className={`w-5 h-5 ${balance >= 0 ? 'text-purple-400' : 'text-red-400'}`} />
               </div>
-              <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Balance</h3>
+              <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Balance</h3>
             </div>
             <div>
-              <p className={`text-4xl font-bold mb-1 tracking-tight ${balance >= 0 ? 'text-gradient-blue-purple' : 'text-red-400'}`}>
+              <p className={`text-4xl font-bold mb-1 tracking-tight ${balance >= 0 ? 'text-teal' : 'text-red-400'}`}>
                 {formatIncome(balance)}
               </p>
-              <p className="text-xs text-slate-500 font-normal">{balance >= 0 ? 'Positive' : 'Negative'} balance</p>
+              <p className="text-xs text-text-muted font-normal">{balance >= 0 ? 'Positive' : 'Negative'} balance</p>
             </div>
           </div>
         </div>
@@ -762,7 +693,7 @@ const Dashboard = () => {
 
       {/* Financial Health Metrics */}
       <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10">
-        <h2 className="text-xl font-bold text-white mb-6 tracking-tight">Financial Health</h2>
+        <h2 className="text-xl font-bold text-text-primary mb-6 tracking-tight">Financial Health</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="text-center">
             <div className="inline-block relative w-28 h-28 mb-4">
@@ -781,7 +712,7 @@ const Dashboard = () => {
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-2xl font-bold text-white">{savingsRate}%</span>
+                <span className="text-2xl font-bold text-teal">{savingsRate}%</span>
               </div>
             </div>
             <p className="text-sm text-slate-400 font-normal">Savings Rate</p>
@@ -809,7 +740,7 @@ const Dashboard = () => {
             <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 mr-3">
               <DashboardIcon className="w-5 h-5 text-blue-400" />
             </div>
-            <h3 className="text-xl font-bold text-white tracking-tight">Income vs Expenses</h3>
+            <h3 className="text-xl font-bold text-text-primary tracking-tight">Income vs Expenses</h3>
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={trendData}>
@@ -834,7 +765,7 @@ const Dashboard = () => {
             </AreaChart>
           </ResponsiveContainer>
           {chartExplanations.incomeVsExpenses && (
-            <p className="text-sm text-slate-400 font-normal mt-4 text-center">
+            <p className="text-sm text-text-secondary font-normal mt-4 text-center">
               {chartExplanations.incomeVsExpenses}
             </p>
           )}
@@ -873,23 +804,23 @@ const Dashboard = () => {
             </ResponsiveContainer>
           ) : null}
           {categoryData.length > 0 && chartExplanations.categoryBreakdown && (
-            <p className="text-sm text-slate-400 font-normal mt-4 text-center">
+            <p className="text-sm text-text-secondary font-normal mt-4 text-center">
               {chartExplanations.categoryBreakdown}
             </p>
           )}
           {categoryData.length === 0 && (
             <div className="flex flex-col items-center justify-center h-[300px] text-center">
-              <ShoppingIcon className="w-16 h-16 text-gray-600 mb-4" />
-              <p className="text-slate-400 text-lg mb-2 font-medium">No expenses yet</p>
-              <p className="text-slate-500 text-sm">Add expenses to see category breakdown</p>
+              <ShoppingIcon className="w-16 h-16 text-text-muted mb-4" />
+              <p className="text-text-secondary text-lg mb-2 font-medium">No expenses yet</p>
+              <p className="text-text-muted text-sm">Add expenses to see category breakdown</p>
               <div className="mt-6 grid grid-cols-3 gap-4 w-full max-w-md">
                 {['Food', 'Travel', 'Shopping', 'Entertainment', 'Bills', 'Others'].map((cat, idx) => (
                   <div key={cat} className="glass-card rounded-xl p-4 border border-white/10 transition-all">
                     <div className="flex items-center justify-center mb-3">
-                      {categoryIcons[cat] || <ShoppingIcon className="w-5 h-5 text-slate-500" />}
+                      {categoryIcons[cat] || <ShoppingIcon className="w-5 h-5 text-text-muted" />}
                     </div>
-                    <p className="text-xs text-slate-400 text-center font-normal uppercase tracking-wider">{cat}</p>
-                    <p className="text-xs text-slate-500 text-center mt-2 font-normal">₹0.00</p>
+                    <p className="text-xs text-text-secondary text-center font-normal uppercase tracking-wider">{cat}</p>
+                    <p className="text-xs text-text-muted text-center mt-2 font-normal">₹0.00</p>
                   </div>
                 ))}
               </div>
@@ -906,7 +837,7 @@ const Dashboard = () => {
             <div className="p-2 rounded-lg bg-pink-500/10 border border-pink-500/20 mr-3">
               <ExpensesIcon className="w-5 h-5 text-pink-400" />
             </div>
-            <h3 className="text-xl font-bold text-white tracking-tight">Monthly Spending</h3>
+            <h3 className="text-xl font-bold text-text-primary tracking-tight">Monthly Spending</h3>
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={monthlyChartData}>
@@ -921,7 +852,7 @@ const Dashboard = () => {
             </BarChart>
           </ResponsiveContainer>
           {chartExplanations.monthlySpending && (
-            <p className="text-sm text-slate-400 font-normal mt-4 text-center">
+            <p className="text-sm text-text-secondary font-normal mt-4 text-center">
               {chartExplanations.monthlySpending}
             </p>
           )}
@@ -931,7 +862,7 @@ const Dashboard = () => {
         <div className="glass-light rounded-xl p-6 shadow-lg border border-slate-700/30">
           <div className="flex items-center mb-4">
             <DashboardIcon className="w-5 h-5 text-yellow-400 mr-2" />
-            <h3 className="text-xl font-bold text-white">Daily Spending Trend (Last 30 Days)</h3>
+            <h3 className="text-xl font-bold text-text-primary">Daily Spending Trend (Last 30 Days)</h3>
           </div>
           {dailyChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
@@ -948,15 +879,15 @@ const Dashboard = () => {
             </ResponsiveContainer>
           ) : null}
           {dailyChartData.length > 0 && chartExplanations.dailyTrend && (
-            <p className="text-sm text-slate-400 font-normal mt-4 text-center">
+            <p className="text-sm text-text-secondary font-normal mt-4 text-center">
               {chartExplanations.dailyTrend}
             </p>
           )}
           {dailyChartData.length === 0 && (
             <div className="flex flex-col items-center justify-center h-[300px] text-center px-4 overflow-hidden">
-              <DashboardIcon className="w-12 h-12 text-gray-600 mb-3" />
-              <p className="text-gray-400 text-base mb-1">No spending data for last 30 days</p>
-              <p className="text-gray-500 text-xs mb-4">Add expenses to see your daily spending trend</p>
+              <DashboardIcon className="w-12 h-12 text-text-muted mb-3" />
+              <p className="text-text-secondary text-base mb-1">No spending data for last 30 days</p>
+              <p className="text-text-muted text-xs mb-4">Add expenses to see your daily spending trend</p>
               <div className="w-full max-w-full overflow-x-auto">
                 <div className="grid grid-cols-7 gap-1.5 min-w-max mx-auto">
                   {Array.from({ length: 30 }, (_, i) => {
@@ -964,11 +895,11 @@ const Dashboard = () => {
                     day.setDate(day.getDate() - (29 - i));
                     return (
                       <div key={i} className="glass-light rounded p-1.5 border border-gray-700 min-w-[40px]">
-                        <p className="text-[10px] text-gray-500 text-center leading-tight">{day.getDate()}</p>
-                        <div className="h-6 bg-gray-800 rounded mt-1 flex items-end justify-center">
-                          <div className="w-full bg-gray-700 rounded" style={{ height: '0%' }}></div>
+                        <p className="text-[10px] text-text-muted text-center leading-tight">{day.getDate()}</p>
+                        <div className="h-6 bg-card-bg rounded mt-1 flex items-end justify-center">
+                          <div className="w-full bg-card-hover rounded" style={{ height: '0%' }}></div>
                         </div>
-                        <p className="text-[9px] text-gray-600 text-center mt-0.5 leading-tight">₹0</p>
+                        <p className="text-[9px] text-text-muted text-center mt-0.5 leading-tight">₹0</p>
                       </div>
                     );
                   })}
@@ -981,8 +912,8 @@ const Dashboard = () => {
 
       {/* Top Categories Infographic */}
       <div className="glass-light rounded-xl p-6 mb-8">
-        <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
-          <ShoppingIcon className="w-6 h-6 mr-2 text-blue-400" />
+        <h2 className="text-2xl font-bold text-text-primary mb-4 flex items-center">
+          <ShoppingIcon className="w-6 h-6 mr-2 text-teal" />
           Top Spending Categories
         </h2>
         <div className="space-y-4">
@@ -991,15 +922,15 @@ const Dashboard = () => {
             return (
               <div key={item.category} className="flex items-center gap-4">
                 <div className="flex items-center gap-3 w-32">
-                  <div className="text-gray-400">
+                  <div className="text-text-secondary">
                     {categoryIcons[item.category] || <ShoppingIcon className="w-5 h-5" />}
                   </div>
-                  <span className="text-sm text-gray-300 font-medium">{item.category}</span>
+                  <span className="text-sm text-text-primary font-medium">{item.category}</span>
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-gray-400">{percentage.toFixed(1)}%</span>
-                    <span className="text-sm font-bold text-white">{formatExpense(item.amount)}</span>
+                    <span className="text-sm text-text-secondary">{percentage.toFixed(1)}%</span>
+                    <span className="text-sm font-bold text-teal">{formatExpense(item.amount)}</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
                     <div
@@ -1016,20 +947,20 @@ const Dashboard = () => {
 
       {/* Category Cards - Like Fold App */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
-          <ShoppingIcon className="w-6 h-6 mr-2 text-blue-400" />
+        <h2 className="text-2xl font-bold text-text-primary mb-4 flex items-center">
+          <ShoppingIcon className="w-6 h-6 mr-2 text-teal" />
           Spending by Category
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {categoryData.slice(0, 10).map((item, index) => (
             <div key={item.category} className="glass-light rounded-xl p-4 border border-gray-700 hover:border-blue-500/50 transition-all hover:scale-105">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-gray-400">
+                <div className="text-text-secondary">
                   {categoryIcons[item.category] || <ShoppingIcon className="w-5 h-5" />}
                 </div>
               </div>
-              <p className="text-xs text-slate-400 mb-2 font-normal">{item.category}</p>
-              <p className="text-xl font-bold text-white mb-3 tracking-tight">{formatExpense(item.amount)}</p>
+              <p className="text-xs text-text-secondary mb-2 font-normal">{item.category}</p>
+              <p className="text-xl font-bold text-teal mb-3 tracking-tight">{formatExpense(item.amount)}</p>
               <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 transition-all duration-500"
@@ -1048,27 +979,27 @@ const Dashboard = () => {
             <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 mr-3">
               <BudgetsIcon className="w-5 h-5 text-purple-400" />
             </div>
-            <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Active Budgets</h3>
+            <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Active Budgets</h3>
           </div>
-          <p className="text-3xl font-bold text-white tracking-tight">{dashboardData.budgets || 0}</p>
+          <p className="text-3xl font-bold text-teal tracking-tight">{dashboardData.budgets || 0}</p>
         </div>
         <div className="glass-card rounded-2xl p-6 border border-white/10">
           <div className="flex items-center mb-4">
             <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mr-3">
               <GoalsIcon className="w-5 h-5 text-yellow-400" />
             </div>
-            <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Active Goals</h3>
+            <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Active Goals</h3>
           </div>
-          <p className="text-3xl font-bold text-white tracking-tight">{dashboardData.activeGoals || 0}</p>
+          <p className="text-3xl font-bold text-teal tracking-tight">{dashboardData.activeGoals || 0}</p>
         </div>
         <div className="glass-card rounded-2xl p-6 border border-white/10">
           <div className="flex items-center mb-4">
             <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20 mr-3">
               <IncomeIcon className="w-5 h-5 text-green-400" />
             </div>
-            <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Income Sources</h3>
+            <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Income Sources</h3>
           </div>
-          <p className="text-3xl font-bold text-white tracking-tight">
+          <p className="text-3xl font-bold text-aqua tracking-tight">
             {new Set(incomes.map(i => i.source)).size}
           </p>
         </div>
@@ -1077,9 +1008,9 @@ const Dashboard = () => {
             <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 mr-3">
               <ExpensesIcon className="w-5 h-5 text-blue-400" />
             </div>
-            <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Categories</h3>
+            <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Categories</h3>
           </div>
-          <p className="text-3xl font-bold text-white tracking-tight">{categoryData.length}</p>
+          <p className="text-3xl font-bold text-soft-green tracking-tight">{categoryData.length}</p>
         </div>
       </div>
 
@@ -1091,12 +1022,12 @@ const Dashboard = () => {
               <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
                 <DashboardIcon className="w-5 h-5 text-cyan-400" />
               </div>
-              <h3 className="text-xl font-bold text-white tracking-tight">Connect Bank</h3>
+              <h3 className="text-xl font-bold text-text-primary tracking-tight">Connect Bank</h3>
               <span className="px-2 py-1 text-xs font-medium text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
                 Coming Soon
               </span>
             </div>
-            <p className="text-slate-300 text-base font-normal leading-relaxed">
+            <p className="text-text-secondary text-base font-normal leading-relaxed">
               Automatically sync your bank transactions and never miss tracking an expense. Get real-time updates and smarter insights.
             </p>
           </div>
@@ -1125,13 +1056,13 @@ const Dashboard = () => {
             <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
               <DashboardIcon className="w-6 h-6 text-blue-400" />
             </div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">Insights Summary</h2>
+            <h2 className="text-2xl font-bold text-text-primary tracking-tight">Insights Summary</h2>
           </div>
           <div className="space-y-4">
             {insights.map((insight, index) => (
               <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 transition-all">
                 <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-400 mt-2"></div>
-                <p className="text-base text-slate-200 font-normal leading-relaxed flex-1">
+                <p className="text-base text-text-primary font-normal leading-relaxed flex-1">
                   {insight}
                 </p>
               </div>
@@ -1144,8 +1075,8 @@ const Dashboard = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-white mb-1">Recent Transactions</h2>
-            <p className="text-slate-400 text-sm">Your latest financial activity</p>
+            <h2 className="text-2xl font-bold text-text-primary mb-1">Recent Transactions</h2>
+            <p className="text-text-secondary text-sm">Your latest financial activity</p>
           </div>
           <Button variant="ghost" size="sm" onClick={() => window.location.href = '/transactions'}>
             View All
@@ -1156,29 +1087,29 @@ const Dashboard = () => {
             <table className="min-w-full">
               <thead className="bg-white/5">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Description</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Amount</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Description</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Category</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Amount</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {recentTransactions.length === 0 ? (
                   <tr>
                     <td colSpan="4" className="px-6 py-8 text-center">
-                      <p className="text-slate-400 text-sm">No recent transactions</p>
+                      <p className="text-text-secondary text-sm">No recent transactions</p>
                     </td>
                   </tr>
                 ) : (
                   recentTransactions.map((transaction) => (
                     <tr key={transaction._id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4 text-sm text-slate-300 font-normal">
+                      <td className="px-6 py-4 text-sm text-text-secondary font-normal">
                         {new Date(transaction.date || transaction.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 text-sm text-white font-medium">
+                      <td className="px-6 py-4 text-sm text-text-primary font-medium">
                         {transaction.merchant || transaction.description || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-400 font-normal">
+                      <td className="px-6 py-4 text-sm text-text-secondary font-normal">
                         {transaction.category || 'Uncategorized'}
                       </td>
                       <td className={`px-6 py-4 text-sm font-semibold ${
