@@ -35,7 +35,7 @@ const Logo = ({ size = 'default', className = '', showText = true }) => {
     <div className={`flex items-center ${showText ? 'space-x-3' : ''} ${className}`} style={{ background: 'transparent' }}>
       <div className={`${sizeClasses[size] || sizeClasses.default}`} style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
         <img
-          src={getLogoPath()}
+          src="/logo.svg"
           alt="Stash"
           className="w-full h-full object-contain"
           style={{ 
