@@ -543,6 +543,67 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Cards Section */}
+      <div className="space-y-4 mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-1">Cards</h2>
+            <p className="text-slate-400 text-sm">Your saved payment cards</p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => window.location.href = '/cards'}>
+            View All
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Sample Card 1 */}
+          <div className="glass-card rounded-xl p-5 border border-white/10 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-50"></div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                  Credit
+                </span>
+                <span className="text-xs text-slate-400">HDFC</span>
+              </div>
+              <p className="text-lg font-mono font-semibold text-white mb-4 tracking-wider">
+                •••• •••• •••• 1234
+              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Available</p>
+                  <p className="text-sm font-semibold text-white">₹55,000</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Expires</p>
+                  <p className="text-sm font-medium text-white">12/25</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Sample Card 2 */}
+          <div className="glass-card rounded-xl p-5 border border-white/10 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-cyan-500/20 opacity-50"></div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30">
+                  Debit
+                </span>
+                <span className="text-xs text-slate-400">ICICI</span>
+              </div>
+              <p className="text-lg font-mono font-semibold text-white mb-4 tracking-wider">
+                •••• •••• •••• 5678
+              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Balance</p>
+                  <p className="text-sm font-semibold text-white">₹1,25,000</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="glass-card rounded-2xl p-8 border border-white/10">
