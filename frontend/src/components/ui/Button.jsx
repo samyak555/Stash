@@ -15,9 +15,9 @@ const Button = forwardRef(({
 
   // Variant styles
   const variantClasses = {
-    primary: 'bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 text-white hover:from-cyan-400 hover:via-blue-400 hover:to-purple-400 hover:shadow-lg hover:shadow-cyan-500/20 active:scale-[0.98]',
-    secondary: 'bg-white/10 text-white border border-white/20 hover:bg-white/15 hover:border-white/30 active:scale-[0.98]',
-    ghost: 'bg-transparent text-slate-300 hover:bg-white/5 hover:text-white border border-transparent hover:border-white/10 active:scale-[0.98]',
+    primary: 'bg-gradient-to-r from-teal via-aqua to-soft-green text-white hover:from-teal-400 hover:via-aqua-400 hover:to-soft-green-400 hover:shadow-lg hover:shadow-teal/20 active:scale-[0.98]',
+    secondary: 'bg-card-bg text-text-primary border border-border hover:bg-card-hover hover:border-border active:scale-[0.98]',
+    ghost: 'bg-transparent text-text-secondary hover:bg-card-bg hover:text-text-primary border border-transparent hover:border-border active:scale-[0.98]',
     danger: 'bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/20 active:scale-[0.98]',
   };
 

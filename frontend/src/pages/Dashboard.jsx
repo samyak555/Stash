@@ -558,14 +558,14 @@ const Dashboard = () => {
       )}
 
       {/* Safe-to-Spend Today - Daily Anchor Metric */}
-      <div className="mb-8 glass-card rounded-2xl p-6 border border-cyan-500/20 bg-gradient-to-br from-cyan-500/10 to-purple-500/10">
+      <div className="mb-8 glass-card rounded-2xl p-6 border border-teal/20 bg-gradient-to-br from-teal/10 to-aqua/10">
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-lg font-semibold text-slate-300">Safe to Spend Today</h2>
+              <h2 className="text-xl font-semibold text-text-secondary">Safe to Spend Today</h2>
               <button
                 onClick={() => setShowSafeToSpendInfo(!showSafeToSpendInfo)}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-text-muted hover:text-text-primary transition-colors"
                 title="Learn more"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -573,11 +573,11 @@ const Dashboard = () => {
                 </svg>
               </button>
             </div>
-            <p className="text-4xl font-bold text-cyan-400 mb-1">
+            <p className="text-2xl font-semibold text-teal mb-1">
               ₹{Math.round(safeToSpendToday).toLocaleString()}
             </p>
             {showSafeToSpendInfo && (
-              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+              <p className="text-xs text-text-muted mt-2 leading-relaxed">
                 Based on your monthly income, average daily expenses, and active savings goals. This updates daily.
               </p>
             )}
