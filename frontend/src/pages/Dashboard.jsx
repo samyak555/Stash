@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { DashboardIcon, ExpensesIcon, IncomeIcon, BudgetsIcon, GoalsIcon, FoodIcon, TravelIcon, MovieIcon, ClothesIcon, ShoppingIcon } from '../components/Icons';
 import Logo from '../components/Logo';
 import GuidedCoach from '../components/GuidedCoach';
+import { formatIncome, formatExpense } from '../utils/formatDisplayValue';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -256,7 +257,7 @@ const Dashboard = () => {
         insightsList.push(`Your top spending category is ${categoryData[0].category}`);
       }
       if (parseFloat(avgDailySpending) > 0) {
-        insightsList.push(`Your average daily spending is ₹${avgDailySpending}`);
+        insightsList.push(`Your average daily spending is ${formatExpense(avgDailySpending)}`);
       }
     }
 
@@ -536,7 +537,7 @@ const Dashboard = () => {
               <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Total Income</h3>
             </div>
             <div>
-              <p className="text-4xl font-bold text-white mb-1 tracking-tight">₹{totalIncome.toFixed(2)}</p>
+              <p className="text-4xl font-bold text-white mb-1 tracking-tight">{formatIncome(totalIncome)}</p>
               <p className="text-xs text-slate-500 font-normal">{incomes.length} entries</p>
             </div>
           </div>
@@ -550,7 +551,7 @@ const Dashboard = () => {
               <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Total Expenses</h3>
             </div>
             <div>
-              <p className="text-4xl font-bold text-white mb-1 tracking-tight">₹{totalExpenses.toFixed(2)}</p>
+              <p className="text-4xl font-bold text-white mb-1 tracking-tight">{formatExpense(totalExpenses)}</p>
               <p className="text-xs text-slate-500 font-normal">{expenses.length} entries</p>
             </div>
           </div>
@@ -565,7 +566,7 @@ const Dashboard = () => {
             </div>
             <div>
               <p className={`text-4xl font-bold mb-1 tracking-tight ${balance >= 0 ? 'text-gradient-blue-purple' : 'text-red-400'}`}>
-                ₹{balance.toFixed(2)}
+                {formatIncome(balance)}
               </p>
               <p className="text-xs text-slate-500 font-normal">{balance >= 0 ? 'Positive' : 'Negative'} balance</p>
             </div>
@@ -600,11 +601,11 @@ const Dashboard = () => {
             <p className="text-sm text-slate-400 font-normal">Savings Rate</p>
           </div>
           <div className="text-center">
-            <p className="text-3xl font-bold text-blue-400 mb-2 tracking-tight">₹{avgDailySpending}</p>
+            <p className="text-3xl font-bold text-blue-400 mb-2 tracking-tight">{formatExpense(avgDailySpending)}</p>
             <p className="text-sm text-slate-400 font-normal">Avg Daily Spending</p>
           </div>
           <div className="text-center">
-            <p className="text-3xl font-bold text-purple-400 mb-2 tracking-tight">₹{spendingVelocity}</p>
+            <p className="text-3xl font-bold text-purple-400 mb-2 tracking-tight">{formatExpense(spendingVelocity)}</p>
             <p className="text-sm text-slate-400 font-normal">Spending Velocity</p>
           </div>
           <div className="text-center">
@@ -612,33 +613,6 @@ const Dashboard = () => {
             <p className="text-sm text-slate-400 font-normal">Transactions</p>
           </div>
         </div>
-      </div>
-
-      {/* Insights Summary Card */}
-      {insights.length > 0 && (
-        <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10 bg-gradient-to-br from-blue-500/5 to-purple-500/5">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
-              <DashboardIcon className="w-6 h-6 text-blue-400" />
-            </div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">Insights Summary</h2>
-          </div>
-          <div className="space-y-4">
-            {insights.map((insight, index) => (
-              <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 transition-all">
-                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-400 mt-2"></div>
-                <p className="text-base text-slate-200 font-normal leading-relaxed flex-1">
-                  {insight}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Guided Coach - Full width */}
-      <div className="mb-8">
-        <GuidedCoach expenses={expenses || []} incomes={incomes || []} stashScore={stashScore || 50} />
       </div>
 
       {/* Charts Row 1 */}
@@ -839,7 +813,7 @@ const Dashboard = () => {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm text-gray-400">{percentage.toFixed(1)}%</span>
-                    <span className="text-sm font-bold text-white">₹{item.amount.toFixed(2)}</span>
+                    <span className="text-sm font-bold text-white">{formatExpense(item.amount)}</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
                     <div
@@ -869,7 +843,7 @@ const Dashboard = () => {
                 </div>
               </div>
               <p className="text-xs text-slate-400 mb-2 font-normal">{item.category}</p>
-              <p className="text-xl font-bold text-white mb-3 tracking-tight">₹{item.amount.toFixed(2)}</p>
+              <p className="text-xl font-bold text-white mb-3 tracking-tight">{formatExpense(item.amount)}</p>
               <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 transition-all duration-500"
@@ -955,6 +929,33 @@ const Dashboard = () => {
             Notify Me
           </button>
         </div>
+      </div>
+
+      {/* Insights Summary Card - Moved to bottom */}
+      {insights.length > 0 && (
+        <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10 bg-gradient-to-br from-blue-500/5 to-purple-500/5">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+              <DashboardIcon className="w-6 h-6 text-blue-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">Insights Summary</h2>
+          </div>
+          <div className="space-y-4">
+            {insights.map((insight, index) => (
+              <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 transition-all">
+                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-400 mt-2"></div>
+                <p className="text-base text-slate-200 font-normal leading-relaxed flex-1">
+                  {insight}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Guided Coach - Full width - Moved to bottom */}
+      <div className="mb-8">
+        <GuidedCoach expenses={expenses || []} incomes={incomes || []} stashScore={stashScore || 50} />
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { expenseAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { ExpensesIcon, FoodIcon, TravelIcon, MovieIcon, ClothesIcon, ShoppingIcon } from '../components/Icons';
 import Logo from '../components/Logo';
+import { formatExpense } from '../utils/formatDisplayValue';
 
 const Expenses = () => {
   const [expenses, setExpenses] = useState([]);
@@ -145,7 +146,7 @@ const Expenses = () => {
                   {categoryIcons[category] || <ShoppingIcon className="w-5 h-5" />}
                 </div>
                 <p className="text-xs text-slate-400 mb-2 font-normal uppercase tracking-wider">{category}</p>
-                <p className="text-xl font-bold text-white tracking-tight">₹{total.toFixed(2)}</p>
+                <p className="text-xl font-bold text-white tracking-tight">{formatExpense(total)}</p>
               </div>
             ))}
         </div>
@@ -245,7 +246,7 @@ const Expenses = () => {
                     {categoryIcons[expense.category] && <span className="mr-2">{categoryIcons[expense.category]}</span>}
                     {expense.category}
                   </td>
-                  <td className="px-6 py-4 text-sm text-white font-semibold">₹{parseFloat(expense.amount).toFixed(2)}</td>
+                  <td className="px-6 py-4 text-sm text-white font-semibold">{formatExpense(expense.amount)}</td>
                   <td className="px-6 py-4 text-sm text-slate-400 font-normal">{expense.note || '-'}</td>
                   <td className="px-6 py-4 text-sm">
                     <button

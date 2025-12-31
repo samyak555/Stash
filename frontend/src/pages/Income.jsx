@@ -3,6 +3,7 @@ import { incomeAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { IncomeIcon } from '../components/Icons';
 import Logo from '../components/Logo';
+import { formatIncome } from '../utils/formatDisplayValue';
 
 const Income = () => {
   const [incomes, setIncomes] = useState([]);
@@ -137,7 +138,7 @@ const Income = () => {
             <p className="text-sm text-slate-400 mb-4 uppercase tracking-wider font-normal">
               Total income this period
             </p>
-            <p className="text-5xl font-bold text-gradient-cyan-pink tracking-tight">₹{totalIncome.toFixed(2)}</p>
+            <p className="text-5xl font-bold text-gradient-cyan-pink tracking-tight">{formatIncome(totalIncome)}</p>
           </div>
           <div className="p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
             <IncomeIcon className="w-12 h-12 text-cyan-400" />
@@ -153,7 +154,7 @@ const Income = () => {
               <p className="text-xs text-slate-400 mb-3 uppercase tracking-wider font-normal">
                 {source}
               </p>
-              <p className="text-[20px] font-semibold text-white leading-tight">₹{total.toFixed(2)}</p>
+              <p className="text-[20px] font-semibold text-white leading-tight">{formatIncome(total)}</p>
             </div>
           ))}
         </div>
@@ -282,7 +283,7 @@ const Income = () => {
                     {income.source}
                   </td>
                   <td className="px-8 py-4 text-[15px] text-white font-semibold" style={{ lineHeight: '1.75' }}>
-                    ₹{parseFloat(income.amount).toFixed(2)}
+                    {formatIncome(income.amount)}
                   </td>
                   <td className="px-8 py-4 text-[15px] text-slate-400" style={{ lineHeight: '1.75', opacity: 0.7 }}>
                     {income.note || '-'}
