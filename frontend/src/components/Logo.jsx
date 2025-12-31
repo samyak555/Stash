@@ -75,7 +75,7 @@ const Logo = ({ size = 'default', className = '', showText = true, iconOnly = fa
       />
       
       {showText && (
-        <span className="text-lg font-semibold bg-gradient-to-r from-aqua via-teal to-soft-green bg-clip-text text-transparent tracking-tight">
+        <span className="text-lg font-semibold text-gradient-brand tracking-tight">
           Stash
         </span>
       )}

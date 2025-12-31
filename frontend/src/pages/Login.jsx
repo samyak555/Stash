@@ -136,6 +136,18 @@ const Login = ({ setUser }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-app-bg relative overflow-hidden">
+      {/* Full Page Logo Background Watermark - Transparent, fills complete page */}
+      <div 
+        className="fixed inset-0 w-full h-full pointer-events-none z-0"
+        style={{
+          backgroundImage: 'url(/logo.svg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.03,
+          filter: 'grayscale(100%)',
+        }}
+      />
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="w-full max-w-[400px] space-y-8 animate-fade-in">
