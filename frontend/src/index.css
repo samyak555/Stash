@@ -271,22 +271,30 @@ input:focus, textarea:focus, select:focus {
   background-clip: text;
 }
 
-/* Premium Custom scrollbar */
+/* Premium Thin Scrollbar - macOS style */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--stash-sidebar-bg);
-  border-radius: 10px;
+  background: transparent;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--stash-teal) 0%, var(--stash-aqua) 100%);
-  border-radius: 10px;
-  border: 2px solid var(--stash-sidebar-bg);
+  background: rgba(79, 209, 197, 0.2);
+  border-radius: 3px;
+  border: none;
+  transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, var(--stash-aqua) 0%, var(--stash-soft-green) 100%);
+  background: rgba(79, 209, 197, 0.4);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(79, 209, 197, 0.2) transparent;
 }

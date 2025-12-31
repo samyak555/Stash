@@ -83,7 +83,7 @@ const Sidebar = ({ user, setUser }) => {
                 to={item.path}
                 className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? 'bg-teal/20 text-teal border border-teal/30'
+                    ? 'bg-gradient-to-r from-aqua/20 via-teal/20 to-soft-green/20 text-teal border border-teal/30'
                     : 'text-text-secondary hover:text-text-primary hover:bg-card-bg'
                 }`}
               >

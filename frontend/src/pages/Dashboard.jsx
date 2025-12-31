@@ -558,7 +558,7 @@ const Dashboard = () => {
       )}
 
       {/* Safe-to-Spend Today - Daily Anchor Metric */}
-      <div className="mb-8 glass-card rounded-2xl p-6 border border-teal/20 bg-gradient-to-br from-teal/10 to-aqua/10">
+      <div className="mb-8 glass-card rounded-2xl p-6 border border-teal/20 bg-gradient-to-br from-aqua/10 via-teal/10 to-soft-green/10">
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
@@ -573,7 +573,7 @@ const Dashboard = () => {
                 </svg>
               </button>
             </div>
-            <p className="text-2xl font-semibold text-teal mb-1">
+            <p className="text-2xl font-semibold bg-gradient-to-r from-aqua via-teal to-soft-green bg-clip-text text-transparent mb-1">
               ₹{Math.round(safeToSpendToday).toLocaleString()}
             </p>
             {showSafeToSpendInfo && (
