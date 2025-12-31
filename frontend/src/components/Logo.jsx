@@ -1,22 +1,11 @@
 import React from 'react';
 
-// Logo import - will use dynamic import to handle missing files gracefully
-// Add your logo files to /src/assets/logo/ folder (logo.svg, logo.png, or logo.webp)
-let logoImage = null;
-try {
-  logoImage = require('../assets/logo/logo.svg');
-} catch (e) {
-  try {
-    logoImage = require('../assets/logo/logo.png');
-  } catch (e2) {
-    try {
-      logoImage = require('../assets/logo/logo.webp');
-    } catch (e3) {
-      // Logo file not found - will use fallback
-      logoImage = null;
-    }
-  }
-}
+// Logo import - using public folder
+// Add your logo files to /public/ folder (logo.svg, logo.png, or logo.webp)
+// Or use Vite's import for /src/assets/logo/ files
+const getLogoPath = () => {
+  return '/logo.svg'; // Default to public folder
+};
 
 const Logo = ({ size = 'default', className = '', showText = true }) => {
   const sizeClasses = {
@@ -26,16 +15,11 @@ const Logo = ({ size = 'default', className = '', showText = true }) => {
     xl: 'w-28 h-28',
   };
 
-  // Fallback if logo import fails
-  const handleImageError = (e) => {
-    e.target.style.display = 'none';
-  };
-
   return (
     <div className={`flex items-center ${showText ? 'space-x-3' : ''} ${className}`} style={{ background: 'transparent' }}>
       <div className={`${sizeClasses[size] || sizeClasses.default}`} style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
         <img
-          src="/logo.svg"
+          src={getLogoPath()}
           alt="Stash"
           className="w-full h-full object-contain"
           style={{ 
