@@ -34,13 +34,30 @@ const Layout = ({ children, user, setUser }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-black">
-      <nav className="glass-light shadow-xl border-b border-white/10 sticky top-0 z-50 backdrop-blur-xl">
+    <div className="min-h-screen bg-black relative">
+      {/* Background Watermark - Subtle, non-intrusive */}
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
+        <img
+          src="/logo.png"
+          alt=""
+          className="w-[90vw] h-[90vh] max-w-[800px] max-h-[800px] object-contain"
+          style={{ 
+            opacity: 0.04,
+            filter: 'grayscale(100%)',
+            mixBlendMode: 'normal'
+          }}
+          onError={(e) => {
+            e.target.style.display = 'none';
+          }}
+        />
+      </div>
+
+      <nav className="glass-light shadow-xl border-b border-white/10 sticky top-0 z-50 backdrop-blur-xl relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <Link to="/" className="flex items-center">
-                <Logo size="default" showText={true} />
+                <Logo size="default" showText={false} />
               </Link>
               {/* Desktop Navigation */}
               <div className="hidden md:ml-8 md:flex md:space-x-4">
@@ -134,7 +151,7 @@ const Layout = ({ children, user, setUser }) => {
         )}
       </nav>
 
-      <main className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         {children}
         <Footer />
       </main>

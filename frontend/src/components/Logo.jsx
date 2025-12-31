@@ -30,12 +30,12 @@ const Logo = ({ size = 'default', className = '', showText = true, fullPage = fa
   }
 
   return (
-    <div className={`flex items-center space-x-3 ${className}`}>
+    <div className={`flex items-center ${showText ? 'space-x-3' : ''} ${className}`}>
       <div className={`relative ${sizeClasses[size] || sizeClasses.default}`}>
         <img
           src="/logo.png"
           alt="Stash"
-          className="w-full h-full object-contain drop-shadow-lg"
+          className="w-full h-full object-contain"
           onError={(e) => {
             e.target.style.display = 'none';
             const parent = e.target.parentElement;
