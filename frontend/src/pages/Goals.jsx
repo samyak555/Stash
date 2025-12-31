@@ -129,13 +129,14 @@ const Goals = () => {
             </h1>
             <p className="text-slate-400 text-lg font-normal">Set and achieve your financial goals</p>
           </div>
-          <button
+          <Button
             onClick={() => setShowForm(!showForm)}
-            className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold flex items-center text-base whitespace-nowrap"
+            variant="primary"
+            leftIcon={<span>{showForm ? '✕' : '+'}</span>}
+            className="whitespace-nowrap"
           >
-            <span className="mr-2">{showForm ? '✕' : '+'}</span>
             {showForm ? 'Cancel' : 'Create Goal'}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -192,13 +193,13 @@ const Goals = () => {
             </div>
           </div>
           <div className="flex gap-3 mt-6">
-            <button type="submit" className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold">
+            <Button type="submit" variant="primary">
               {editingGoal ? 'Update' : 'Create'} Goal
-            </button>
+            </Button>
             {editingGoal && (
-              <button type="button" onClick={resetForm} className="px-6 py-3.5 rounded-xl font-semibold text-slate-400 hover:text-white border border-white/10 hover:border-white/20 transition-all">
+              <Button type="button" onClick={resetForm} variant="ghost">
                 Cancel
-              </button>
+              </Button>
             )}
           </div>
         </form>
@@ -281,18 +282,22 @@ const Goals = () => {
                 </div>
 
                 <div className="flex gap-2 mt-4">
-                  <button
+                  <Button
                     onClick={() => handleEdit(goal)}
-                    className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-cyan-400 hover:text-cyan-300 border border-cyan-500/20 hover:border-cyan-500/40 transition-all"
+                    variant="ghost"
+                    size="sm"
+                    className="flex-1 text-cyan-400 hover:text-cyan-300"
                   >
                     Edit
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => handleDelete(goal._id)}
-                    className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-500/40 transition-all"
+                    variant="danger"
+                    size="sm"
+                    className="flex-1"
                   >
                     Delete
-                  </button>
+                  </Button>
                 </div>
               </div>
             );

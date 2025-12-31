@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useState } from 'react';
 import Logo from './Logo';
 import Footer from './Footer';
+import Button from './ui/Button';
 import { DashboardIcon, ExpensesIcon, IncomeIcon, BudgetsIcon, GoalsIcon, FamilyIcon, InsightsIcon, SettingsIcon } from './Icons';
 
 const Layout = ({ children, user, setUser }) => {
@@ -63,12 +64,13 @@ const Layout = ({ children, user, setUser }) => {
             {/* Desktop User Info */}
             <div className="hidden md:flex items-center space-x-5">
               <span className="text-slate-400 text-sm font-normal">Hello, <span className="text-white font-medium">{user?.name}</span></span>
-              <button
+              <Button
                 onClick={handleLogout}
-                className="px-5 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 border border-red-500/20 hover:border-red-500/40"
+                variant="danger"
+                size="sm"
               >
                 Logout
-              </button>
+              </Button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -112,18 +114,21 @@ const Layout = ({ children, user, setUser }) => {
                   {item.label}
                 </Link>
               ))}
-              <button
+              <Button
                 onClick={() => {
                   handleLogout();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-3 py-2.5 rounded-lg text-base font-medium text-red-400 hover:bg-slate-800/50 hover:text-red-300 flex items-center transition-all duration-200"
+                variant="danger"
+                className="w-full justify-start"
+                leftIcon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                }
               >
-                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
                 Logout
-              </button>
+              </Button>
             </div>
           </div>
         )}

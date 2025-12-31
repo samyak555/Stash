@@ -3,6 +3,7 @@ import { groupAPI, userAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { FamilyIcon } from '../components/Icons';
 import Logo from '../components/Logo';
+import Button from '../components/ui/Button';
 
 const Family = () => {
   const [groups, setGroups] = useState([]);
@@ -88,13 +89,14 @@ const Family = () => {
             </h1>
             <p className="text-slate-400 text-lg font-normal">Share expenses with family and friends</p>
           </div>
-          <button
+          <Button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold flex items-center text-base whitespace-nowrap"
+            variant="primary"
+            leftIcon={<span>{showCreateForm ? '✕' : '+'}</span>}
+            className="whitespace-nowrap"
           >
-            <span className="mr-2">{showCreateForm ? '✕' : '+'}</span>
             {showCreateForm ? 'Cancel' : 'Create Group'}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -124,9 +126,9 @@ const Family = () => {
               />
             </div>
           </div>
-          <button type="submit" className="mt-4 bg-pink-600 hover:bg-pink-700 text-white px-6 py-2 rounded-lg font-medium">
+          <Button type="submit" variant="primary" className="mt-4">
             Create Group
-          </button>
+          </Button>
         </form>
       )}
 
@@ -161,15 +163,17 @@ const Family = () => {
               </div>
 
               <div className="flex gap-2">
-                <button
+                <Button
                   onClick={() => setShowInviteForm(group._id)}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                  variant="primary"
+                  size="sm"
+                  className="flex-1"
                 >
                   Invite
-                </button>
-                <button className="flex-1 px-4 py-2 rounded-xl text-sm font-medium text-slate-400 hover:text-white border border-white/10 hover:border-white/20 transition-all">
+                </Button>
+                <Button variant="ghost" size="sm" className="flex-1">
                   View
-                </button>
+                </Button>
               </div>
 
               {showInviteForm === group._id && (
@@ -185,21 +189,25 @@ const Family = () => {
                     ))}
                   </select>
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       onClick={() => handleInvite(group._id)}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+                      variant="primary"
+                      size="sm"
+                      className="flex-1"
                     >
                       Send
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => {
                         setShowInviteForm(null);
                         setSelectedUserId('');
                       }}
-                      className="flex-1 btn-premium text-white px-4 py-2.5 rounded-xl text-sm font-semibold"
+                      variant="ghost"
+                      size="sm"
+                      className="flex-1"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}

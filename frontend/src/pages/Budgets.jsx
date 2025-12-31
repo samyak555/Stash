@@ -3,6 +3,7 @@ import { budgetAPI, expenseAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { BudgetsIcon } from '../components/Icons';
 import Logo from '../components/Logo';
+import Button from '../components/ui/Button';
 
 const Budgets = () => {
   const [budgets, setBudgets] = useState([]);
@@ -120,13 +121,14 @@ const Budgets = () => {
             </h1>
             <p className="text-slate-400 text-lg font-normal">Set and track your spending limits</p>
           </div>
-          <button
+          <Button
             onClick={() => setShowForm(!showForm)}
-            className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold flex items-center text-base whitespace-nowrap"
+            variant="primary"
+            leftIcon={<span>{showForm ? '✕' : '+'}</span>}
+            className="whitespace-nowrap"
           >
-            <span className="mr-2">{showForm ? '✕' : '+'}</span>
             {showForm ? 'Cancel' : 'Set Budget'}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -169,9 +171,9 @@ const Budgets = () => {
               />
             </div>
           </div>
-          <button type="submit" className="mt-4 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium">
+          <Button type="submit" variant="primary" className="mt-4">
             Set Budget
-          </button>
+          </Button>
         </form>
       )}
 
@@ -195,12 +197,14 @@ const Budgets = () => {
                   <h3 className="text-xl font-bold text-white mb-1">{budget.category}</h3>
                   <p className="text-sm text-slate-400">{new Date(budget.month + '-01').toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
                 </div>
-                <button
+                <Button
                   onClick={() => handleDelete(budget._id)}
-                  className="text-red-400 hover:text-red-300"
+                  variant="danger"
+                  size="sm"
+                  className="!p-2"
                 >
                   ✕
-                </button>
+                </Button>
               </div>
               
               <div className="space-y-3">

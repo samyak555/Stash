@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useExpenses } from '../contexts/ExpenseContext';
 import { ExpensesIcon, FoodIcon, TravelIcon, MovieIcon, ClothesIcon, ShoppingIcon } from '../components/Icons';
 import Logo from '../components/Logo';
+import Button from '../components/ui/Button';
 import { formatExpense } from '../utils/formatDisplayValue';
 
 const Expenses = () => {
@@ -118,13 +119,14 @@ const Expenses = () => {
             </h1>
             <p className="text-slate-400 text-lg font-normal">Track and manage your spending</p>
           </div>
-          <button
+          <Button
             onClick={() => setShowForm(!showForm)}
-            className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold flex items-center text-base whitespace-nowrap"
+            variant="primary"
+            leftIcon={<span>{showForm ? '✕' : '+'}</span>}
+            className="whitespace-nowrap"
           >
-            <span className="mr-2">{showForm ? '✕' : '+'}</span>
             {showForm ? 'Cancel' : 'Add Expense'}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -198,17 +200,17 @@ const Expenses = () => {
             </div>
           </div>
           <div className="flex gap-3 mt-4">
-            <button 
+            <Button 
               type="submit" 
               disabled={saving}
-              className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
             >
               {saving ? 'Saving...' : editingExpense ? 'Update Expense' : 'Add Expense'}
-            </button>
+            </Button>
             {editingExpense && (
-              <button type="button" onClick={resetForm} className="px-6 py-3.5 rounded-xl font-semibold text-slate-400 hover:text-white border border-white/10 hover:border-white/20 transition-all">
+              <Button type="button" onClick={resetForm} variant="ghost">
                 Cancel
-              </button>
+              </Button>
             )}
           </div>
         </form>
@@ -247,18 +249,23 @@ const Expenses = () => {
                   <td className="px-6 py-4 text-sm text-white font-semibold">{formatExpense(expense.amount)}</td>
                   <td className="px-6 py-4 text-sm text-slate-400 font-normal">{expense.note || '-'}</td>
                   <td className="px-6 py-4 text-sm">
-                    <button
-                      onClick={() => handleEdit(expense)}
-                      className="text-cyan-400 hover:text-cyan-300 mr-4 font-medium transition-colors"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(expense._id)}
-                      className="text-red-400 hover:text-red-300 font-medium transition-colors"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleEdit(expense)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-cyan-400 hover:text-cyan-300"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(expense._id)}
+                        variant="danger"
+                        size="sm"
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))

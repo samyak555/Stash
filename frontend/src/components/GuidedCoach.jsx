@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { DashboardIcon } from './Icons';
+import Button from './ui/Button';
 
 const GuidedCoach = ({ expenses = [], incomes = [], stashScore = 50 }) => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
@@ -212,17 +213,18 @@ const GuidedCoach = ({ expenses = [], incomes = [], stashScore = 50 }) => {
         <p className="text-sm text-slate-400 font-medium mb-4">Ask a question:</p>
         <div className="grid grid-cols-1 gap-3">
           {questions.map((question, index) => (
-            <button
+            <Button
               key={index}
               onClick={() => handleQuestionClick(question)}
-              className={`p-4 rounded-xl border text-left transition-all ${
+              variant={selectedQuestion === question ? 'secondary' : 'ghost'}
+              className={`w-full justify-start text-left ${
                 selectedQuestion === question
                   ? 'bg-purple-500/20 border-purple-500/50 text-white'
-                  : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/8 hover:border-purple-500/30'
+                  : ''
               }`}
             >
               <span className="text-sm font-normal">{question}</span>
-            </button>
+            </Button>
           ))}
         </div>
       </div>

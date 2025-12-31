@@ -4,6 +4,7 @@ import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import Logo from '../components/Logo';
 import Footer from '../components/Footer';
+import Button from '../components/ui/Button';
 
 const Register = ({ setUser }) => {
   const [formData, setFormData] = useState({
@@ -99,13 +100,14 @@ const Register = ({ setUser }) => {
             </div>
 
             <div className="pt-2">
-              <button
+              <Button
                 type="submit"
                 disabled={loading}
-                className="btn-premium w-full py-4 px-6 text-base font-semibold rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none"
+                variant="primary"
+                className="w-full"
               >
                 {loading ? 'Creating account...' : 'Sign up'}
-              </button>
+              </Button>
             </div>
 
             <div className="text-center pt-4 border-t border-white/5">

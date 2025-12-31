@@ -3,6 +3,7 @@ import { incomeAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { IncomeIcon } from '../components/Icons';
 import Logo from '../components/Logo';
+import Button from '../components/ui/Button';
 import { formatIncome } from '../utils/formatDisplayValue';
 
 const Income = () => {
@@ -121,13 +122,14 @@ const Income = () => {
             </h1>
             <p className="text-slate-400 text-lg font-normal">A clear overview of all your income streams</p>
           </div>
-          <button
+          <Button
             onClick={() => setShowForm(!showForm)}
-            className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold flex items-center text-base whitespace-nowrap"
+            variant="primary"
+            leftIcon={<span>{showForm ? '✕' : '+'}</span>}
+            className="whitespace-nowrap"
           >
-            <span className="mr-2">{showForm ? '✕' : '+'}</span>
             {showForm ? 'Cancel' : 'Add Income'}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -221,20 +223,20 @@ const Income = () => {
             </div>
           </div>
           <div className="flex gap-3 mt-6">
-            <button 
+            <Button 
               type="submit" 
-              className="btn-premium text-white px-6 py-3.5 rounded-xl font-semibold"
+              variant="primary"
             >
               {editingIncome ? 'Update Income' : 'Add Income'}
-            </button>
+            </Button>
             {editingIncome && (
-              <button 
+              <Button 
                 type="button" 
                 onClick={resetForm} 
-                className="px-6 py-3.5 rounded-xl font-semibold text-slate-400 hover:text-white border border-white/10 hover:border-white/20 transition-all"
+                variant="ghost"
               >
                 Cancel
-              </button>
+              </Button>
             )}
           </div>
         </form>
@@ -289,19 +291,22 @@ const Income = () => {
                     {income.note || '-'}
                   </td>
                   <td className="px-8 py-4 text-[15px]">
-                    <div className="flex gap-4">
-                      <button
+                    <div className="flex gap-2">
+                      <Button
                         onClick={() => handleEdit(income)}
-                        className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium"
+                        variant="ghost"
+                        size="sm"
+                        className="text-cyan-400 hover:text-cyan-300"
                       >
                         Edit
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => handleDelete(income._id)}
-                        className="text-red-400 hover:text-red-300 transition-colors font-medium"
+                        variant="danger"
+                        size="sm"
                       >
                         Delete
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>

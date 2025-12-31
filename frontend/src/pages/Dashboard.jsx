@@ -7,6 +7,7 @@ import { useExpenses } from '../contexts/ExpenseContext';
 import { DashboardIcon, ExpensesIcon, IncomeIcon, BudgetsIcon, GoalsIcon, FoodIcon, TravelIcon, MovieIcon, ClothesIcon, ShoppingIcon } from '../components/Icons';
 import Logo from '../components/Logo';
 import GuidedCoach from '../components/GuidedCoach';
+import Button from '../components/ui/Button';
 import { formatIncome, formatExpense } from '../utils/formatDisplayValue';
 
 const Dashboard = () => {
@@ -912,7 +913,7 @@ const Dashboard = () => {
               Automatically sync your bank transactions and never miss tracking an expense. Get real-time updates and smarter insights.
             </p>
           </div>
-          <button
+          <Button
             onClick={() => {
               const interested = localStorage.getItem('bankSyncInterest');
               if (!interested) {
@@ -922,10 +923,11 @@ const Dashboard = () => {
                 toast('You\'re already on the waitlist!', { icon: '✅' });
               }
             }}
-            className="px-6 py-3 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 rounded-xl text-cyan-400 font-medium text-sm transition-all hover:scale-105"
+            variant="secondary"
+            className="bg-cyan-500/20 hover:bg-cyan-500/30 border-cyan-500/50 text-cyan-400"
           >
             Notify Me
-          </button>
+          </Button>
         </div>
       </div>
 
