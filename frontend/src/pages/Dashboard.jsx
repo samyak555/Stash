@@ -525,33 +525,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Insights Summary Card */}
-      {insights.length > 0 && (
-        <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10 bg-gradient-to-br from-blue-500/5 to-purple-500/5">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
-              <DashboardIcon className="w-6 h-6 text-blue-400" />
-            </div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">Insights Summary</h2>
-          </div>
-          <div className="space-y-4">
-            {insights.map((insight, index) => (
-              <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 transition-all">
-                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-400 mt-2"></div>
-                <p className="text-base text-slate-200 font-normal leading-relaxed flex-1">
-                  {insight}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Guided Coach - Full width */}
-      <div className="mb-8">
-        <GuidedCoach expenses={expenses || []} incomes={incomes || []} stashScore={stashScore || 50} />
-      </div>
-
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="glass-card rounded-2xl p-8 border border-white/10">
@@ -639,6 +612,33 @@ const Dashboard = () => {
             <p className="text-sm text-slate-400 font-normal">Transactions</p>
           </div>
         </div>
+      </div>
+
+      {/* Insights Summary Card */}
+      {insights.length > 0 && (
+        <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10 bg-gradient-to-br from-blue-500/5 to-purple-500/5">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+              <DashboardIcon className="w-6 h-6 text-blue-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">Insights Summary</h2>
+          </div>
+          <div className="space-y-4">
+            {insights.map((insight, index) => (
+              <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 transition-all">
+                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-400 mt-2"></div>
+                <p className="text-base text-slate-200 font-normal leading-relaxed flex-1">
+                  {insight}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Guided Coach - Full width */}
+      <div className="mb-8">
+        <GuidedCoach expenses={expenses || []} incomes={incomes || []} stashScore={stashScore || 50} />
       </div>
 
       {/* Charts Row 1 */}
