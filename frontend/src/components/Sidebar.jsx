@@ -66,12 +66,12 @@ const Sidebar = ({ user, setUser }) => {
   return (
     <aside className="fixed left-0 top-0 h-screen w-60 bg-sidebar-bg border-r border-border flex flex-col z-50">
       {/* STASH Logo Section - Clean Professional Brand Area */}
-      <div className="p-3 border-b border-border bg-gradient-to-br from-sidebar-bg to-card-bg flex items-center justify-center" style={{ minHeight: '80px' }}>
+      <div className="border-b border-border bg-gradient-to-br from-sidebar-bg to-card-bg flex items-center justify-center" style={{ minHeight: '80px', padding: '8px' }}>
         <Link to="/" className="flex items-center justify-center w-full h-full">
           <img
             src={iconSrc}
             alt="Stash"
-            className="w-full h-full max-w-[220px] max-h-[80px] object-contain"
+            className="w-full h-full object-contain"
             style={{
               background: 'transparent',
               border: 'none',
@@ -80,7 +80,10 @@ const Sidebar = ({ user, setUser }) => {
               outline: 'none',
               padding: '0',
               margin: '0',
-              display: 'block'
+              display: 'block',
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain'
             }}
             onError={(e) => {
               e.target.style.display = 'none';
