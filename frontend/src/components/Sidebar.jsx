@@ -1,8 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
-import Logo from './Logo';
 import Button from './ui/Button';
+// Import logo icon for sidebar header
+import iconSrc from '../assets/logo/icon.png';
 import { 
   DashboardIcon, 
   ExpensesIcon, 
@@ -65,9 +66,26 @@ const Sidebar = ({ user, setUser }) => {
   return (
     <aside className="fixed left-0 top-0 h-screen w-60 bg-sidebar-bg border-r border-border flex flex-col z-50">
       {/* STASH Logo Section - Clean Professional Brand Area */}
-      <div className="p-6 border-b border-border bg-gradient-to-br from-sidebar-bg to-card-bg">
-        <Link to="/" className="flex items-center justify-center h-full w-full">
-          <Logo size="large" showText={false} iconOnly={true} className="justify-center" />
+      <div className="p-3 border-b border-border bg-gradient-to-br from-sidebar-bg to-card-bg flex items-center justify-center" style={{ minHeight: '80px' }}>
+        <Link to="/" className="flex items-center justify-center w-full h-full">
+          <img
+            src={iconSrc}
+            alt="Stash"
+            className="w-full h-full max-w-[200px] max-h-[72px] object-contain"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              borderRadius: '0',
+              boxShadow: 'none',
+              outline: 'none',
+              padding: '0',
+              margin: '0',
+              display: 'block'
+            }}
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
         </Link>
       </div>
 
