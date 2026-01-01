@@ -71,7 +71,7 @@ const Sidebar = ({ user, setUser }) => {
           <img
             src={iconSrc}
             alt="Stash"
-            className="w-full h-full max-w-[200px] max-h-[72px] object-contain"
+            className="w-full h-full max-w-[220px] max-h-[80px] object-contain"
             style={{
               background: 'transparent',
               border: 'none',

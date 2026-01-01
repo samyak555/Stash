@@ -137,6 +137,18 @@ const Login = ({ setUser }) => {
 
   return (
     <div className="min-h-screen h-screen w-screen overflow-y-auto overflow-x-hidden bg-app-bg relative flex items-center justify-center py-8">
+      {/* Background STASH Squirrel Icon - Large, Centered, Behind Content */}
+      <div 
+        className="fixed inset-0 w-full h-full pointer-events-none z-0"
+        style={{
+          backgroundImage: `url(${iconSrc})`,
+          backgroundSize: '60%',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.12,
+        }}
+      />
+
       {/* Main Content - Centered */}
       <div className="relative z-10 w-full max-w-[420px] px-4 sm:px-6">
         <div className="space-y-6">

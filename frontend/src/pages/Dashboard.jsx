@@ -668,7 +668,7 @@ const Dashboard = () => {
               <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Total Expenses</h3>
             </div>
             <div>
-              <p className="text-4xl font-bold text-highlight-green mb-1 tracking-tight">{formatExpense(totalExpenses)}</p>
+              <p className="text-4xl font-bold text-highlight-aqua mb-1 tracking-tight">{formatExpense(totalExpenses)}</p>
               <p className="text-xs text-text-muted font-normal">{expenses.length} entries</p>
             </div>
           </div>
@@ -682,7 +682,7 @@ const Dashboard = () => {
               <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Balance</h3>
             </div>
             <div>
-              <p className={`text-4xl font-bold mb-1 tracking-tight ${balance >= 0 ? 'text-highlight-blue' : 'text-red-400'}`}>
+              <p className={`text-4xl font-bold mb-1 tracking-tight ${balance >= 0 ? 'text-highlight-aqua' : 'text-red-400'}`}>
                 {formatIncome(balance)}
               </p>
               <p className="text-xs text-text-muted font-normal">{balance >= 0 ? 'Positive' : 'Negative'} balance</p>
@@ -712,21 +712,21 @@ const Dashboard = () => {
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-2xl font-bold text-highlight-blue">{savingsRate}%</span>
+                <span className="text-2xl font-bold text-highlight-aqua">{savingsRate}%</span>
               </div>
             </div>
             <p className="text-sm text-slate-400 font-normal">Savings Rate</p>
           </div>
           <div className="text-center">
-            <p className="text-3xl font-bold text-blue-400 mb-2 tracking-tight">{formatExpense(avgDailySpending)}</p>
+            <p className="text-3xl font-bold text-highlight-aqua mb-2 tracking-tight">{formatExpense(avgDailySpending)}</p>
             <p className="text-sm text-slate-400 font-normal">Avg Daily Spending</p>
           </div>
           <div className="text-center">
-            <p className="text-3xl font-bold text-purple-400 mb-2 tracking-tight">{formatExpense(spendingVelocity)}</p>
+            <p className="text-3xl font-bold text-highlight-aqua mb-2 tracking-tight">{formatExpense(spendingVelocity)}</p>
             <p className="text-sm text-slate-400 font-normal">Spending Velocity</p>
           </div>
           <div className="text-center">
-            <p className="text-3xl font-bold text-cyan-400 mb-2 tracking-tight">{expenses.length}</p>
+            <p className="text-3xl font-bold text-highlight-aqua mb-2 tracking-tight">{expenses.length}</p>
             <p className="text-sm text-slate-400 font-normal">Transactions</p>
           </div>
         </div>
@@ -930,7 +930,7 @@ const Dashboard = () => {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm text-text-secondary">{percentage.toFixed(1)}%</span>
-                    <span className="text-sm font-bold text-highlight-blue">{formatExpense(item.amount)}</span>
+                    <span className="text-sm font-bold text-highlight-aqua">{formatExpense(item.amount)}</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
                     <div
@@ -960,7 +960,7 @@ const Dashboard = () => {
                 </div>
               </div>
               <p className="text-xs text-text-secondary mb-2 font-normal">{item.category}</p>
-              <p className="text-xl font-bold text-highlight-blue mb-3 tracking-tight">{formatExpense(item.amount)}</p>
+              <p className="text-xl font-bold text-highlight-aqua mb-3 tracking-tight">{formatExpense(item.amount)}</p>
               <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 transition-all duration-500"
@@ -981,7 +981,7 @@ const Dashboard = () => {
             </div>
             <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Active Budgets</h3>
           </div>
-          <p className="text-3xl font-bold text-highlight-blue tracking-tight">{dashboardData.budgets || 0}</p>
+          <p className="text-3xl font-bold text-highlight-aqua tracking-tight">{dashboardData.budgets || 0}</p>
         </div>
         <div className="glass-card rounded-2xl p-6 border border-white/10">
           <div className="flex items-center mb-4">
@@ -990,7 +990,7 @@ const Dashboard = () => {
             </div>
             <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Active Goals</h3>
           </div>
-          <p className="text-3xl font-bold text-highlight-blue tracking-tight">{dashboardData.activeGoals || 0}</p>
+          <p className="text-3xl font-bold text-highlight-aqua tracking-tight">{dashboardData.activeGoals || 0}</p>
         </div>
         <div className="glass-card rounded-2xl p-6 border border-white/10">
           <div className="flex items-center mb-4">
@@ -1010,7 +1010,7 @@ const Dashboard = () => {
             </div>
             <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Categories</h3>
           </div>
-          <p className="text-3xl font-bold text-highlight-green tracking-tight">{categoryData.length}</p>
+          <p className="text-3xl font-bold text-highlight-aqua tracking-tight">{categoryData.length}</p>
         </div>
       </div>
 
