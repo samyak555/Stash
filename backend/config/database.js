@@ -6,7 +6,6 @@ const connectDB = async () => {
     
     // Disable buffering - fail fast if not connected
     mongoose.set('bufferCommands', false);
-    mongoose.set('bufferMaxEntries', 0);
     
     // Connection options
     const options = {
