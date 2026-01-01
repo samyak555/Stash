@@ -135,13 +135,13 @@ const Login = ({ setUser }) => {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-app-bg relative flex items-center justify-center">
+    <div className="min-h-screen h-screen w-screen overflow-y-auto overflow-x-hidden bg-app-bg relative flex items-center justify-center py-8">
       {/* Large Background Squirrel Logo - Hero Scale, Bold Brand Presence */}
       <div 
         className="absolute inset-0 w-full h-full pointer-events-none z-0"
         style={{
           backgroundImage: `url(${logoSrc})`,
-          backgroundSize: '110%',
+          backgroundSize: '100%',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           opacity: 0.15,
@@ -153,8 +153,8 @@ const Login = ({ setUser }) => {
         <div className="space-y-6">
           {/* Stash Wordmark - Refined Brand Identity */}
           <div className="text-center mb-4">
-            <h1 className="text-5xl sm:text-6xl font-bold text-gradient-brand tracking-tight mb-2">
-              Stash
+            <h1 className="text-4xl sm:text-5xl font-bold text-gradient-brand tracking-tight mb-2">
+              <span className="text-5xl sm:text-6xl">S</span>tash
             </h1>
             <p className="text-text-secondary text-sm font-medium">
               Financial Management Platform
