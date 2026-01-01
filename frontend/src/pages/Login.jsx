@@ -307,6 +307,19 @@ const Login = ({ setUser }) => {
           </div>
         </div>
       </div>
+
+      {/* Footer Credit - Bottom of Page */}
+      <footer className="absolute bottom-0 left-0 right-0 py-6 text-center z-10">
+        <p className="text-text-secondary text-sm">
+          Developed by <span className="text-text-primary font-medium">Samyak Jain</span> –{' '}
+          <a 
+            href="mailto:sam718ind@gmail.com" 
+            className="text-aqua hover:text-aqua-400 transition-colors"
+          >
+            sam718ind@gmail.com
+          </a>
+        </p>
+      </footer>
     </div>
   );
 };
