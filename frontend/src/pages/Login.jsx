@@ -142,7 +142,7 @@ const Login = ({ setUser }) => {
         style={{
           backgroundImage: `url(${iconSrc})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center 70%',
+          backgroundPosition: 'center 85%',
           backgroundRepeat: 'no-repeat',
           opacity: 0.25,
         }}
