@@ -142,7 +142,7 @@ const Login = ({ setUser }) => {
         style={{
           backgroundImage: `url(${iconSrc})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundPosition: 'center center',
           backgroundRepeat: 'no-repeat',
           opacity: 0.25,
         }}
@@ -249,6 +249,13 @@ const Login = ({ setUser }) => {
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* Tagline - Below Login Card */}
+          <div className="text-center mt-6">
+            <p className="text-aqua text-base font-medium tracking-wide">
+              Secure. Grow. Succeed.
+            </p>
           </div>
         </div>
       </div>
