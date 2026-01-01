@@ -1,8 +1,8 @@
-import fileDB from '../utils/fileDB.js';
+import Budget from '../models/Budget.js';
 
 export const getAll = async (req, res) => {
   try {
-    const budgets = fileDB.findBudgets({ user: req.user._id });
+    const budgets = await Budget.find({ user: req.user._id });
     res.json(budgets);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -11,7 +11,7 @@ export const getAll = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const budget = fileDB.createBudget({
+    const budget = await Budget.create({
       ...req.body,
       user: req.user._id,
     });
@@ -20,5 +20,3 @@ export const create = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-

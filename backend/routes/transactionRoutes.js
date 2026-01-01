@@ -63,9 +63,9 @@ router.post('/sync-now', authenticate, async (req, res) => {
 });
 
 // Get sync status
-router.get('/sync-status', authenticate, (req, res) => {
+router.get('/sync-status', authenticate, async (req, res) => {
   try {
-    const status = transactionScheduler.getSyncStatus(req.user._id);
+    const status = await transactionScheduler.getSyncStatus(req.user._id);
     res.json(status);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -78,9 +78,3 @@ router.post('/webhook/paytm', handlePaytmWebhook);
 router.post('/webhook/generic', handleGenericWebhook);
 
 export default router;
-
-
-
-
-
-

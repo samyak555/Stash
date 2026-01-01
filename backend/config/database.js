@@ -1,15 +1,18 @@
-import fileDB from '../utils/fileDB.js';
+import mongoose from 'mongoose';
 
 const connectDB = async () => {
   try {
-    await fileDB.initDB();
-    console.log(`✅ File-based Database Initialized: ${fileDB.getDbFilePath()}`);
+    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/stash';
+    
+    const conn = await mongoose.connect(mongoURI);
+    
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    console.log(`📦 Database: ${conn.connection.name}`);
   } catch (error) {
-    console.error('❌ File-based Database initialization error:', error.message);
-    console.error('⚠️  Server will continue but database operations might fail.');
+    console.error('❌ MongoDB connection error:', error.message);
+    console.error('⚠️  Make sure MONGODB_URI is set in your .env file');
+    process.exit(1);
   }
 };
 
 export default connectDB;
-
-

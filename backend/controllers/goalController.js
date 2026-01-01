@@ -1,8 +1,8 @@
-import fileDB from '../utils/fileDB.js';
+import Goal from '../models/Goal.js';
 
 export const getAll = async (req, res) => {
   try {
-    const goals = fileDB.findGoals({ user: req.user._id });
+    const goals = await Goal.find({ user: req.user._id }).sort({ createdAt: -1 });
     res.json(goals);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -11,7 +11,7 @@ export const getAll = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const goal = fileDB.createGoal({
+    const goal = await Goal.create({
       ...req.body,
       user: req.user._id,
     });
@@ -23,7 +23,11 @@ export const create = async (req, res) => {
 
 export const update = async (req, res) => {
   try {
-    const goal = fileDB.updateGoal(req.params.id, req.body);
+    const goal = await Goal.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id },
+      req.body,
+      { new: true, runValidators: true }
+    );
     if (!goal) {
       return res.status(404).json({ message: 'Goal not found' });
     }
@@ -33,4 +37,23 @@ export const update = async (req, res) => {
   }
 };
 
-
+export const addProgress = async (req, res) => {
+  try {
+    const { amount } = req.body;
+    const goal = await Goal.findOne({ _id: req.params.id, user: req.user._id });
+    
+    if (!goal) {
+      return res.status(404).json({ message: 'Goal not found' });
+    }
+    
+    goal.currentAmount = (goal.currentAmount || 0) + parseFloat(amount);
+    if (goal.currentAmount >= goal.targetAmount) {
+      goal.status = 'completed';
+    }
+    
+    await goal.save();
+    res.json(goal);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

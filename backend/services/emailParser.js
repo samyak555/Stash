@@ -2,7 +2,7 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const Imap = require('node-imap');
 import { simpleParser } from 'mailparser';
-import fileDB from '../utils/fileDB.js';
+import Expense from '../models/Expense.js';
 
 class EmailTransactionParser {
   constructor(emailConfig) {
@@ -48,43 +48,45 @@ class EmailTransactionParser {
           // Fetch emails from last 7 days
           const sinceDate = new Date();
           sinceDate.setDate(sinceDate.getDate() - 7);
-          
-          this.imap.search(['UNSEEN', ['SINCE', sinceDate]], (err, results) => {
+          const searchCriteria = ['UNSEEN', ['SINCE', sinceDate]];
+
+          this.imap.search(searchCriteria, (err, results) => {
             if (err) return reject(err);
-            
             if (!results || results.length === 0) {
               return resolve([]);
             }
 
-            const fetch = this.imap.fetch(results, { bodies: '' });
+            const fetch = this.imap.fetch(results, { bodies: '', struct: true });
             const transactions = [];
-            let processed = 0;
 
             fetch.on('message', (msg, seqno) => {
-              msg.on('body', async (stream) => {
-                try {
-                  const parsed = await simpleParser(stream);
-                  const transaction = this.extractTransaction(parsed, userId);
-                  if (transaction) {
-                    transactions.push(transaction);
-                  }
-                  processed++;
-                  if (processed === results.length) {
-                    resolve(transactions);
-                  }
-                } catch (error) {
-                  console.error('Parse error:', error);
-                  processed++;
-                  if (processed === results.length) {
-                    resolve(transactions);
-                  }
-                }
+              let emailBody = '';
+
+              msg.on('body', (stream, info) => {
+                let buffer = '';
+                stream.on('data', (chunk) => {
+                  buffer += chunk.toString('utf8');
+                });
+                stream.once('end', () => {
+                  simpleParser(buffer).then((parsed) => {
+                    emailBody = parsed.text || parsed.html || '';
+                    const transaction = this.extractTransaction(parsed, userId);
+                    if (transaction) {
+                      transactions.push(transaction);
+                    }
+                  }).catch((err) => {
+                    console.error('Error parsing email:', err);
+                  });
+                });
               });
             });
 
             fetch.once('error', (err) => {
-              console.error('Fetch error:', err);
-              resolve(transactions); // Return what we have
+              reject(err);
+            });
+
+            fetch.once('end', () => {
+              resolve(transactions);
             });
           });
         });
@@ -95,304 +97,127 @@ class EmailTransactionParser {
   }
 
   extractTransaction(email, userId) {
-    const subject = (email.subject || '').toLowerCase();
-    const text = (email.text || '').toLowerCase();
-    const html = (email.html || '').toLowerCase();
-    const fullText = subject + ' ' + text;
+    const text = email.text || email.html || '';
+    const subject = email.subject || '';
+    const from = email.from?.text || '';
 
-    // Paytm patterns
-    if (fullText.includes('paytm')) {
-      return this.parsePaytmTransaction(email, userId);
+    // Paytm
+    if (from.includes('paytm') || subject.includes('Paytm')) {
+      const amountMatch = text.match(/Rs\.?\s*(\d+(?:\.\d{2})?)/i) || text.match(/₹\s*(\d+(?:\.\d{2})?)/);
+      const descMatch = text.match(/(?:paid to|sent to|received from)\s*([A-Za-z0-9\s]+)/i);
+      if (amountMatch) {
+        return {
+          user: userId,
+          amount: parseFloat(amountMatch[1]),
+          category: this.categorizeTransaction(descMatch ? descMatch[1] : 'Paytm Transaction', parseFloat(amountMatch[1])),
+          description: descMatch ? descMatch[1] : 'Paytm Transaction',
+          date: email.date || new Date(),
+        };
+      }
     }
 
-    // PhonePe patterns
-    if (fullText.includes('phonepe') || fullText.includes('phone pe')) {
-      return this.parsePhonePeTransaction(email, userId);
+    // PhonePe
+    if (from.includes('phonepe') || subject.includes('PhonePe')) {
+      const amountMatch = text.match(/Rs\.?\s*(\d+(?:\.\d{2})?)/i) || text.match(/₹\s*(\d+(?:\.\d{2})?)/);
+      const descMatch = text.match(/(?:paid to|sent to|received from)\s*([A-Za-z0-9\s]+)/i);
+      if (amountMatch) {
+        return {
+          user: userId,
+          amount: parseFloat(amountMatch[1]),
+          category: this.categorizeTransaction(descMatch ? descMatch[1] : 'PhonePe Transaction', parseFloat(amountMatch[1])),
+          description: descMatch ? descMatch[1] : 'PhonePe Transaction',
+          date: email.date || new Date(),
+        };
+      }
     }
 
-    // MakeMyTrip patterns
-    if (fullText.includes('makemytrip') || fullText.includes('mmt')) {
-      return this.parseMMTTransaction(email, userId);
+    // MakeMyTrip
+    if (from.includes('makemytrip') || subject.includes('MakeMyTrip')) {
+      const amountMatch = text.match(/Rs\.?\s*(\d+(?:\.\d{2})?)/i) || text.match(/₹\s*(\d+(?:\.\d{2})?)/);
+      if (amountMatch) {
+        return {
+          user: userId,
+          amount: parseFloat(amountMatch[1]),
+          category: 'Travel',
+          description: 'MakeMyTrip Booking',
+          date: email.date || new Date(),
+        };
+      }
     }
 
-    // Bank transaction patterns
-    if (fullText.includes('debited') || fullText.includes('credited') || 
-        fullText.includes('inr') || fullText.includes('rs.') || fullText.includes('₹')) {
-      return this.parseBankTransaction(email, userId);
-    }
+    // Generic bank transactions
+    const bankKeywords = ['debit', 'credit', 'transaction', 'payment', 'withdrawal'];
+    const isBankEmail = bankKeywords.some(keyword => 
+      subject.toLowerCase().includes(keyword) || from.toLowerCase().includes('bank')
+    );
 
-    // Zomato/Swiggy
-    if (fullText.includes('zomato') || fullText.includes('swiggy')) {
-      return this.parseFoodDeliveryTransaction(email, userId);
-    }
-
-    // Uber/Ola
-    if (fullText.includes('uber') || fullText.includes('ola')) {
-      return this.parseRideTransaction(email, userId);
-    }
-
-    // BookMyShow
-    if (fullText.includes('bookmyshow') || fullText.includes('bms')) {
-      return this.parseEntertainmentTransaction(email, userId);
+    if (isBankEmail) {
+      const amountMatch = text.match(/Rs\.?\s*(\d+(?:\.\d{2})?)/i) || text.match(/₹\s*(\d+(?:\.\d{2})?)/) || text.match(/INR\s*(\d+(?:\.\d{2})?)/i);
+      const descMatch = text.match(/(?:paid to|at|for)\s*([A-Za-z0-9\s]+)/i);
+      if (amountMatch) {
+        return {
+          user: userId,
+          amount: parseFloat(amountMatch[1]),
+          category: this.categorizeTransaction(descMatch ? descMatch[1] : 'Bank Transaction', parseFloat(amountMatch[1])),
+          description: descMatch ? descMatch[1] : 'Bank Transaction',
+          date: email.date || new Date(),
+        };
+      }
     }
 
     return null;
   }
 
-  parsePaytmTransaction(email, userId) {
-    const text = email.text || '';
-    const subject = email.subject || '';
-
-    // Extract amount
-    const amountMatch = text.match(/rs\.?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i) || 
-                       text.match(/₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i) ||
-                       text.match(/inr\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i);
-    if (!amountMatch) return null;
-
-    const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
-
-    // Extract merchant/description
-    const merchantMatch = text.match(/paid to\s+([^\n]+)/i) || 
-                         text.match(/sent to\s+([^\n]+)/i) ||
-                         text.match(/payment to\s+([^\n]+)/i);
-    const merchant = merchantMatch ? merchantMatch[1].trim().split('\n')[0] : 'Paytm Payment';
-
-    // Extract date
-    const dateMatch = text.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/) || 
-                     subject.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/);
-    const date = dateMatch ? this.parseDate(dateMatch[1]) : new Date();
-
-    return {
-      user: userId,
-      amount,
-      category: this.categorizeTransaction(merchant),
-      description: `Paytm - ${merchant}`,
-      date: date.toISOString(),
-      source: 'paytm',
-      autoDetected: true
-    };
-  }
-
-  parsePhonePeTransaction(email, userId) {
-    const text = email.text || '';
-    const subject = email.subject || '';
-
-    const amountMatch = text.match(/₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i) ||
-                       text.match(/rs\.?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i);
-    if (!amountMatch) return null;
-
-    const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
-    const merchantMatch = text.match(/paid to\s+([^\n]+)/i) ||
-                         text.match(/payment to\s+([^\n]+)/i);
-    const merchant = merchantMatch ? merchantMatch[1].trim().split('\n')[0] : 'PhonePe Payment';
-
-    const dateMatch = text.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/) ||
-                     subject.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/);
-    const date = dateMatch ? this.parseDate(dateMatch[1]) : new Date();
-
-    return {
-      user: userId,
-      amount,
-      category: this.categorizeTransaction(merchant),
-      description: `PhonePe - ${merchant}`,
-      date: date.toISOString(),
-      source: 'phonepe',
-      autoDetected: true
-    };
-  }
-
-  parseMMTTransaction(email, userId) {
-    const text = email.text || '';
-    const subject = email.subject || '';
-
-    const amountMatch = text.match(/₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i) || 
-                       text.match(/inr\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i) ||
-                       text.match(/rs\.?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i);
-    if (!amountMatch) return null;
-
-    const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
-    
-    const bookingMatch = text.match(/booking id[:\s]+([a-z0-9]+)/i) ||
-                        subject.match(/booking[:\s]+([a-z0-9]+)/i);
-    const bookingId = bookingMatch ? bookingMatch[1] : '';
-
-    const dateMatch = text.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/) ||
-                     subject.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/);
-    const date = dateMatch ? this.parseDate(dateMatch[1]) : new Date();
-
-    return {
-      user: userId,
-      amount,
-      category: 'travel',
-      description: `MakeMyTrip Booking${bookingId ? ' - ' + bookingId : ''}`,
-      date: date.toISOString(),
-      source: 'makemytrip',
-      autoDetected: true
-    };
-  }
-
-  parseBankTransaction(email, userId) {
-    const text = email.text || '';
-    const subject = email.subject || '';
-
-    const amountMatch = text.match(/inr\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i) || 
-                       text.match(/rs\.?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i) ||
-                       text.match(/₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i);
-    if (!amountMatch) return null;
-
-    const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
-    const isDebit = subject.toLowerCase().includes('debited') || 
-                   text.toLowerCase().includes('debited') ||
-                   text.toLowerCase().includes('withdrawal');
-
-    if (!isDebit) return null; // Only track expenses (debits)
-
-    const descriptionMatch = text.match(/to\s+([^\n]+?)(?:\s+on|\s+via|\s+at|$)/i) ||
-                            text.match(/paid to\s+([^\n]+?)(?:\s+on|\s+via|\s+at|$)/i) ||
-                            subject.match(/to\s+([^\n]+)/i);
-    const description = descriptionMatch ? descriptionMatch[1].trim().split('\n')[0] : 'Bank Transaction';
-
-    const dateMatch = text.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/) ||
-                     subject.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/);
-    const date = dateMatch ? this.parseDate(dateMatch[1]) : new Date();
-
-    return {
-      user: userId,
-      amount,
-      category: this.categorizeTransaction(description),
-      description: description,
-      date: date.toISOString(),
-      source: 'bank',
-      autoDetected: true
-    };
-  }
-
-  parseFoodDeliveryTransaction(email, userId) {
-    const text = email.text || '';
-    const amountMatch = text.match(/₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i) ||
-                       text.match(/rs\.?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i);
-    if (!amountMatch) return null;
-
-    const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
-    const service = text.includes('zomato') ? 'Zomato' : 'Swiggy';
-    
-    const dateMatch = text.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/);
-    const date = dateMatch ? this.parseDate(dateMatch[1]) : new Date();
-
-    return {
-      user: userId,
-      amount,
-      category: 'food',
-      description: `${service} Order`,
-      date: date.toISOString(),
-      source: service.toLowerCase(),
-      autoDetected: true
-    };
-  }
-
-  parseRideTransaction(email, userId) {
-    const text = email.text || '';
-    const amountMatch = text.match(/₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i) ||
-                       text.match(/rs\.?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i);
-    if (!amountMatch) return null;
-
-    const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
-    const service = text.includes('uber') ? 'Uber' : 'Ola';
-    
-    const dateMatch = text.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/);
-    const date = dateMatch ? this.parseDate(dateMatch[1]) : new Date();
-
-    return {
-      user: userId,
-      amount,
-      category: 'travel',
-      description: `${service} Ride`,
-      date: date.toISOString(),
-      source: service.toLowerCase(),
-      autoDetected: true
-    };
-  }
-
-  parseEntertainmentTransaction(email, userId) {
-    const text = email.text || '';
-    const amountMatch = text.match(/₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i) ||
-                       text.match(/rs\.?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i);
-    if (!amountMatch) return null;
-
-    const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
-    
-    const dateMatch = text.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/);
-    const date = dateMatch ? this.parseDate(dateMatch[1]) : new Date();
-
-    return {
-      user: userId,
-      amount,
-      category: 'entertainment',
-      description: 'BookMyShow - Movie Tickets',
-      date: date.toISOString(),
-      source: 'bookmyshow',
-      autoDetected: true
-    };
-  }
-
-  parseDate(dateString) {
-    try {
-      const parts = dateString.split(/[-\/]/);
-      if (parts.length === 3) {
-        const day = parseInt(parts[0]);
-        const month = parseInt(parts[1]) - 1;
-        const year = parseInt(parts[2].length === 2 ? '20' + parts[2] : parts[2]);
-        return new Date(year, month, day);
-      }
-    } catch (e) {
-      // Fall through to return new Date()
-    }
-    return new Date();
-  }
-
-  categorizeTransaction(description) {
+  categorizeTransaction(description, amount) {
     const desc = description.toLowerCase();
     
-    if (desc.includes('movie') || desc.includes('cinema') || desc.includes('bookmyshow') || desc.includes('theater')) {
-      return 'entertainment';
+    if (desc.includes('food') || desc.includes('restaurant') || desc.includes('zomato') || desc.includes('swiggy')) {
+      return 'Food & Dining';
     }
-    if (desc.includes('food') || desc.includes('restaurant') || desc.includes('swiggy') || desc.includes('zomato') || desc.includes('dining')) {
-      return 'food';
+    if (desc.includes('uber') || desc.includes('ola') || desc.includes('taxi') || desc.includes('cab')) {
+      return 'Transportation';
     }
-    if (desc.includes('travel') || desc.includes('cab') || desc.includes('uber') || desc.includes('ola') || desc.includes('makemytrip') || desc.includes('flight') || desc.includes('train') || desc.includes('hotel')) {
-      return 'travel';
+    if (desc.includes('hotel') || desc.includes('travel') || desc.includes('flight') || desc.includes('train')) {
+      return 'Travel';
     }
-    if (desc.includes('cloth') || desc.includes('fashion') || desc.includes('myntra') || desc.includes('flipkart') || desc.includes('amazon') || desc.includes('shopping')) {
-      return 'shopping';
+    if (desc.includes('shopping') || desc.includes('amazon') || desc.includes('flipkart')) {
+      return 'Shopping';
     }
-    if (desc.includes('grocery') || desc.includes('bigbasket') || desc.includes('bill') || desc.includes('electricity') || desc.includes('water') || desc.includes('gas')) {
-      return 'bills';
+    if (desc.includes('movie') || desc.includes('cinema') || desc.includes('entertainment')) {
+      return 'Entertainment';
     }
-    if (desc.includes('fuel') || desc.includes('petrol') || desc.includes('diesel')) {
-      return 'fuel';
+    if (desc.includes('medical') || desc.includes('hospital') || desc.includes('pharmacy')) {
+      return 'Healthcare';
     }
-    if (desc.includes('health') || desc.includes('medical') || desc.includes('pharmacy') || desc.includes('hospital')) {
-      return 'health';
+    if (desc.includes('electricity') || desc.includes('water') || desc.includes('gas') || desc.includes('utility')) {
+      return 'Utilities';
     }
     
-    return 'others';
+    return 'Other';
   }
 
   async saveTransactions(transactions) {
     const saved = [];
     for (const transaction of transactions) {
-      // Check if transaction already exists (prevent duplicates)
-      const existing = fileDB.findExpenses({ user: transaction.user })
-        .find(e => 
-          Math.abs(e.amount - transaction.amount) < 0.01 && 
-          e.description === transaction.description &&
-          Math.abs(new Date(e.date) - new Date(transaction.date)) < 300000 // Within 5 minutes
-        );
+      try {
+        // Check if transaction already exists (prevent duplicates)
+        const existing = await Expense.findOne({
+          user: transaction.user,
+          amount: transaction.amount,
+          description: transaction.description,
+          date: {
+            $gte: new Date(new Date(transaction.date).getTime() - 300000), // Within 5 minutes
+            $lte: new Date(new Date(transaction.date).getTime() + 300000)
+          }
+        });
 
-      if (!existing) {
-        const expense = fileDB.createExpense(transaction);
-        saved.push(expense);
-        console.log(`✅ Auto-added: ${transaction.description} - ₹${transaction.amount}`);
+        if (!existing) {
+          const expense = await Expense.create(transaction);
+          saved.push(expense);
+          console.log(`✅ Auto-added: ${transaction.description} - ₹${transaction.amount}`);
+        }
+      } catch (error) {
+        console.error('Error saving transaction:', error);
       }
     }
     return saved;
@@ -406,4 +231,3 @@ class EmailTransactionParser {
 }
 
 export default EmailTransactionParser;
-

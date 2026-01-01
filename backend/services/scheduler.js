@@ -1,6 +1,6 @@
 import schedule from 'node-schedule';
 import EmailTransactionParser from './emailParser.js';
-import fileDB from '../utils/fileDB.js';
+import User from '../models/User.js';
 import CryptoJS from 'crypto-js';
 
 class TransactionScheduler {
@@ -24,7 +24,7 @@ class TransactionScheduler {
       const encryptedPassword = this.encryptPassword(emailConfig.password);
       
       // Save encrypted config
-      const user = fileDB.findUserById(userId);
+      const user = await User.findById(userId);
       if (user) {
         user.emailConfig = {
           email: emailConfig.email,
@@ -34,7 +34,7 @@ class TransactionScheduler {
           enabled: true,
           lastSync: null
         };
-        fileDB.updateUser(userId, { emailConfig: user.emailConfig });
+        await user.save();
       }
 
       // Decrypt for connection
@@ -45,7 +45,7 @@ class TransactionScheduler {
 
       const parser = new EmailTransactionParser(decryptedConfig);
       await parser.connect();
-      this.parsers.set(userId, parser);
+      this.parsers.set(userId.toString(), parser);
       
       console.log(`✅ Email configured for user: ${userId}`);
       return true;
@@ -58,7 +58,7 @@ class TransactionScheduler {
   async setupUserEmailOAuth(userId, emailConfig) {
     try {
       // For OAuth, we store the access token instead of password
-      const user = fileDB.findUserById(userId);
+      const user = await User.findById(userId);
       if (user) {
         user.emailConfig = {
           email: emailConfig.email,
@@ -69,7 +69,7 @@ class TransactionScheduler {
           lastSync: null,
           authType: 'oauth'
         };
-        fileDB.updateUser(userId, { emailConfig: user.emailConfig });
+        await user.save();
       }
 
       // For OAuth, we'll use the access token for Gmail API
@@ -83,27 +83,33 @@ class TransactionScheduler {
   }
 
   async removeUserEmail(userId) {
-    const parser = this.parsers.get(userId);
+    const parser = this.parsers.get(userId.toString());
     if (parser) {
       parser.disconnect();
-      this.parsers.delete(userId);
+      this.parsers.delete(userId.toString());
     }
 
-    const user = fileDB.findUserById(userId);
+    const user = await User.findById(userId);
     if (user && user.emailConfig) {
       user.emailConfig.enabled = false;
-      fileDB.updateUser(userId, { emailConfig: user.emailConfig });
+      await user.save();
     }
   }
 
   async syncUserTransactions(userId) {
     try {
-      const user = fileDB.findUserById(userId);
+      const user = await User.findById(userId);
       if (!user || !user.emailConfig || !user.emailConfig.enabled) {
         return { count: 0, error: 'Email not configured' };
       }
 
-      let parser = this.parsers.get(userId);
+      // Skip OAuth users for now (would need Gmail API implementation)
+      if (user.emailConfig.authType === 'oauth') {
+        console.log(`⏭️ Skipping OAuth user ${userId} (Gmail API not implemented yet)`);
+        return { count: 0, error: 'OAuth not fully implemented' };
+      }
+
+      let parser = this.parsers.get(userId.toString());
       
       // Reconnect if not connected
       if (!parser) {
@@ -115,23 +121,23 @@ class TransactionScheduler {
         };
         parser = new EmailTransactionParser(decryptedConfig);
         await parser.connect();
-        this.parsers.set(userId, parser);
+        this.parsers.set(userId.toString(), parser);
       }
 
-      const transactions = await parser.fetchAndParseTransactions(userId);
+      const transactions = await parser.fetchAndParseTransactions(userId.toString());
       const saved = await parser.saveTransactions(transactions);
 
       // Update last sync time
       if (user.emailConfig) {
-        user.emailConfig.lastSync = new Date().toISOString();
-        fileDB.updateUser(userId, { emailConfig: user.emailConfig });
+        user.emailConfig.lastSync = new Date();
+        await user.save();
       }
 
       return { count: saved.length, transactions: saved };
     } catch (error) {
       console.error(`Error syncing transactions for user ${userId}:`, error);
       // Remove parser on error to force reconnect next time
-      this.parsers.delete(userId);
+      this.parsers.delete(userId.toString());
       throw error;
     }
   }
@@ -141,15 +147,11 @@ class TransactionScheduler {
     schedule.scheduleJob('*/5 * * * *', async () => {
       console.log('🔍 Auto-syncing transactions...');
       
-      const users = fileDB.findAllUsers();
+      const users = await User.find({ 'emailConfig.enabled': true });
       
       for (const user of users) {
-        if (!user.emailConfig || !user.emailConfig.enabled) {
-          continue;
-        }
-
         try {
-          const result = await this.syncUserTransactions(user._id);
+          const result = await this.syncUserTransactions(user._id.toString());
           if (result.count > 0) {
             console.log(`✅ User ${user._id}: Found ${result.count} new transactions`);
           }
@@ -171,19 +173,19 @@ class TransactionScheduler {
   }
 
   getSyncStatus(userId) {
-    const user = fileDB.findUserById(userId);
-    if (!user || !user.emailConfig) {
-      return { connected: false, lastSync: null };
-    }
+    return User.findById(userId).then(user => {
+      if (!user || !user.emailConfig) {
+        return { connected: false, lastSync: null };
+      }
 
-    return {
-      connected: user.emailConfig.enabled || false,
-      email: user.emailConfig.email,
-      lastSync: user.emailConfig.lastSync || null,
-      isConnected: this.parsers.has(userId)
-    };
+      return {
+        connected: user.emailConfig.enabled || false,
+        email: user.emailConfig.email,
+        lastSync: user.emailConfig.lastSync || null,
+        isConnected: this.parsers.has(userId.toString())
+      };
+    });
   }
 }
 
 export default new TransactionScheduler();
-

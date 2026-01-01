@@ -1,7 +1,7 @@
 import crypto from 'crypto';
-import fileDB from '../utils/fileDB.js';
+import Expense from '../models/Expense.js';
 
-export const handleRazorpayWebhook = (req, res) => {
+export const handleRazorpayWebhook = async (req, res) => {
   try {
     const signature = req.headers['x-razorpay-signature'];
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
@@ -31,12 +31,12 @@ export const handleRazorpayWebhook = (req, res) => {
       const userId = payment.notes?.userId || payment.customer_id;
 
       if (userId) {
-        const expense = fileDB.createExpense({
+        const expense = await Expense.create({
           user: userId,
           amount: payment.amount / 100, // Convert paise to rupees
           description: payment.description || `Razorpay Payment - ${payment.id}`,
           category: categorizeByDescription(payment.description || ''),
-          date: new Date(payment.created_at * 1000).toISOString(),
+          date: new Date(payment.created_at * 1000),
           source: 'razorpay',
           autoDetected: true,
           transactionId: payment.id
@@ -53,7 +53,7 @@ export const handleRazorpayWebhook = (req, res) => {
   }
 };
 
-export const handlePaytmWebhook = (req, res) => {
+export const handlePaytmWebhook = async (req, res) => {
   try {
     // Paytm webhook verification (implement based on Paytm's documentation)
     const { ORDERID, TXNID, TXNAMOUNT, STATUS, userId } = req.body;
@@ -61,12 +61,12 @@ export const handlePaytmWebhook = (req, res) => {
     if (STATUS === 'TXN_SUCCESS' && userId) {
       const amount = parseFloat(TXNAMOUNT);
 
-      const expense = fileDB.createExpense({
+      const expense = await Expense.create({
         user: userId,
         amount,
         description: `Paytm Payment - ${ORDERID}`,
-        category: 'others',
-        date: new Date().toISOString(),
+        category: 'Other',
+        date: new Date(),
         source: 'paytm',
         autoDetected: true,
         transactionId: TXNID
@@ -82,7 +82,7 @@ export const handlePaytmWebhook = (req, res) => {
   }
 };
 
-export const handleGenericWebhook = (req, res) => {
+export const handleGenericWebhook = async (req, res) => {
   try {
     const { userId, amount, description, category, date, source } = req.body;
 
@@ -90,12 +90,12 @@ export const handleGenericWebhook = (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const expense = fileDB.createExpense({
+    const expense = await Expense.create({
       user: userId,
       amount: parseFloat(amount),
       description: description || 'Webhook Transaction',
       category: category || categorizeByDescription(description || ''),
-      date: date || new Date().toISOString(),
+      date: date || new Date(),
       source: source || 'webhook',
       autoDetected: true
     });
@@ -112,26 +112,20 @@ function categorizeByDescription(description) {
   const desc = (description || '').toLowerCase();
   
   if (desc.includes('movie') || desc.includes('cinema') || desc.includes('bookmyshow')) {
-    return 'entertainment';
+    return 'Entertainment';
   }
   if (desc.includes('food') || desc.includes('restaurant') || desc.includes('swiggy') || desc.includes('zomato')) {
-    return 'food';
+    return 'Food & Dining';
   }
   if (desc.includes('travel') || desc.includes('cab') || desc.includes('uber') || desc.includes('ola') || desc.includes('makemytrip')) {
-    return 'travel';
+    return 'Travel';
   }
   if (desc.includes('cloth') || desc.includes('fashion') || desc.includes('myntra') || desc.includes('flipkart')) {
-    return 'shopping';
+    return 'Shopping';
   }
   if (desc.includes('grocery') || desc.includes('bigbasket') || desc.includes('bill')) {
-    return 'bills';
+    return 'Bills & Utilities';
   }
   
-  return 'others';
+  return 'Other';
 }
-
-
-
-
-
-

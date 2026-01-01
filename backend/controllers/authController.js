@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import fileDB from '../utils/fileDB.js';
+import User from '../models/User.js';
 import transactionScheduler from '../services/scheduler.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -12,12 +12,12 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'Name and email are required' });
     }
     
-    const existingUser = fileDB.findUserByEmail(email);
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
     
-    const user = fileDB.createUser({ name, email });
+    const user = await User.create({ name, email: email.toLowerCase() });
     const token = jwt.sign({ _id: user._id, email: user.email }, JWT_SECRET);
     
     res.status(201).json({
@@ -39,13 +39,13 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Email is required' });
     }
     
-    let user = fileDB.findUserByEmail(email);
+    let user = await User.findOne({ email: email.toLowerCase() });
     
     // If user doesn't exist and Google token provided, create user
     if (!user && googleAccessToken) {
-      user = fileDB.createUser({ 
+      user = await User.create({ 
         name: email.split('@')[0], 
-        email,
+        email: email.toLowerCase(),
         googleAuth: true 
       });
     }
@@ -57,27 +57,23 @@ export const login = async (req, res) => {
     // If Google OAuth token provided, automatically set up email sync
     if (googleAccessToken && user.email.endsWith('@gmail.com')) {
       try {
-        // Store Google access token for Gmail API access
         const emailConfig = {
           email: user.email,
-          accessToken: googleAccessToken, // Store OAuth token instead of password
+          accessToken: googleAccessToken,
           host: 'imap.gmail.com',
           port: 993,
           enabled: true,
           lastSync: null,
-          authType: 'oauth' // Mark as OAuth authentication
+          authType: 'oauth'
         };
         
-        // Update user with email config
-        fileDB.updateUser(user._id, { emailConfig });
-        
-        // Set up email sync with OAuth token
-        await transactionScheduler.setupUserEmailOAuth(user._id, emailConfig);
+        user.emailConfig = emailConfig;
+        await user.save();
+        await transactionScheduler.setupUserEmailOAuth(user._id.toString(), emailConfig);
         
         console.log(`✅ Auto-configured Gmail sync for user: ${user.email}`);
       } catch (error) {
         console.error('Failed to auto-configure email sync:', error);
-        // Don't fail login if email setup fails
       }
     }
     
@@ -103,18 +99,17 @@ export const googleAuth = async (req, res) => {
       return res.status(400).json({ message: 'Google access token and email are required' });
     }
     
-    let user = fileDB.findUserByEmail(email);
+    let user = await User.findOne({ email: email.toLowerCase() });
     
-    // Create user if doesn't exist
     if (!user) {
-      user = fileDB.createUser({ 
+      user = await User.create({ 
         name: name || email.split('@')[0], 
-        email,
+        email: email.toLowerCase(),
         googleAuth: true 
       });
     } else {
-      // Update existing user
-      fileDB.updateUser(user._id, { googleAuth: true });
+      user.googleAuth = true;
+      await user.save();
     }
     
     // Automatically set up Gmail sync for Gmail users
@@ -130,8 +125,9 @@ export const googleAuth = async (req, res) => {
           authType: 'oauth'
         };
         
-        fileDB.updateUser(user._id, { emailConfig });
-        await transactionScheduler.setupUserEmailOAuth(user._id, emailConfig);
+        user.emailConfig = emailConfig;
+        await user.save();
+        await transactionScheduler.setupUserEmailOAuth(user._id.toString(), emailConfig);
         
         console.log(`✅ Auto-configured Gmail sync for Google user: ${user.email}`);
       } catch (error) {
