@@ -5,6 +5,8 @@ import toast from 'react-hot-toast';
 import Logo from '../components/Logo';
 import Footer from '../components/Footer';
 import Button from '../components/ui/Button';
+// Import logo for background
+import iconSrc from '../assets/logo/icon.png';
 
 const Register = ({ setUser }) => {
   const [formData, setFormData] = useState({
@@ -45,6 +47,18 @@ const Register = ({ setUser }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-app-bg relative overflow-hidden">
+      {/* Background STASH Squirrel Icon - Hero Scale, Dominant Brand Presence */}
+      <div 
+        className="fixed inset-0 w-full h-full pointer-events-none z-0"
+        style={{
+          backgroundImage: `url(${iconSrc})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.25,
+        }}
+      />
+      
       <div className="flex-1 flex items-center justify-center py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="w-full max-w-[440px] space-y-8 animate-fade-in">
           {/* STASH Logo - Bold Brand Presence */}
