@@ -682,7 +682,7 @@ const Dashboard = () => {
               <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Balance</h3>
             </div>
             <div>
-              <p className={`text-4xl font-bold mb-1 tracking-tight ${balance >= 0 ? 'text-highlight-teal' : 'text-red-400'}`}>
+              <p className={`text-4xl font-bold mb-1 tracking-tight ${balance >= 0 ? 'text-highlight-blue' : 'text-red-400'}`}>
                 {formatIncome(balance)}
               </p>
               <p className="text-xs text-text-muted font-normal">{balance >= 0 ? 'Positive' : 'Negative'} balance</p>
@@ -712,7 +712,7 @@ const Dashboard = () => {
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-2xl font-bold text-highlight-teal">{savingsRate}%</span>
+                <span className="text-2xl font-bold text-highlight-blue">{savingsRate}%</span>
               </div>
             </div>
             <p className="text-sm text-slate-400 font-normal">Savings Rate</p>
@@ -930,7 +930,7 @@ const Dashboard = () => {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm text-text-secondary">{percentage.toFixed(1)}%</span>
-                    <span className="text-sm font-bold text-highlight-teal">{formatExpense(item.amount)}</span>
+                    <span className="text-sm font-bold text-highlight-blue">{formatExpense(item.amount)}</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
                     <div
@@ -960,7 +960,7 @@ const Dashboard = () => {
                 </div>
               </div>
               <p className="text-xs text-text-secondary mb-2 font-normal">{item.category}</p>
-              <p className="text-xl font-bold text-highlight-teal mb-3 tracking-tight">{formatExpense(item.amount)}</p>
+              <p className="text-xl font-bold text-highlight-blue mb-3 tracking-tight">{formatExpense(item.amount)}</p>
               <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 transition-all duration-500"
@@ -981,7 +981,7 @@ const Dashboard = () => {
             </div>
             <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Active Budgets</h3>
           </div>
-          <p className="text-3xl font-bold text-highlight-teal tracking-tight">{dashboardData.budgets || 0}</p>
+          <p className="text-3xl font-bold text-highlight-blue tracking-tight">{dashboardData.budgets || 0}</p>
         </div>
         <div className="glass-card rounded-2xl p-6 border border-white/10">
           <div className="flex items-center mb-4">
@@ -990,7 +990,7 @@ const Dashboard = () => {
             </div>
             <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Active Goals</h3>
           </div>
-          <p className="text-3xl font-bold text-highlight-teal tracking-tight">{dashboardData.activeGoals || 0}</p>
+          <p className="text-3xl font-bold text-highlight-blue tracking-tight">{dashboardData.activeGoals || 0}</p>
         </div>
         <div className="glass-card rounded-2xl p-6 border border-white/10">
           <div className="flex items-center mb-4">

@@ -15,7 +15,7 @@ const Button = forwardRef(({
 
   // Variant styles - Brand gradient for primary
   const variantClasses = {
-    primary: 'bg-gradient-to-r from-aqua via-teal to-soft-green text-white hover:from-aqua-400 hover:via-teal-400 hover:to-soft-green-400 hover:shadow-lg hover:shadow-teal/20 active:scale-[0.98]',
+    primary: 'bg-gradient-to-r from-aqua via-teal-blue to-light-green text-white hover:from-aqua-400 hover:via-teal-blue-400 hover:to-light-green-400 hover:shadow-lg hover:shadow-teal-blue/20 active:scale-[0.98]',
     secondary: 'bg-card-bg text-text-primary border border-border hover:bg-card-hover hover:border-border active:scale-[0.98]',
     ghost: 'bg-transparent text-text-secondary hover:bg-card-bg hover:text-text-primary border border-transparent hover:border-border active:scale-[0.98]',
     danger: 'bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/20 active:scale-[0.98]',

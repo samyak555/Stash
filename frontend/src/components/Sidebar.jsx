@@ -68,7 +68,7 @@ const Sidebar = ({ user, setUser }) => {
       <div className="p-6 border-b border-border">
         <Link to="/" className="flex items-center space-x-3">
           <Logo size="small" showText={false} iconOnly={true} />
-            <span className="text-lg font-semibold text-gradient-brand tracking-tight">Stash</span>
+            <span className="text-lg font-semibold text-gradient-brand tracking-tight lowercase">stash</span>
         </Link>
       </div>
 
@@ -83,7 +83,7 @@ const Sidebar = ({ user, setUser }) => {
                 to={item.path}
                 className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? 'bg-gradient-to-r from-aqua/20 via-teal/20 to-soft-green/20 text-teal border border-teal/30'
+                    ? 'bg-teal-blue/10 text-teal-blue border border-teal-blue/30'
                     : 'text-text-secondary hover:text-text-primary hover:bg-card-bg'
                 }`}
               >

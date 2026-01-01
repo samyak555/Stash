@@ -7,22 +7,37 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary accent colors from logo - More Vibrant
-        teal: {
-          DEFAULT: '#2DD4BF',
-          50: '#E6F9F7',
-          100: '#CCF3EF',
-          200: '#99E7DF',
-          300: '#66DBCF',
-          400: '#4FD1C5',
-          500: '#3DB8AD',
-          600: '#2A9F95',
-          700: '#20867D',
-          800: '#156D65',
-          900: '#0B544D',
+        // STASH Logo-Aligned Color System
+        // Primary / Trust (navigation, headers)
+        'deep-blue': {
+          DEFAULT: '#1E3A8A',
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          200: '#BFDBFE',
+          300: '#93C5FD',
+          400: '#60A5FA',
+          500: '#3B82F6',
+          600: '#2563EB',
+          700: '#1D4ED8',
+          800: '#1E3A8A',
+          900: '#1E40AF',
         },
+        'teal-blue': {
+          DEFAULT: '#2563EB',
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          200: '#BFDBFE',
+          300: '#93C5FD',
+          400: '#60A5FA',
+          500: '#3B82F6',
+          600: '#2563EB',
+          700: '#1D4ED8',
+          800: '#1E3A8A',
+          900: '#1E40AF',
+        },
+        // Insight / Intelligence
         aqua: {
-          DEFAULT: '#34E0D1',
+          DEFAULT: '#5EEAD4',
           50: '#E6FBF8',
           100: '#CCF7F1',
           200: '#99EFE3',
@@ -34,18 +49,39 @@ export default {
           800: '#249280',
           900: '#1A7C6A',
         },
+        // Growth / Success
+        'light-green': {
+          DEFAULT: '#6EE7B7',
+          50: '#ECFDF5',
+          100: '#D1FAE5',
+          200: '#A7F3D0',
+          300: '#6EE7B7',
+          400: '#34D399',
+          500: '#10B981',
+          600: '#059669',
+          700: '#047857',
+          800: '#065F46',
+          900: '#064E3B',
+        },
+        'dark-green': {
+          DEFAULT: '#166534',
+          50: '#ECFDF5',
+          100: '#D1FAE5',
+          200: '#A7F3D0',
+          300: '#6EE7B7',
+          400: '#34D399',
+          500: '#10B981',
+          600: '#059669',
+          700: '#047857',
+          800: '#166534',
+          900: '#064E3B',
+        },
+        // Legacy support (map to new colors)
+        teal: {
+          DEFAULT: '#2563EB', // Map to teal-blue
+        },
         'soft-green': {
-          DEFAULT: '#4ADE80',
-          50: '#E6FBF3',
-          100: '#CCF7E7',
-          200: '#99EFCF',
-          300: '#66E7B7',
-          400: '#6EE7B7',
-          500: '#5BD1A0',
-          600: '#48BB89',
-          700: '#3BA572',
-          800: '#2E8F5B',
-          900: '#217944',
+          DEFAULT: '#6EE7B7', // Map to light-green
         },
         // Background system
         'app-bg': '#0E1116',

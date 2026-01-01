@@ -4,15 +4,22 @@
 
 @layer base {
   :root {
-    /* New STASH color system - More Vibrant */
-    --stash-teal: #2DD4BF;
-    --stash-aqua: #34E0D1;
-    --stash-soft-green: #4ADE80;
+    /* STASH Logo-Aligned Color System */
+    /* Primary / Trust */
+    --stash-deep-blue: #1E3A8A;
+    --stash-teal-blue: #2563EB;
+    /* Insight / Intelligence */
+    --stash-aqua: #5EEAD4;
+    /* Growth / Success */
+    --stash-light-green: #6EE7B7;
+    --stash-dark-green: #166534;
+    /* Base UI */
     --stash-app-bg: #0E1116;
     --stash-sidebar-bg: #12161D;
     --stash-card-bg: #181D26;
     --stash-card-hover: #1F2530;
     --stash-border: #2A2F3A;
+    /* Text */
     --stash-text-primary: #E5E7EB;
     --stash-text-secondary: #9CA3AF;
     --stash-text-muted: #6B7280;
@@ -45,7 +52,7 @@
   
   /* Text highlight/glance effects with logo gradient */
   .text-gradient-brand {
-    background: linear-gradient(135deg, var(--stash-aqua) 0%, var(--stash-teal) 50%, var(--stash-soft-green) 100%);
+    background: linear-gradient(135deg, var(--stash-aqua) 0%, var(--stash-teal-blue) 50%, var(--stash-light-green) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -57,23 +64,24 @@
     text-shadow: 0 0 20px rgba(94, 234, 212, 0.3);
   }
   
-  .text-highlight-teal {
-    color: var(--stash-teal);
-    text-shadow: 0 0 20px rgba(79, 209, 197, 0.3);
+  .text-highlight-blue {
+    color: var(--stash-teal-blue);
+    text-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
   }
   
   .text-highlight-green {
-    color: var(--stash-soft-green);
+    color: var(--stash-light-green);
     text-shadow: 0 0 20px rgba(110, 231, 183, 0.3);
   }
   
   /* Glance effect for important text */
   .text-glance {
-    background: linear-gradient(135deg, var(--stash-aqua) 0%, var(--stash-teal) 50%, var(--stash-soft-green) 100%);
+    background: linear-gradient(135deg, var(--stash-aqua) 0%, var(--stash-teal-blue) 50%, var(--stash-light-green) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     animation: glance 3s ease-in-out infinite;
+    display: inline-block;
   }
   
   @keyframes glance {
@@ -89,7 +97,7 @@
   
   /* Mobile touch improvements */
   button, a {
-    -webkit-tap-highlight-color: rgba(79, 209, 197, 0.2);
+    -webkit-tap-highlight-color: rgba(37, 99, 235, 0.2);
     touch-action: manipulation;
   }
   
@@ -219,10 +227,10 @@ input, textarea, select {
 
 input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: var(--stash-teal);
+  border-color: var(--stash-teal-blue);
   box-shadow: 
-    0 0 0 3px rgba(79, 209, 197, 0.1),
-    0 0 20px rgba(79, 209, 197, 0.1);
+    0 0 0 3px rgba(37, 99, 235, 0.1),
+    0 0 20px rgba(37, 99, 235, 0.1);
 }
 
 /* Smooth transitions */
@@ -286,7 +294,7 @@ input:focus, textarea:focus, select:focus {
 
 /* Premium Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, var(--stash-aqua) 0%, var(--stash-teal) 50%, var(--stash-soft-green) 100%);
+  background: linear-gradient(135deg, var(--stash-aqua) 0%, var(--stash-teal-blue) 50%, var(--stash-light-green) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -302,14 +310,14 @@ input:focus, textarea:focus, select:focus {
 }
 
 .text-gradient-teal-aqua {
-  background: linear-gradient(135deg, var(--stash-teal) 0%, var(--stash-aqua) 100%);
+  background: linear-gradient(135deg, var(--stash-teal-blue) 0%, var(--stash-aqua) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .text-gradient-aqua-green {
-  background: linear-gradient(135deg, var(--stash-aqua) 0%, var(--stash-soft-green) 100%);
+  background: linear-gradient(135deg, var(--stash-aqua) 0%, var(--stash-light-green) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -327,18 +335,18 @@ input:focus, textarea:focus, select:focus {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(79, 209, 197, 0.2);
+  background: rgba(37, 99, 235, 0.2);
   border-radius: 3px;
   border: none;
   transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(79, 209, 197, 0.4);
+  background: rgba(37, 99, 235, 0.4);
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(79, 209, 197, 0.2) transparent;
+  scrollbar-color: rgba(37, 99, 235, 0.2) transparent;
 }
