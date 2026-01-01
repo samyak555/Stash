@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
-import Logo from '../components/Logo';
-import Footer from '../components/Footer';
 import Button from '../components/ui/Button';
+// Import logo for background
+import logoSrc from '../assets/logo/logo.png';
 
 const Login = ({ setUser }) => {
   const [formData, setFormData] = useState({
@@ -135,29 +135,47 @@ const Login = ({ setUser }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-app-bg relative overflow-hidden">
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="w-full max-w-[400px] space-y-8 animate-fade-in">
-          {/* STASH Logo - Bold Brand Presence */}
-          <div className="text-center animate-slide-up mb-8">
-            <Logo size="xl" showText={true} iconOnly={false} className="justify-center" />
-          </div>
-          
-          {/* Header */}
-          <div className="text-center animate-slide-up space-y-3">
-            <h1 className="text-4xl sm:text-5xl font-bold text-gradient-brand tracking-tight">
-              Welcome Back
+    <div className="h-screen w-screen overflow-hidden bg-app-bg relative flex items-center justify-center">
+      {/* Large Background Squirrel Logo - Hero Scale, Bold Brand Presence */}
+      <div 
+        className="absolute inset-0 w-full h-full pointer-events-none z-0"
+        style={{
+          backgroundImage: `url(${logoSrc})`,
+          backgroundSize: '90%',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.15,
+          filter: 'blur(1px)',
+        }}
+      />
+
+      {/* Main Content - Centered, Non-Scrollable */}
+      <div className="relative z-10 w-full max-w-[420px] px-4 sm:px-6">
+        <div className="space-y-6">
+          {/* STASH Wordmark - Bold Brand Identity */}
+          <div className="text-center mb-4">
+            <h1 className="text-5xl sm:text-6xl font-black text-gradient-brand tracking-tight uppercase mb-2">
+              STASH
             </h1>
-            <p className="text-text-secondary text-base font-normal">
+            <p className="text-text-secondary text-sm font-medium">
+              Financial Management Platform
+            </p>
+          </div>
+
+          {/* Welcome Header */}
+          <div className="text-center mb-6">
+            <h2 className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight mb-2">
+              Welcome Back
+            </h2>
+            <p className="text-text-secondary text-sm">
               Sign in to continue managing your finances
             </p>
           </div>
           
           {/* Auth Card */}
-          <div className="glass-light p-8 sm:p-10 rounded-2xl space-y-6 animate-scale-in" style={{ animationDelay: '0.1s' }}>
+          <div className="glass-light p-6 sm:p-8 rounded-2xl space-y-5">
             {/* Google Sign-In Button */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <Button
                 type="button"
                 onClick={handleGoogleSignIn}
@@ -183,8 +201,8 @@ const Login = ({ setUser }) => {
               </Button>
 
               {/* Description */}
-              <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-xl p-4">
-                <p className="text-xs text-cyan-300 font-medium mb-2 flex items-center gap-2">
+              <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-xl p-3">
+                <p className="text-xs text-cyan-300 font-medium mb-1 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -207,9 +225,9 @@ const Login = ({ setUser }) => {
             </div>
 
             {/* Email Login Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">
+                <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2 tracking-tight">
                   Email address
                 </label>
                 <input
@@ -217,14 +235,14 @@ const Login = ({ setUser }) => {
                   name="email"
                   type="email"
                   required
-                  className="w-full px-4 py-4 border border-white/10 rounded-xl bg-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
+                  className="w-full px-4 py-3 border border-white/10 rounded-xl bg-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
                   placeholder="you@example.com"
                   value={formData.email}
                   onChange={handleChange}
                 />
               </div>
 
-              <div className="pt-2">
+              <div>
                 <Button
                   type="submit"
                   disabled={loading}
@@ -244,7 +262,7 @@ const Login = ({ setUser }) => {
               </div>
             </form>
 
-            <div className="text-center pt-4 border-t border-white/5">
+            <div className="text-center pt-3 border-t border-white/5">
               <p className="text-sm text-slate-400">
                 Don't have an account?{' '}
                 <Link
@@ -260,11 +278,6 @@ const Login = ({ setUser }) => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="relative z-10 mt-auto">
-        <Footer />
       </div>
     </div>
   );
