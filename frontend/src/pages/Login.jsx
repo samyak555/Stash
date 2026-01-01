@@ -222,18 +222,6 @@ const Login = ({ setUser }) => {
                 {googleLoading ? 'Signing in...' : 'Continue with Google'}
               </Button>
 
-              {/* Description */}
-              <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-xl p-3">
-                <p className="text-xs text-cyan-300 font-medium mb-1 flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Automatic Transaction Sync
-                </p>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  When you sign in with Google, we automatically connect your Gmail to fetch transactions from Paytm, PhonePe, banks, and more. No manual setup required!
-                </p>
-              </div>
             </div>
 
             {/* Divider */}
@@ -308,19 +296,6 @@ const Login = ({ setUser }) => {
           </div>
         </div>
       </div>
-
-      {/* Footer Credit - Fixed at Bottom */}
-      <footer className="sticky bottom-0 left-0 right-0 py-4 text-center bg-app-bg/80 backdrop-blur-sm border-t border-border/50 z-10 mt-auto">
-        <p className="text-text-muted text-xs">
-          Developed by <span className="text-text-secondary font-medium">Samyak Jain</span> –{' '}
-          <a 
-            href="mailto:sam718ind@gmail.com" 
-            className="text-text-secondary hover:text-text-primary transition-colors"
-          >
-            sam718ind@gmail.com
-          </a>
-        </p>
-      </footer>
     </div>
   );
 };
