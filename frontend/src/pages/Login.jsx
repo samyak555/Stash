@@ -136,7 +136,8 @@ const Login = ({ setUser }) => {
   };
 
   return (
-    <div className="min-h-screen h-screen w-screen overflow-y-auto overflow-x-hidden bg-app-bg relative flex items-center justify-center py-8">
+    <div className="min-h-screen h-screen w-screen overflow-y-auto overflow-x-hidden bg-app-bg relative flex flex-col">
+      <div className="flex-1 flex items-center justify-center py-8">
       {/* Background STASH Squirrel Icon - Dominant, Brand-Defining */}
       <div 
         className="fixed inset-0 w-full h-full pointer-events-none z-0"
@@ -308,13 +309,13 @@ const Login = ({ setUser }) => {
         </div>
       </div>
 
-      {/* Footer Credit - Bottom of Page */}
-      <footer className="absolute bottom-0 left-0 right-0 py-6 text-center z-10">
-        <p className="text-text-secondary text-sm">
-          Developed by <span className="text-text-primary font-medium">Samyak Jain</span> –{' '}
+      {/* Footer Credit - Fixed at Bottom */}
+      <footer className="sticky bottom-0 left-0 right-0 py-4 text-center bg-app-bg/80 backdrop-blur-sm border-t border-border/50 z-10 mt-auto">
+        <p className="text-text-muted text-xs">
+          Developed by <span className="text-text-secondary font-medium">Samyak Jain</span> –{' '}
           <a 
             href="mailto:sam718ind@gmail.com" 
-            className="text-aqua hover:text-aqua-400 transition-colors"
+            className="text-text-secondary hover:text-text-primary transition-colors"
           >
             sam718ind@gmail.com
           </a>

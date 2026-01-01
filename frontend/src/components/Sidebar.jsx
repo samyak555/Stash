@@ -118,15 +118,33 @@ const Sidebar = ({ user, setUser }) => {
       {/* User Info & Logout */}
       <div className="p-4 border-t border-border space-y-3">
         <div className="px-4 py-2">
-          <p className="text-xs text-text-muted uppercase tracking-wider mb-1">Account</p>
-          <p className="text-sm font-medium text-text-primary truncate">{user?.name || 'User'}</p>
-          <p className="text-xs text-text-secondary truncate">{user?.email || ''}</p>
+          <p className="text-xs text-text-muted uppercase tracking-wider mb-3">Account</p>
+          <div className="flex items-center space-x-3 mb-2">
+            {/* Avatar Icon or User Image */}
+            {user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user?.name || 'User'}
+                className="w-10 h-10 rounded-full object-cover border border-border flex-shrink-0"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-card-bg border border-border flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-text-primary truncate">{user?.name || 'User'}</p>
+              <p className="text-xs text-text-secondary truncate">{user?.email || ''}</p>
+            </div>
+          </div>
         </div>
         <Button
           onClick={handleLogout}
           variant="danger"
           size="sm"
-          className="w-full justify-start"
+          className="w-full justify-start bg-red-500/10 hover:bg-red-500/15 text-red-400 border border-red-500/20 hover:border-red-500/30"
           leftIcon={<LogoutIcon className="w-4 h-4" />}
         >
           Logout
