@@ -144,17 +144,36 @@ const Login = ({ setUser }) => {
           backgroundSize: 'cover',
           backgroundPosition: 'center 20%',
           backgroundRepeat: 'no-repeat',
-          opacity: 0.25,
+          opacity: 0.22,
         }}
       />
+      
+      {/* Dark overlay for better text contrast */}
+      <div className="fixed inset-0 bg-black/30 pointer-events-none z-[1]" />
+
+      {/* Vignette overlay for text contrast */}
+      <div className="fixed inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40 pointer-events-none z-[5]" />
 
       {/* Main Content - Centered Vertically */}
       <div className="flex-1 flex items-center justify-center relative z-10 px-4 py-8">
         <div className="w-full max-w-[420px]">
           <div className="space-y-6">
             {/* Brand Headline */}
-            <div className="text-center mb-6">
-              <h1 className="text-4xl sm:text-5xl font-bold text-gradient-brand tracking-tight">
+            <div className="text-center mb-6 relative">
+              {/* Subtle glow backdrop */}
+              <div className="absolute inset-0 blur-2xl opacity-30" style={{
+                background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.3) 0%, rgba(94, 234, 212, 0.3) 50%, rgba(110, 231, 183, 0.3) 100%)',
+                transform: 'scale(1.2)',
+              }} />
+              <h1 className="relative text-5xl sm:text-6xl font-bold tracking-tight" style={{
+                background: 'linear-gradient(135deg, #2563EB 0%, #3B82F6 25%, #5EEAD4 50%, #6EE7B7 75%, #34D399 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                textShadow: '0 0 40px rgba(94, 234, 212, 0.2), 0 0 20px rgba(37, 99, 235, 0.15)',
+                filter: 'drop-shadow(0 2px 8px rgba(94, 234, 212, 0.1))',
+                letterSpacing: '-0.03em',
+              }}>
                 Stash
               </h1>
             </div>
@@ -252,9 +271,30 @@ const Login = ({ setUser }) => {
           </div>
 
           {/* Tagline - Below Login Card */}
-          <div className="text-center mt-6">
-            <p className="text-aqua text-base font-medium tracking-wide">
-              Secure. Grow. Succeed.
+          <div className="text-center mt-6 relative">
+            {/* Subtle glow backdrop for tagline */}
+            <div className="absolute inset-0 blur-xl opacity-20" style={{
+              background: 'radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, rgba(110, 231, 183, 0.2) 50%, rgba(94, 234, 212, 0.2) 100%)',
+              transform: 'scale(1.5)',
+            }} />
+            <p className="relative text-base font-semibold" style={{ letterSpacing: '0.15em' }}>
+              <span style={{
+                color: '#2563EB',
+                textShadow: '0 0 20px rgba(37, 99, 235, 0.3), 0 0 10px rgba(37, 99, 235, 0.2)',
+                filter: 'drop-shadow(0 1px 4px rgba(37, 99, 235, 0.15))',
+              }}>Secure</span>
+              <span className="text-slate-400 mx-2">.</span>
+              <span style={{
+                color: '#6EE7B7',
+                textShadow: '0 0 20px rgba(110, 231, 183, 0.3), 0 0 10px rgba(110, 231, 183, 0.2)',
+                filter: 'drop-shadow(0 1px 4px rgba(110, 231, 183, 0.15))',
+              }}>Grow</span>
+              <span className="text-slate-400 mx-2">.</span>
+              <span style={{
+                color: '#5EEAD4',
+                textShadow: '0 0 20px rgba(94, 234, 212, 0.3), 0 0 10px rgba(94, 234, 212, 0.2)',
+                filter: 'drop-shadow(0 1px 4px rgba(94, 234, 212, 0.15))',
+              }}>Succeed</span>
             </p>
           </div>
         </div>
