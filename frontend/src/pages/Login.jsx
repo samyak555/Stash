@@ -255,11 +255,11 @@ const Login = ({ setUser }) => {
 
       {/* Footer Credit - Absolute Bottom */}
       <footer className="absolute bottom-0 left-0 right-0 py-4 text-center z-10">
-        <p className="text-text-muted text-xs">
-          Developed by <span className="text-text-secondary font-medium">Samyak Jain</span> –{' '}
+        <p className="text-aqua text-xs">
+          Developed by <span className="text-aqua font-medium">Samyak Jain</span> –{' '}
           <a 
             href="mailto:sam718ind@gmail.com" 
-            className="text-text-secondary hover:text-text-primary transition-colors"
+            className="text-aqua hover:text-aqua-400 transition-colors"
           >
             sam718ind@gmail.com
           </a>
