@@ -45,20 +45,13 @@ const Register = ({ setUser }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-app-bg relative overflow-hidden">
-      {/* Full Page Logo Background Watermark - Subtle, non-intrusive */}
-      <div 
-        className="fixed inset-0 w-full h-full pointer-events-none z-0"
-        style={{
-          backgroundImage: 'url(/logo.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          opacity: 0.04,
-          filter: 'blur(2px) grayscale(100%) brightness(0.3)',
-        }}
-      />
       <div className="flex-1 flex items-center justify-center py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="w-full max-w-[440px] space-y-8 animate-fade-in">
+          {/* STASH Logo - Bold Brand Presence */}
+          <div className="text-center animate-slide-up mb-8">
+            <Logo size="xl" showText={true} iconOnly={false} className="justify-center" />
+          </div>
+          
           {/* Header */}
           <div className="text-center animate-slide-up space-y-3">
             <h1 className="text-4xl sm:text-5xl font-bold text-gradient-brand tracking-tight">

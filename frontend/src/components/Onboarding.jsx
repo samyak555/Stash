@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { incomeAPI, expenseAPI, goalAPI } from '../services/api';
 import Button from './ui/Button';
+import Logo from './Logo';
 import toast from 'react-hot-toast';
 
 const Onboarding = ({ onComplete }) => {
@@ -113,6 +114,11 @@ const Onboarding = ({ onComplete }) => {
   return (
     <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* STASH Logo - Bold Brand Presence */}
+        <div className="text-center mb-8">
+          <Logo size="xl" showText={true} iconOnly={false} className="justify-center" />
+        </div>
+        
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">

@@ -5,8 +5,6 @@ import toast from 'react-hot-toast';
 import Logo from '../components/Logo';
 import Footer from '../components/Footer';
 import Button from '../components/ui/Button';
-// Import logo for background watermark
-import logoSrc from '../assets/logo/logo.png';
 
 const Login = ({ setUser }) => {
   const [formData, setFormData] = useState({
@@ -138,27 +136,20 @@ const Login = ({ setUser }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-app-bg relative overflow-hidden">
-      {/* STASH Logo Background Watermark - Subtle brand presence */}
-      <div 
-        className="fixed inset-0 w-full h-full pointer-events-none z-0"
-        style={{
-          backgroundImage: `url(${logoSrc})`,
-          backgroundSize: '80%',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          opacity: 0.03,
-          filter: 'blur(3px) grayscale(100%) brightness(0.2)',
-        }}
-      />
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="w-full max-w-[400px] space-y-8 animate-fade-in">
+          {/* STASH Logo - Bold Brand Presence */}
+          <div className="text-center animate-slide-up mb-8">
+            <Logo size="xl" showText={true} iconOnly={false} className="justify-center" />
+          </div>
+          
           {/* Header */}
           <div className="text-center animate-slide-up space-y-3">
-            <h1 className="text-4xl sm:text-5xl font-bold gradient-text tracking-tight">
+            <h1 className="text-4xl sm:text-5xl font-bold text-gradient-brand tracking-tight">
               Welcome Back
             </h1>
-            <p className="text-slate-400 text-base font-normal">
+            <p className="text-text-secondary text-base font-normal">
               Sign in to continue managing your finances
             </p>
           </div>

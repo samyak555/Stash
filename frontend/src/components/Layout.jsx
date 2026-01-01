@@ -24,19 +24,6 @@ const Layout = ({ children, user, setUser }) => {
 
   return (
     <div className="min-h-screen bg-app-bg relative flex">
-      {/* Full Page Logo Background Watermark - Subtle, non-intrusive */}
-      <div 
-        className="fixed inset-0 w-full h-full pointer-events-none z-0"
-        style={{
-          backgroundImage: 'url(/logo.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          opacity: 0.04,
-          filter: 'blur(2px) grayscale(100%) brightness(0.3)',
-        }}
-      />
-      
       {/* Left Sidebar */}
       <Sidebar user={user} setUser={setUser} />
 
