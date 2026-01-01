@@ -251,19 +251,6 @@ const Login = ({ setUser }) => {
                   </Link>
                 </p>
               </div>
-
-              {/* Footer Credit - Below Sign In Button */}
-              <div className="text-center pt-4">
-                <p className="text-text-muted text-xs">
-                  Developed by <span className="text-text-secondary font-medium">Samyak Jain</span> –{' '}
-                  <a 
-                    href="mailto:sam718ind@gmail.com" 
-                    className="text-text-secondary hover:text-text-primary transition-colors"
-                  >
-                    sam718ind@gmail.com
-                  </a>
-                </p>
-              </div>
             </div>
           </div>
         </div>
