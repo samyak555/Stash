@@ -152,14 +152,11 @@ const Login = ({ setUser }) => {
       <div className="flex-1 flex items-center justify-center relative z-10 px-4 py-8">
         <div className="w-full max-w-[420px]">
           <div className="space-y-6">
-            {/* Welcome Header */}
+            {/* Brand Headline */}
             <div className="text-center mb-6">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gradient-brand tracking-tight mb-2">
-                Welcome Back
-              </h2>
-              <p className="text-text-secondary text-sm">
-                Sign in to continue managing your finances
-              </p>
+              <h1 className="text-4xl sm:text-5xl font-bold text-gradient-brand tracking-tight">
+                Stash
+              </h1>
             </div>
             
             {/* Auth Card */}
