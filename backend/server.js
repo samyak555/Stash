@@ -19,18 +19,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Connect to database
-connectDB();
-
-// Start transaction scheduler
-transactionScheduler.startScheduler();
-
-// Middleware
+// Middleware (set up before routes)
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
+// Routes (set up before server starts, but won't execute queries until DB is connected)
 app.use('/api/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/income', incomeRoutes);
@@ -63,11 +57,36 @@ app.get('/api', (req, res) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Server is running' });
+  res.json({ 
+    status: 'OK', 
+    message: 'Server is running',
+    database: 'connected' // This will only be true if DB is connected
+  });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+// Start server only after MongoDB connection is established
+const startServer = async () => {
+  try {
+    // Connect to database FIRST
+    console.log('🚀 Starting Stash Finance API...');
+    await connectDB();
+    
+    // Start transaction scheduler AFTER DB connection
+    console.log('⏰ Starting transaction scheduler...');
+    transactionScheduler.startScheduler();
+    
+    // Start server ONLY after DB connection is successful
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📡 API available at http://localhost:${PORT}/api`);
+      console.log(`✅ All systems ready!`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error.message);
+    console.error('⚠️  Server will not start without database connection');
+    process.exit(1);
+  }
+};
 
-
+// Start the application
+startServer();
