@@ -141,21 +141,20 @@ const Login = ({ setUser }) => {
         className="absolute inset-0 w-full h-full pointer-events-none z-0"
         style={{
           backgroundImage: `url(${logoSrc})`,
-          backgroundSize: '90%',
+          backgroundSize: '110%',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           opacity: 0.15,
-          filter: 'blur(1px)',
         }}
       />
 
       {/* Main Content - Centered, Non-Scrollable */}
       <div className="relative z-10 w-full max-w-[420px] px-4 sm:px-6">
         <div className="space-y-6">
-          {/* STASH Wordmark - Bold Brand Identity */}
+          {/* Stash Wordmark - Refined Brand Identity */}
           <div className="text-center mb-4">
-            <h1 className="text-5xl sm:text-6xl font-black text-gradient-brand tracking-tight uppercase mb-2">
-              STASH
+            <h1 className="text-5xl sm:text-6xl font-bold text-gradient-brand tracking-tight mb-2">
+              Stash
             </h1>
             <p className="text-text-secondary text-sm font-medium">
               Financial Management Platform
@@ -164,7 +163,7 @@ const Login = ({ setUser }) => {
 
           {/* Welcome Header */}
           <div className="text-center mb-6">
-            <h2 className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight mb-2">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gradient-brand tracking-tight mb-2">
               Welcome Back
             </h2>
             <p className="text-text-secondary text-sm">
@@ -276,6 +275,13 @@ const Login = ({ setUser }) => {
                 </Link>
               </p>
             </div>
+          </div>
+
+          {/* Tagline - Below Login Container */}
+          <div className="text-center mt-6 pt-4">
+            <p className="text-text-secondary text-sm font-medium tracking-wide">
+              Secure, Grow, Succeed.
+            </p>
           </div>
         </div>
       </div>
