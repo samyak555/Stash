@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import Button from '../components/ui/Button';
-import Logo from '../components/Logo';
-// Import logo for main hero icon
+// Import logo for background
 import iconSrc from '../assets/logo/icon.png';
 
 const Login = ({ setUser }) => {
@@ -136,68 +135,36 @@ const Login = ({ setUser }) => {
   };
 
   return (
-    <div className="min-h-screen h-screen w-screen overflow-y-auto overflow-x-hidden bg-app-bg relative flex flex-col">
-      <div className="flex-1 flex items-center justify-center py-8">
-      {/* Background STASH Squirrel Icon - Dominant, Brand-Defining */}
+    <div className="h-screen w-screen overflow-hidden bg-app-bg relative flex flex-col">
+      {/* Background STASH Squirrel Icon - Responsive, Viewport-Based */}
       <div 
         className="fixed inset-0 w-full h-full pointer-events-none z-0"
         style={{
           backgroundImage: `url(${iconSrc})`,
-          backgroundSize: '85%',
+          backgroundSize: 'min(85vw, 85vh)',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           opacity: 0.15,
         }}
       />
 
-      {/* Main Content - Centered */}
-      <div className="relative z-10 w-full max-w-[420px] px-4 sm:px-6">
-        <div className="space-y-6">
-          {/* Main STASH Icon - Hero Scale, Primary Visual Element */}
-          <div className="text-center mb-6">
-            <div className="flex justify-center mb-4">
-              <img
-                src={iconSrc}
-                alt="Stash"
-                className="w-32 h-32 sm:w-40 sm:h-40 object-contain"
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  borderRadius: '0',
-                  boxShadow: 'none',
-                  outline: 'none',
-                  padding: '0',
-                  margin: '0',
-                  display: 'block'
-                }}
-              />
+      {/* Main Content - Centered Vertically */}
+      <div className="flex-1 flex items-center justify-center relative z-10 px-4 py-8">
+        <div className="w-full max-w-[420px]">
+          <div className="space-y-6">
+            {/* Welcome Header */}
+            <div className="text-center mb-6">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gradient-brand tracking-tight mb-2">
+                Welcome Back
+              </h2>
+              <p className="text-text-secondary text-sm">
+                Sign in to continue managing your finances
+              </p>
             </div>
-          </div>
-
-          {/* Stash Wordmark - Refined Brand Identity */}
-          <div className="text-center mb-4">
-            <h1 className="text-4xl sm:text-5xl font-bold text-gradient-brand tracking-tight mb-2">
-              <span className="text-5xl sm:text-6xl">S</span><span className="text-5xl sm:text-6xl">tash</span>
-            </h1>
-            <p className="text-text-secondary text-sm font-medium">
-              Financial Management Platform
-            </p>
-          </div>
-
-          {/* Welcome Header */}
-          <div className="text-center mb-6">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gradient-brand tracking-tight mb-2">
-              Welcome Back
-            </h2>
-            <p className="text-text-secondary text-sm">
-              Sign in to continue managing your finances
-            </p>
-          </div>
-          
-          {/* Auth Card */}
-          <div className="glass-light p-6 sm:p-8 rounded-2xl space-y-5">
-            {/* Google Sign-In Button */}
-            <div className="space-y-3">
+            
+            {/* Auth Card */}
+            <div className="glass-light p-6 sm:p-8 rounded-2xl space-y-5">
+              {/* Google Sign-In Button */}
               <Button
                 type="button"
                 onClick={handleGoogleSignIn}
@@ -222,93 +189,98 @@ const Login = ({ setUser }) => {
                 {googleLoading ? 'Signing in...' : 'Continue with Google'}
               </Button>
 
-            </div>
-
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-transparent text-slate-500">Or continue with email</span>
-              </div>
-            </div>
-
-            {/* Email Login Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2 tracking-tight">
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="w-full px-4 py-3 border border-white/10 rounded-xl bg-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-transparent text-slate-500">Or continue with email</span>
+                </div>
               </div>
 
-              <div>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  variant="primary"
-                  className="w-full"
-                  leftIcon={
-                    loading ? (
-                      <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    ) : null
-                  }
-                >
-                  {loading ? 'Signing in...' : 'Sign in'}
-                </Button>
+              {/* Email Login Form */}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2 tracking-tight">
+                    Email address
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    className="w-full px-4 py-3 border border-white/10 rounded-xl bg-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
+                    placeholder="you@example.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    variant="primary"
+                    className="w-full"
+                    leftIcon={
+                      loading ? (
+                        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      ) : null
+                    }
+                  >
+                    {loading ? 'Signing in...' : 'Sign in'}
+                  </Button>
+                </div>
+              </form>
+
+              <div className="text-center pt-3 border-t border-white/5">
+                <p className="text-sm text-slate-400">
+                  Don't have an account?{' '}
+                  <Link
+                    to="/register"
+                    className="font-medium text-gradient-brand hover:opacity-80 transition-opacity inline-flex items-center"
+                  >
+                    Sign up
+                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                </p>
               </div>
-            </form>
 
-            {/* Footer Credit - Below Sign In Button */}
-            <div className="text-center pt-4">
-              <p className="text-text-muted text-xs">
-                Developed by <span className="text-text-secondary font-medium">Samyak Jain</span> –{' '}
-                <a 
-                  href="mailto:sam718ind@gmail.com" 
-                  className="text-text-secondary hover:text-text-primary transition-colors"
-                >
-                  sam718ind@gmail.com
-                </a>
-              </p>
+              {/* Footer Credit - Below Sign In Button */}
+              <div className="text-center pt-4">
+                <p className="text-text-muted text-xs">
+                  Developed by <span className="text-text-secondary font-medium">Samyak Jain</span> –{' '}
+                  <a 
+                    href="mailto:sam718ind@gmail.com" 
+                    className="text-text-secondary hover:text-text-primary transition-colors"
+                  >
+                    sam718ind@gmail.com
+                  </a>
+                </p>
+              </div>
             </div>
-
-            <div className="text-center pt-3 border-t border-white/5">
-              <p className="text-sm text-slate-400">
-                Don't have an account?{' '}
-                <Link
-                  to="/register"
-                  className="font-medium text-gradient-brand hover:opacity-80 transition-opacity inline-flex items-center"
-                >
-                  Sign up
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </p>
-            </div>
-          </div>
-
-          {/* Tagline - Below Login Container */}
-          <div className="text-center mt-6 pt-4">
-            <p className="text-light-green text-base font-medium tracking-wide">
-              Secure, Grow, Succeed.
-            </p>
           </div>
         </div>
       </div>
+
+      {/* Footer Credit - Absolute Bottom */}
+      <footer className="absolute bottom-0 left-0 right-0 py-4 text-center z-10">
+        <p className="text-text-muted text-xs">
+          Developed by <span className="text-text-secondary font-medium">Samyak Jain</span> –{' '}
+          <a 
+            href="mailto:sam718ind@gmail.com" 
+            className="text-text-secondary hover:text-text-primary transition-colors"
+          >
+            sam718ind@gmail.com
+          </a>
+        </p>
+      </footer>
     </div>
   );
 };
