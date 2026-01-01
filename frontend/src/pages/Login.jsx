@@ -3,8 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import Button from '../components/ui/Button';
-// Import logo for background
-import logoSrc from '../assets/logo/logo.png';
+import Logo from '../components/Logo';
+// Import logo for main hero icon
+import iconSrc from '../assets/logo/icon.png';
 
 const Login = ({ setUser }) => {
   const [formData, setFormData] = useState({
@@ -136,25 +137,34 @@ const Login = ({ setUser }) => {
 
   return (
     <div className="min-h-screen h-screen w-screen overflow-y-auto overflow-x-hidden bg-app-bg relative flex items-center justify-center py-8">
-      {/* Large Background Squirrel Logo - Hero Scale, Bold Brand Presence */}
-      <div 
-        className="absolute inset-0 w-full h-full pointer-events-none z-0"
-        style={{
-          backgroundImage: `url(${logoSrc})`,
-          backgroundSize: '100%',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          opacity: 0.15,
-        }}
-      />
-
-      {/* Main Content - Centered, Non-Scrollable */}
+      {/* Main Content - Centered */}
       <div className="relative z-10 w-full max-w-[420px] px-4 sm:px-6">
         <div className="space-y-6">
+          {/* Main STASH Icon - Hero Scale, Primary Visual Element */}
+          <div className="text-center mb-6">
+            <div className="flex justify-center mb-4">
+              <img
+                src={iconSrc}
+                alt="Stash"
+                className="w-32 h-32 sm:w-40 sm:h-40 object-contain"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: '0',
+                  boxShadow: 'none',
+                  outline: 'none',
+                  padding: '0',
+                  margin: '0',
+                  display: 'block'
+                }}
+              />
+            </div>
+          </div>
+
           {/* Stash Wordmark - Refined Brand Identity */}
           <div className="text-center mb-4">
             <h1 className="text-4xl sm:text-5xl font-bold text-gradient-brand tracking-tight mb-2">
-              <span className="text-5xl sm:text-6xl">S</span>tash
+              <span className="text-5xl sm:text-6xl">S</span><span className="text-5xl sm:text-6xl">tash</span>
             </h1>
             <p className="text-text-secondary text-sm font-medium">
               Financial Management Platform
@@ -279,7 +289,7 @@ const Login = ({ setUser }) => {
 
           {/* Tagline - Below Login Container */}
           <div className="text-center mt-6 pt-4">
-            <p className="text-text-secondary text-sm font-medium tracking-wide">
+            <p className="text-light-green text-base font-medium tracking-wide">
               Secure, Grow, Succeed.
             </p>
           </div>

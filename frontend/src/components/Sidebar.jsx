@@ -64,13 +64,10 @@ const Sidebar = ({ user, setUser }) => {
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-60 bg-sidebar-bg border-r border-border flex flex-col z-50">
-      {/* STASH Logo Section - Professional Brand Area */}
+      {/* STASH Logo Section - Clean Professional Brand Area */}
       <div className="p-6 border-b border-border bg-gradient-to-br from-sidebar-bg to-card-bg">
-        <Link to="/" className="flex flex-col items-center space-y-3 group">
-          <Logo size="large" showText={true} iconOnly={false} className="justify-center" />
-          <div className="text-center">
-            <p className="text-xs text-text-muted uppercase tracking-widest font-medium">Financial Management</p>
-          </div>
+        <Link to="/" className="flex items-center justify-center h-full w-full">
+          <Logo size="large" showText={false} iconOnly={true} className="justify-center" />
         </Link>
       </div>
 
