@@ -5,6 +5,8 @@ import toast from 'react-hot-toast';
 import Logo from '../components/Logo';
 import Footer from '../components/Footer';
 import Button from '../components/ui/Button';
+// Import logo for background watermark
+import logoSrc from '../assets/logo/logo.png';
 
 const Login = ({ setUser }) => {
   const [formData, setFormData] = useState({
@@ -136,16 +138,16 @@ const Login = ({ setUser }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-app-bg relative overflow-hidden">
-      {/* Full Page Logo Background Watermark - Subtle, non-intrusive */}
+      {/* STASH Logo Background Watermark - Subtle brand presence */}
       <div 
         className="fixed inset-0 w-full h-full pointer-events-none z-0"
         style={{
-          backgroundImage: 'url(/logo.png)',
-          backgroundSize: 'cover',
+          backgroundImage: `url(${logoSrc})`,
+          backgroundSize: '80%',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          opacity: 0.04,
-          filter: 'blur(2px) grayscale(100%) brightness(0.3)',
+          opacity: 0.03,
+          filter: 'blur(3px) grayscale(100%) brightness(0.2)',
         }}
       />
       {/* Main Content */}
