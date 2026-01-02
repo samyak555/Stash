@@ -3,6 +3,8 @@ import User from '../models/User.js';
 /**
  * Clear all users from database (Admin only)
  * WARNING: This is irreversible!
+ * 
+ * Endpoint: DELETE /api/admin/users
  */
 export const clearAllUsers = async (req, res) => {
   try {
@@ -19,15 +21,19 @@ export const clearAllUsers = async (req, res) => {
     // Delete all users
     const result = await User.deleteMany({});
 
-    console.log(`✅ Admin cleared database: Deleted ${result.deletedCount} users`);
+    console.log(`✅ Admin ${req.userId} cleared database: Deleted ${result.deletedCount} users`);
 
     res.json({ 
+      success: true,
       message: `Successfully deleted ${result.deletedCount} users from database`,
       deletedCount: result.deletedCount 
     });
   } catch (error) {
     console.error('Error clearing database:', error.message);
-    res.status(500).json({ message: 'Failed to clear database' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to clear database' 
+    });
   }
 };
 
