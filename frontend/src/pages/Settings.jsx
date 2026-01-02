@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { transactionAPI } from '../services/api';
+import { transactionAPI, userAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import Button from '../components/ui/Button';
 
@@ -12,10 +12,100 @@ const Settings = () => {
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState(null);
+  
+  // Profile editing state
+  const [profile, setProfile] = useState({
+    name: '',
+    age: '',
+    profession: '',
+  });
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
     loadSyncStatus();
+    loadProfile();
+    checkGuestMode();
   }, []);
+
+  const checkGuestMode = () => {
+    const guestStatus = localStorage.getItem('isGuest') === 'true';
+    setIsGuest(guestStatus);
+  };
+
+  const loadProfile = async () => {
+    try {
+      const response = await userAPI.getProfile();
+      const userData = response.data;
+      setProfile({
+        name: userData.name || '',
+        age: userData.age || '',
+        profession: userData.profession || '',
+      });
+    } catch (error) {
+      console.error('Failed to load profile:', error);
+      // Fallback to localStorage
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          setProfile({
+            name: userData.name || '',
+            age: userData.age || '',
+            profession: userData.profession || '',
+          });
+        } catch (e) {
+          console.error('Failed to parse user data:', e);
+        }
+      }
+    }
+  };
+
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault();
+    setProfileLoading(true);
+
+    try {
+      const updateData = {
+        name: profile.name.trim(),
+      };
+      
+      if (profile.age) {
+        const ageNum = parseInt(profile.age);
+        if (isNaN(ageNum) || ageNum < 13 || ageNum > 100) {
+          toast.error('Age must be between 13 and 100');
+          setProfileLoading(false);
+          return;
+        }
+        updateData.age = ageNum;
+      }
+      
+      if (profile.profession) {
+        updateData.profession = profile.profession.trim();
+      }
+
+      await userAPI.updateProfile(updateData);
+      
+      // Update localStorage
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          const updatedUser = { ...userData, ...updateData };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        } catch (e) {
+          console.error('Failed to update localStorage:', e);
+        }
+      }
+      
+      toast.success('Profile updated successfully!');
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      toast.error(error.response?.data?.message || 'Failed to update profile');
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   const loadSyncStatus = async () => {
     try {
@@ -93,6 +183,72 @@ const Settings = () => {
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight">Settings</h1>
         <p className="text-slate-400 text-lg font-normal">Manage your account and transaction sync settings</p>
       </div>
+
+      {/* Profile Settings - Only for authenticated users */}
+      {!isGuest && (
+        <div className="glass-card p-8 rounded-2xl border border-white/10">
+          <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Profile Settings</h2>
+          <form onSubmit={handleProfileUpdate} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={profile.name}
+                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                placeholder="Enter your full name"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:bg-white/8 transition-all focus:border-cyan-400/50"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Age
+              </label>
+              <input
+                type="number"
+                min="13"
+                max="100"
+                value={profile.age}
+                onChange={(e) => setProfile({ ...profile, age: e.target.value })}
+                placeholder="Enter your age"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:bg-white/8 transition-all focus:border-cyan-400/50"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Profession
+              </label>
+              <select
+                value={profile.profession}
+                onChange={(e) => setProfile({ ...profile, profession: e.target.value })}
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:bg-white/8 transition-all focus:border-cyan-400/50"
+              >
+                <option value="">Select profession</option>
+                <option value="Student">Student</option>
+                <option value="Salaried">Salaried</option>
+                <option value="Business">Business</option>
+                <option value="Freelancer">Freelancer</option>
+                <option value="Homemaker">Homemaker</option>
+                <option value="Retired">Retired</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={profileLoading}
+              className="w-full"
+            >
+              {profileLoading ? 'Saving...' : 'Update Profile'}
+            </Button>
+          </form>
+        </div>
+      )}
 
       {/* Auto-Fetch Transactions Card */}
       <div className="glass-card p-8 sm:p-10 rounded-2xl border border-white/10">

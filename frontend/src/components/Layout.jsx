@@ -3,6 +3,7 @@ import Sidebar from './Sidebar';
 import Onboarding from './Onboarding';
 import FirstTimeOnboarding from './FirstTimeOnboarding';
 import GuestUpgradeBanner from './GuestUpgradeBanner';
+import { useGuestMode } from '../hooks/useGuestMode';
 
 const Layout = ({ children, user, setUser }) => {
   const [showFirstTimeOnboarding, setShowFirstTimeOnboarding] = useState(false);
