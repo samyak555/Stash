@@ -123,8 +123,11 @@ export const verifySMTPConnection = async () => {
   }
 };
 
-// Initialize transporter on module load
-transporter = initializeTransporter().catch((error) => {
+// Initialize transporter on module load (async, non-blocking)
+// Verification will happen on server startup via verifySMTPConnection()
+initializeTransporter().then((trans) => {
+  transporter = trans;
+}).catch((error) => {
   console.error('Failed to initialize email transporter:', error.message);
   transporter = null;
 });
