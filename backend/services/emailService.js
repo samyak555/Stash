@@ -28,7 +28,7 @@ const initializeTransporter = () => {
     throw new Error('EMAIL_USER and EMAIL_PASS environment variables are required');
   }
 
-  // Create transporter
+  // Create transporter with improved configuration for Render
   transporter = nodemailer.createTransport({
     host: emailHost,
     port: emailPort,
@@ -38,12 +38,18 @@ const initializeTransporter = () => {
       user: emailUser,
       pass: emailPass,
     },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
+    connectionTimeout: 30000, // Increased to 30 seconds for Render
+    greetingTimeout: 30000,
+    socketTimeout: 30000,
     tls: {
-      rejectUnauthorized: false,
+      rejectUnauthorized: false, // Allow self-signed certificates
+      ciphers: 'SSLv3', // Use SSLv3 for compatibility
     },
+    pool: true, // Use connection pooling
+    maxConnections: 1,
+    maxMessages: 3,
+    logger: false, // Disable verbose logging
+    debug: false,
   });
 
   return transporter;
@@ -186,18 +192,35 @@ export const verifyEmailService = async () => {
       };
     }
 
-    // Verify SMTP connection
-    await mailTransporter.verify();
-    console.log('✅ Email service verified successfully');
-    return {
-      success: true,
-      details: {
-        EMAIL_HOST: emailHost,
-        EMAIL_PORT: emailPort,
-        EMAIL_USER: emailUser,
-        EMAIL_FROM: process.env.EMAIL_FROM || emailUser,
-      },
-    };
+    // Verify SMTP connection with retry logic
+    let lastError = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        console.log(`Attempting SMTP verification (attempt ${attempt}/3)...`);
+        await mailTransporter.verify();
+        console.log('✅ Email service verified successfully');
+        return {
+          success: true,
+          details: {
+            EMAIL_HOST: emailHost,
+            EMAIL_PORT: emailPort,
+            EMAIL_USER: emailUser,
+            EMAIL_FROM: process.env.EMAIL_FROM || emailUser,
+            attempts: attempt,
+          },
+        };
+      } catch (verifyError) {
+        lastError = verifyError;
+        console.error(`Attempt ${attempt} failed:`, verifyError.message);
+        if (attempt < 3) {
+          // Wait before retry (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+        }
+      }
+    }
+
+    // All attempts failed
+    throw lastError;
   } catch (error) {
     console.error('❌ Email service verification failed:', error.message);
     console.error('   Error code:', error.code);
@@ -212,19 +235,29 @@ export const verifyEmailService = async () => {
         issue: 'Authentication failed',
         solution: 'Verify EMAIL_PASS is a Gmail App Password (16 characters), not regular password',
         help: 'Get App Password: https://myaccount.google.com/apppasswords',
+        errorCode: error.code,
       };
-    } else if (error.code === 'ECONNECTION' || error.code === 'ETIMEDOUT') {
-      errorMessage = 'SMTP connection failed - check EMAIL_HOST and EMAIL_PORT';
+    } else if (error.code === 'ECONNECTION' || error.code === 'ETIMEDOUT' || error.code === 'ESOCKET') {
+      errorMessage = 'SMTP connection failed - network or firewall issue';
       errorDetails = {
         issue: 'Connection failed',
-        solution: 'Verify network connectivity to smtp.gmail.com:587',
+        solution: 'This may be a temporary network issue. Try again in a few minutes.',
+        troubleshooting: [
+          'Check if Gmail is blocking connections from Render',
+          'Verify Render service is not in sleep mode',
+          'Try using port 465 with secure: true instead',
+          'Check Render logs for more details',
+        ],
         EMAIL_HOST: process.env.EMAIL_HOST || 'smtp.gmail.com',
         EMAIL_PORT: process.env.EMAIL_PORT || '587',
+        errorCode: error.code,
+        errorMessage: error.message,
       };
     } else {
       errorDetails = {
         errorCode: error.code,
         errorMessage: error.message,
+        fullError: error.toString(),
       };
     }
 
