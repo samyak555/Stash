@@ -52,7 +52,7 @@ export const authAPI = {
   resendVerification: (email) => api.post('/auth/resend-verification', { email }),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
-  googleAuth: (idToken) => api.post('/auth/google', { idToken }),
+  googleAuth: (data) => api.post('/auth/google', data), // Accepts { idToken } or { code }
 };
 
 export const expenseAPI = {
