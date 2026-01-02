@@ -45,18 +45,20 @@ const Register = ({ setUser }) => {
       ...formData,
       [name]: value,
     });
-    // Clear error when user starts typing (but don't validate on keystroke)
+    // Clear error when user starts typing (no validation on keystroke)
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    // Normalize password values with trim
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Normalize password values with trim() before comparison
     const password = formData.password ? formData.password.trim() : '';
     const confirmPassword = formData.confirmPassword ? formData.confirmPassword.trim() : '';
+    
+    const newErrors = {};
 
     // Password validation
     if (!password) {
@@ -68,7 +70,7 @@ const Register = ({ setUser }) => {
       }
     }
 
-    // Confirm password validation (only on submit)
+    // Confirm password validation - ONLY in submit handler
     if (!confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
     } else if (password !== confirmPassword) {
@@ -88,14 +90,9 @@ const Register = ({ setUser }) => {
       newErrors.profession = 'Profession is required';
     }
 
+    // Set errors and block submission if any errors exist
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
+    if (Object.keys(newErrors).length > 0) {
       toast.error('Please fix the errors in the form');
       return;
     }
@@ -103,8 +100,8 @@ const Register = ({ setUser }) => {
     setLoading(true);
 
     try {
-      // Don't send confirmPassword to backend
-      const { confirmPassword, ...submitData } = formData;
+      // Don't send confirmPassword to backend - only send password (will be hashed server-side)
+      const { confirmPassword: _, ...submitData } = formData;
       const response = await authAPI.register(submitData);
       const { token, ...userData } = response.data;
 
