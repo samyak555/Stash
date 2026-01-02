@@ -65,45 +65,37 @@ const AuthCallback = ({ setUser }) => {
         // Store token in localStorage
         localStorage.setItem('token', token);
 
-        // Fetch user data from backend using token
-        try {
-          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/users/profile`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
+        // Get user data from URL params (backend includes all data in redirect)
+        const name = searchParams.get('name');
+        const email = searchParams.get('email');
+        const role = searchParams.get('role') || 'user';
+        const onboardingCompleted = searchParams.get('onboardingCompleted') === 'true';
+        const userId = searchParams.get('_id');
+        const message = searchParams.get('message');
 
-          if (response.ok) {
-            const userData = await response.json();
-            localStorage.setItem('user', JSON.stringify(userData));
-            
-            // Sync onboardingCompleted to localStorage
-            if (userData.onboardingCompleted) {
-              localStorage.setItem('onboardingCompleted', 'true');
-            }
-            
-            setUser(userData);
+        // Construct user data from URL params
+        const userData = {
+          _id: userId,
+          name: name ? decodeURIComponent(name) : '',
+          email: email ? decodeURIComponent(email) : '',
+          emailVerified: emailVerified === 'true',
+          role: role,
+          onboardingCompleted: onboardingCompleted,
+        };
 
-            toast.success('Signed in with Google!');
-            navigate('/');
-          } else {
-            // If profile fetch fails, try to decode token and create minimal user object
-            // This is a fallback - ideally backend should return user data in redirect
-            const userData = {
-              emailVerified: emailVerified === 'true',
-            };
-            localStorage.setItem('user', JSON.stringify(userData));
-            setUser(userData);
-            
-            toast.success('Signed in with Google!');
-            navigate('/');
-          }
-        } catch (fetchError) {
-          console.error('Error fetching user profile:', fetchError);
-          // Still proceed with token - user can be fetched later
-          toast.success('Signed in with Google!');
-          navigate('/');
+        // Store user data in localStorage
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        // Sync onboardingCompleted to localStorage
+        if (onboardingCompleted) {
+          localStorage.setItem('onboardingCompleted', 'true');
         }
+        
+        setUser(userData);
+
+        // Show success message (from backend or default)
+        toast.success(message || 'Signed in successfully!');
+        navigate('/');
       } catch (error) {
         console.error('Auth callback error:', error);
         toast.error('Failed to complete authentication');

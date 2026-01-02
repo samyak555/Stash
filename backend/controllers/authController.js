@@ -116,6 +116,7 @@ export const register = async (req, res) => {
 
     // Generate secure verification token
     const verificationToken = generateVerificationToken();
+    const verificationTokenHash = hashToken(verificationToken); // Hash token before storing
     const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     // Determine role (admin if email matches)
@@ -130,7 +131,7 @@ export const register = async (req, res) => {
       age,
       profession,
       emailVerified: false, // MANDATORY - user cannot login until verified
-      verificationToken,
+      verificationToken: verificationTokenHash, // Store hashed token
       verificationTokenExpiry,
       authProvider: 'local',
       role,
@@ -139,13 +140,17 @@ export const register = async (req, res) => {
 
     // Send welcome + verification email via SMTP
     try {
-      await sendVerificationEmail(user.email, user.name, verificationToken);
+      await sendVerificationEmail(user.email, user.name, verificationToken); // Send plain token in email
       console.log(`✅ Verification email sent to ${user.email}`);
     } catch (emailError) {
       console.error('❌ Failed to send verification email:', emailError.message);
+      console.error('   Error details:', emailError);
       // Delete user if email fails (user cannot verify without email)
       await User.findByIdAndDelete(user._id);
-      return res.status(500).json({ message: 'Failed to send verification email. Please try again.' });
+      return res.status(500).json({ 
+        message: 'Failed to send verification email. Please check your email configuration and try again.',
+        error: process.env.NODE_ENV === 'development' ? emailError.message : undefined
+      });
     }
 
     // Return user data (NO TOKEN - user cannot login until verified)
@@ -183,17 +188,22 @@ export const verifyEmail = async (req, res) => {
     }
 
     if (!token) {
-      return res.status(400).json({ message: 'Verification token is required' });
+      const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+      return res.redirect(`${FRONTEND_URL}/login?error=no_token`);
     }
 
-    // Find user with matching verification token
+    // Hash the token to compare with stored hash
+    const hashedToken = hashToken(token);
+
+    // Find user with matching verification token (hashed)
     const user = await User.findOne({
-      verificationToken: token,
+      verificationToken: hashedToken,
       verificationTokenExpiry: { $gt: new Date() },
     });
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired verification token' });
+      const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+      return res.redirect(`${FRONTEND_URL}/login?error=invalid_or_expired_token`);
     }
 
     // Mark email as verified and clear token
@@ -209,9 +219,19 @@ export const verifyEmail = async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    // Redirect to frontend with token (or return JSON)
+    // Redirect to frontend auth callback with token and user data (auto-login after verification)
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    res.redirect(`${frontendUrl}/verify-email-success?token=${token_jwt}`);
+    const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
+    redirectUrl.searchParams.set('token', token_jwt);
+    redirectUrl.searchParams.set('emailVerified', 'true');
+    redirectUrl.searchParams.set('name', encodeURIComponent(user.name));
+    redirectUrl.searchParams.set('email', encodeURIComponent(user.email));
+    redirectUrl.searchParams.set('role', user.role || 'user');
+    redirectUrl.searchParams.set('onboardingCompleted', user.onboardingCompleted ? 'true' : 'false');
+    redirectUrl.searchParams.set('_id', user._id.toString());
+    redirectUrl.searchParams.set('message', 'Email verified successfully!');
+    
+    res.redirect(redirectUrl.toString());
   } catch (error) {
     console.error('Email verification error:', error.message);
     res.status(500).json({ message: 'Email verification failed' });
@@ -246,9 +266,10 @@ export const resendVerification = async (req, res) => {
 
     // Generate new verification token (invalidate previous)
     const verificationToken = generateVerificationToken();
+    const verificationTokenHash = hashToken(verificationToken); // Hash token before storing
     const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    user.verificationToken = verificationToken;
+    user.verificationToken = verificationTokenHash; // Store hashed token
     user.verificationTokenExpiry = verificationTokenExpiry;
     await user.save();
 
@@ -585,10 +606,15 @@ export const googleAuthCallback = async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    // Redirect to frontend with token and user data
+    // Redirect to frontend with token and user data (include all data to avoid extra API call)
     const redirectUrl = new URL(`${FRONTEND_URL}/auth/callback`);
     redirectUrl.searchParams.set('token', token);
     redirectUrl.searchParams.set('emailVerified', 'true');
+    redirectUrl.searchParams.set('name', encodeURIComponent(user.name));
+    redirectUrl.searchParams.set('email', encodeURIComponent(user.email));
+    redirectUrl.searchParams.set('role', user.role || 'user');
+    redirectUrl.searchParams.set('onboardingCompleted', user.onboardingCompleted ? 'true' : 'false');
+    redirectUrl.searchParams.set('_id', user._id.toString());
     
     console.log(`✅ Google OAuth successful for ${user.email}, redirecting to frontend`);
     res.redirect(redirectUrl.toString());
