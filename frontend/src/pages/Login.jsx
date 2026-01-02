@@ -61,21 +61,30 @@ const Login = ({ setUser }) => {
     setGoogleLoading(true);
     
     try {
-      // Get backend URL from environment or use default
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      // Remove /api suffix to get base URL
-      const backendBaseUrl = API_URL.replace('/api', '');
+      // Get backend URL - use production URL if API_URL is not set
+      const API_URL = import.meta.env.VITE_API_URL;
+      
+      let backendBaseUrl;
+      if (API_URL) {
+        // Remove /api suffix if present
+        backendBaseUrl = API_URL.replace('/api', '');
+      } else {
+        // Default to production backend URL
+        backendBaseUrl = 'https://stash-backend-4wty.onrender.com';
+      }
       
       // Construct full OAuth URL
       const oauthUrl = `${backendBaseUrl}/api/auth/google`;
       
-      console.log('Redirecting to Google OAuth:', oauthUrl);
+      console.log('🔐 Redirecting to Google OAuth:', oauthUrl);
+      console.log('   API_URL from env:', API_URL);
+      console.log('   Backend base URL:', backendBaseUrl);
       
       // Redirect to backend OAuth endpoint
       // Backend will handle Google OAuth and redirect back with token
       window.location.href = oauthUrl;
     } catch (error) {
-      console.error('Google sign-in error:', error);
+      console.error('❌ Google sign-in error:', error);
       toast.error('Failed to initiate Google sign-in. Please try again.');
       setGoogleLoading(false);
     }

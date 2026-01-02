@@ -30,7 +30,7 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-// CORS middleware - Allow frontend origin
+// CORS middleware - Allow frontend origin and OAuth redirects
 const allowedOrigins = [
   'https://stash-beige.vercel.app',
   'http://localhost:5173',
@@ -45,10 +45,14 @@ app.use(cors({
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      // In production, only allow specific origins
+      // In production, allow OAuth redirects (no origin) but be strict about others
       if (process.env.NODE_ENV === 'production') {
-        // Allow Google OAuth redirects (no origin)
-        callback(null, true);
+        // Allow if it's a known pattern (Render, Vercel, etc.)
+        if (origin.includes('onrender.com') || origin.includes('vercel.app')) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
       } else {
         callback(null, true); // Allow in development
       }
@@ -63,7 +67,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
+// Routes - Auth routes FIRST (important for OAuth)
 app.use('/api/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/income', incomeRoutes);
@@ -108,6 +112,9 @@ const startServer = async () => {
     console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'not set'}`);
     console.log(`   MONGODB_URI: ${process.env.MONGODB_URI ? 'set' : '❌ NOT SET'}`);
     console.log(`   JWT_SECRET: ${process.env.JWT_SECRET ? 'set' : '❌ NOT SET'}`);
+    console.log(`   GOOGLE_CLIENT_ID: ${process.env.GOOGLE_CLIENT_ID ? 'set' : '❌ NOT SET'}`);
+    console.log(`   BACKEND_URL: ${process.env.BACKEND_URL || 'not set'}`);
+    console.log(`   FRONTEND_URL: ${process.env.FRONTEND_URL || 'not set'}`);
     
     // Validate environment variables before starting
     if (!process.env.MONGODB_URI) {
@@ -143,9 +150,14 @@ const startServer = async () => {
     }
     
     console.log(`🚀 Starting server on port ${PORT}...`);
-app.listen(PORT, () => {
+    app.listen(PORT, () => {
       console.log(`✅ Server running successfully on port ${PORT}`);
       console.log(`🌐 Health check: http://localhost:${PORT}/api/health`);
+      console.log(`🔐 Auth routes available at: http://localhost:${PORT}/api/auth/*`);
+      console.log(`   - GET /api/auth/google`);
+      console.log(`   - GET /api/auth/google/callback`);
+      console.log(`   - POST /api/auth/register`);
+      console.log(`   - POST /api/auth/login`);
     });
   } catch (error) {
     console.error('❌ Failed to start server');
@@ -178,5 +190,3 @@ try {
   }
   process.exit(1);
 }
-
-
