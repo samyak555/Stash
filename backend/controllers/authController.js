@@ -439,15 +439,16 @@ export const resetPassword = async (req, res) => {
  * Google OAuth 2.0 - Initiate authorization
  * GET /api/auth/google
  * - Redirects to Google OAuth consent screen
+ * - Uses Authorization Code Flow
  */
 export const googleAuthInitiate = async (req, res) => {
   try {
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const BACKEND_URL = process.env.BACKEND_URL || `https://stash-backend-4wty.onrender.com`;
 
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+      console.error('Google OAuth credentials not configured');
       return res.status(500).json({ message: 'Google OAuth not configured' });
     }
 
@@ -457,17 +458,20 @@ export const googleAuthInitiate = async (req, res) => {
       `${BACKEND_URL}/api/auth/google/callback`
     );
 
-    // Generate authorization URL
+    // Generate authorization URL with proper parameters
     const authUrl = oauth2Client.generateAuthUrl({
       access_type: 'offline',
-      scope: ['profile', 'email'],
+      scope: ['openid', 'email', 'profile'],
+      response_type: 'code',
       prompt: 'consent',
     });
 
+    console.log('Redirecting to Google OAuth:', authUrl);
     res.redirect(authUrl);
   } catch (error) {
     console.error('Google OAuth initiate error:', error.message);
-    res.status(500).json({ message: 'Failed to initiate Google OAuth' });
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${FRONTEND_URL}/login?error=oauth_init_failed`);
   }
 };
 

@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import VerifyEmail from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import AuthCallback from './pages/AuthCallback';
 import Dashboard from './pages/Dashboard';
 import Cards from './pages/Cards';
 import Transactions from './pages/Transactions';
@@ -106,6 +107,10 @@ function App() {
         <Route
           path="/reset-password"
           element={user ? <Navigate to="/" replace /> : <ResetPassword />}
+        />
+        <Route
+          path="/auth/callback"
+          element={<AuthCallback setUser={setUser} />}
         />
         <Route
           path="/"

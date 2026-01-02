@@ -52,115 +52,25 @@ const Login = ({ setUser }) => {
     }
   };
 
-
-  const handleGoogleSignIn = async () => {
+  /**
+   * Handle Google Sign-In
+   * Redirects to backend OAuth endpoint (Authorization Code Flow)
+   * Backend handles all Google authentication logic
+   */
+  const handleGoogleSignIn = () => {
     setGoogleLoading(true);
     
     try {
-      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      // Get backend URL from environment or use default
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const backendBaseUrl = API_URL.replace('/api', ''); // Remove /api suffix
       
-      // Check if Google OAuth is configured
-      if (!clientId) {
-        console.error('VITE_GOOGLE_CLIENT_ID is not set in environment variables');
-        toast.error(
-          'Google Sign-In is not configured. Please set VITE_GOOGLE_CLIENT_ID in Vercel environment variables.',
-          { duration: 7000 }
-        );
-        setGoogleLoading(false);
-        return;
-      }
-
-      // Wait for Google script to load
-      if (!window.google) {
-        // Wait up to 5 seconds for Google script to load
-        let attempts = 0;
-        while (!window.google && attempts < 50) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          attempts++;
-        }
-        
-        if (!window.google) {
-          toast.error('Google Sign-In script not loaded. Please refresh the page.', { duration: 5000 });
-          setGoogleLoading(false);
-          return;
-        }
-      }
-
-      // Initialize Google Identity Services with callback
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: async (response) => {
-          if (response.credential) {
-            try {
-              // Send ID token to backend for verification
-              const authResponse = await authAPI.googleAuth(response.credential);
-
-              const { token, ...userData } = authResponse.data;
-              localStorage.setItem('token', token);
-              localStorage.setItem('user', JSON.stringify(userData));
-              
-              // Sync onboardingCompleted to localStorage
-              if (userData.onboardingCompleted) {
-                localStorage.setItem('onboardingCompleted', 'true');
-              }
-              
-              setUser(userData);
-
-              toast.success('Signed in with Google!');
-              navigate('/');
-            } catch (error) {
-              console.error('Google auth error:', error);
-              const errorMessage = error.response?.data?.message || error.message || 'Failed to complete Google sign-in';
-              toast.error(errorMessage);
-              setGoogleLoading(false);
-            }
-          } else {
-            setGoogleLoading(false);
-          }
-        }
-      });
-
-      // Create a temporary button container and render Google sign-in button
-      const buttonContainer = document.createElement('div');
-      buttonContainer.id = 'temp-google-signin';
-      buttonContainer.style.position = 'fixed';
-      buttonContainer.style.top = '-9999px';
-      buttonContainer.style.left = '-9999px';
-      document.body.appendChild(buttonContainer);
-
-      // Render Google sign-in button
-      window.google.accounts.id.renderButton(
-        buttonContainer,
-        {
-          theme: 'outline',
-          size: 'large',
-          type: 'standard',
-          text: 'signin_with',
-          shape: 'rectangular',
-          logo_alignment: 'left',
-        }
-      );
-
-      // Wait a bit for button to render, then click it
-      setTimeout(() => {
-        const googleButton = buttonContainer.querySelector('div[role="button"]');
-        if (googleButton) {
-          googleButton.click();
-        } else {
-          // Fallback: use prompt
-          window.google.accounts.id.prompt();
-        }
-        
-        // Clean up after a delay
-        setTimeout(() => {
-          if (document.body.contains(buttonContainer)) {
-            document.body.removeChild(buttonContainer);
-          }
-        }, 1000);
-      }, 100);
+      // Redirect to backend OAuth endpoint
+      // Backend will handle Google OAuth and redirect back with token
+      window.location.href = `${backendBaseUrl}/api/auth/google`;
     } catch (error) {
       console.error('Google sign-in error:', error);
-      toast.error('Failed to sign in with Google. Please try email login.');
+      toast.error('Failed to initiate Google sign-in. Please try again.');
       setGoogleLoading(false);
     }
   };
