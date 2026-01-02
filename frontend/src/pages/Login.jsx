@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import Logo from '../components/Logo';
 import Footer from '../components/Footer';
 
+// Login component with password authentication
 const Login = ({ setUser }) => {
   const [formData, setFormData] = useState({
     email: '',
