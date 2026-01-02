@@ -58,7 +58,7 @@ const Insights = () => {
             <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 mr-4">
               <InsightsIcon className="w-7 h-7 text-purple-400" />
             </div>
-            AI Insights
+            Stash Insight
           </h1>
           <p className="text-slate-400 text-lg font-normal">Smart financial analysis and recommendations</p>
         </div>

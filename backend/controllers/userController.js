@@ -34,6 +34,7 @@ export const getProfile = async (req, res) => {
       monthlyIncome: user.monthlyIncome,
       onboardingCompleted: user.onboardingCompleted,
       expensesCompleted: user.expensesCompleted || false,
+      goalsCompleted: user.goalsCompleted || false,
       role: user.role,
       authProvider: user.authProvider,
     });
@@ -45,7 +46,7 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { monthlyIncome, onboardingCompleted, expensesCompleted } = req.body;
+    const { monthlyIncome, onboardingCompleted, expensesCompleted, goalsCompleted, name, age, profession } = req.body;
     const userId = req.userId;
 
     // Validate monthlyIncome if provided
@@ -58,6 +59,19 @@ export const updateProfile = async (req, res) => {
 
     // Update user profile
     const updateData = {};
+    if (name !== undefined) {
+      updateData.name = name.trim();
+    }
+    if (age !== undefined) {
+      const ageNum = parseInt(age);
+      if (isNaN(ageNum) || ageNum < 13 || ageNum > 100) {
+        return res.status(400).json({ message: 'Invalid age. Must be between 13 and 100.' });
+      }
+      updateData.age = ageNum;
+    }
+    if (profession !== undefined) {
+      updateData.profession = profession.trim();
+    }
     if (monthlyIncome !== undefined) {
       updateData.monthlyIncome = monthlyIncome === null || monthlyIncome === '' ? null : parseFloat(monthlyIncome);
     }
@@ -66,6 +80,9 @@ export const updateProfile = async (req, res) => {
     }
     if (expensesCompleted !== undefined) {
       updateData.expensesCompleted = expensesCompleted === true || expensesCompleted === 'true';
+    }
+    if (goalsCompleted !== undefined) {
+      updateData.goalsCompleted = goalsCompleted === true || goalsCompleted === 'true';
     }
 
     const user = await User.findByIdAndUpdate(
@@ -88,10 +105,114 @@ export const updateProfile = async (req, res) => {
       monthlyIncome: user.monthlyIncome,
       onboardingCompleted: user.onboardingCompleted,
       expensesCompleted: user.expensesCompleted || false,
+      goalsCompleted: user.goalsCompleted || false,
     });
   } catch (error) {
     console.error('Update profile error:', error.message);
     res.status(500).json({ message: 'Failed to update profile' });
+  }
+};
+
+/**
+ * Delete user account and all associated data
+ * DELETE /api/users/account
+ * Requires Google re-authentication (idToken in body)
+ */
+export const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { idToken } = req.body; // Google ID token for re-authentication
+
+    if (!idToken) {
+      return res.status(400).json({ 
+        message: 'Google re-authentication required. Please sign in again to confirm account deletion.' 
+      });
+    }
+
+    // Verify Google ID token
+    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+    if (!GOOGLE_CLIENT_ID) {
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
+
+    const { OAuth2Client } = await import('google-auth-library');
+    const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+    
+    let ticket;
+    try {
+      ticket = await client.verifyIdToken({
+        idToken,
+        audience: GOOGLE_CLIENT_ID,
+      });
+    } catch (verifyError) {
+      return res.status(401).json({ message: 'Invalid Google token. Please sign in again.' });
+    }
+
+    const payload = ticket.getPayload();
+    const userEmail = payload.email;
+
+    // Verify the token belongs to the current user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.email.toLowerCase() !== userEmail.toLowerCase()) {
+      return res.status(403).json({ message: 'Token does not match current user' });
+    }
+
+    // Only allow deletion for Google-authenticated users
+    if (user.authProvider !== 'google') {
+      return res.status(403).json({ message: 'Account deletion is only available for Google-authenticated users' });
+    }
+
+    // Delete all user-related data from fileDB
+    const fileDB = (await import('../utils/fileDB.js')).default;
+    
+    // Delete expenses
+    const expenses = fileDB.findExpenses({ user: userId });
+    expenses.forEach(expense => {
+      fileDB.deleteExpense(expense._id);
+    });
+
+    // Delete income
+    const incomes = fileDB.findIncomes({ user: userId });
+    incomes.forEach(income => {
+      fileDB.deleteIncome(income._id);
+    });
+
+    // Delete goals
+    const goals = fileDB.findGoals({ user: userId });
+    goals.forEach(goal => {
+      fileDB.deleteGoal(goal._id);
+    });
+
+    // Delete budgets (if deleteBudget method exists)
+    const budgets = fileDB.findBudgets({ user: userId });
+    if (fileDB.deleteBudget) {
+      budgets.forEach(budget => {
+        fileDB.deleteBudget(budget._id);
+      });
+    } else {
+      // If no deleteBudget method, filter out budgets
+      const db = fileDB.readDB ? fileDB.readDB() : null;
+      if (db && db.budgets) {
+        db.budgets = db.budgets.filter(b => b.user !== userId);
+        if (fileDB.writeDB) fileDB.writeDB(db);
+      }
+    }
+
+    // Delete user from MongoDB
+    await User.findByIdAndDelete(userId);
+
+    console.log(`✅ Account deleted: ${user.email} (${userId})`);
+
+    res.json({ 
+      message: 'Account and all associated data have been permanently deleted' 
+    });
+  } catch (error) {
+    console.error('Delete account error:', error.message);
+    res.status(500).json({ message: 'Failed to delete account' });
   }
 };
 

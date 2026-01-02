@@ -95,6 +95,9 @@ const AuthCallback = ({ setUser }) => {
 
         // Show success message (from backend or default)
         toast.success(message || 'Signed in successfully!');
+        
+        // Redirect based on onboarding status
+        // If onboarding not completed, user will be redirected to onboarding by Layout component
         navigate('/');
       } catch (error) {
         console.error('Auth callback error:', error);

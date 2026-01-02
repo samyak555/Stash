@@ -102,7 +102,9 @@ export const groupAPI = {
 
 export const userAPI = {
   getAll: () => api.get('/users'),
+  getProfile: () => api.get('/users/profile'),
   updateProfile: (data) => api.patch('/users/profile', data),
+  deleteAccount: (idToken) => api.delete('/users/account', { data: { idToken } }),
 };
 
 export const transactionAPI = {

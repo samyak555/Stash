@@ -110,6 +110,20 @@ export default {
     return true;
   },
   
+  deleteGoal: (id) => {
+    const db = readDB();
+    db.goals = db.goals.filter(g => g._id !== id);
+    writeDB(db);
+    return true;
+  },
+  
+  deleteBudget: (id) => {
+    const db = readDB();
+    db.budgets = db.budgets.filter(b => b._id !== id);
+    writeDB(db);
+    return true;
+  },
+  
   // Income
   createIncome: (incomeData) => {
     const db = readDB();

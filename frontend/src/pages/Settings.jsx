@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { transactionAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import Button from '../components/ui/Button';
@@ -370,6 +371,116 @@ const Settings = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Delete Account Section */}
+      <DeleteAccountSection />
+    </div>
+  );
+};
+
+/**
+ * Delete Account Component
+ * Only shown for authenticated Google users (not guests)
+ */
+const DeleteAccountSection = () => {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Get user from localStorage
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+      } catch (e) {
+        console.error('Failed to parse user data:', e);
+      }
+    }
+  }, []);
+
+  // Don't show for guests
+  const isGuest = localStorage.getItem('isGuest') === 'true';
+  if (isGuest || !user || user.authProvider !== 'google') {
+    return null;
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!showConfirm) {
+      setShowConfirm(true);
+      return;
+    }
+
+    // Store deletion intent in localStorage
+    localStorage.setItem('pendingAccountDeletion', 'true');
+    
+    // Redirect to Google OAuth for re-authentication
+    // The backend will handle deletion after successful auth
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    const backendUrl = API_URL.replace('/api', '');
+    window.location.href = `${backendUrl}/api/auth/google?deleteAccount=true`;
+  };
+
+  return (
+    <div className="glass-card p-8 rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-500/5 to-orange-500/5">
+      <div className="flex items-start gap-4">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+          <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </div>
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Delete Account</h2>
+          <p className="text-slate-300 text-sm leading-relaxed mb-4">
+            Permanently delete your account and all associated data. This action cannot be undone.
+          </p>
+
+          {!showConfirm ? (
+            <Button
+              variant="danger"
+              onClick={handleDeleteAccount}
+              className="mt-4"
+            >
+              Delete Account
+            </Button>
+          ) : (
+            <div className="space-y-4 mt-4">
+              <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                <p className="text-red-300 text-sm font-medium mb-2">⚠️ Warning: This action is irreversible</p>
+                <p className="text-slate-300 text-xs">
+                  This will permanently delete:
+                </p>
+                <ul className="text-slate-400 text-xs list-disc list-inside mt-2 space-y-1">
+                  <li>Your account and profile</li>
+                  <li>All expenses and income records</li>
+                  <li>All goals and budgets</li>
+                  <li>All transaction sync settings</li>
+                </ul>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowConfirm(false)}
+                  disabled={deleting}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                  className="flex-1"
+                >
+                  {deleting ? 'Deleting...' : 'Confirm Deletion'}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

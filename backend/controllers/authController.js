@@ -512,6 +512,7 @@ export const googleAuthInitiate = async (req, res) => {
  * - Issues JWT and redirects to frontend
  */
 export const googleAuthCallback = async (req, res) => {
+  const deleteAccount = req.query.deleteAccount === 'true';
   try {
     const JWT_SECRET = process.env.JWT_SECRET;
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Logo from '../components/Logo';
@@ -13,6 +13,28 @@ import Footer from '../components/Footer';
 const Login = ({ setUser }) => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
+  
+  // Check for messages/errors from URL params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get('message');
+    const error = params.get('error');
+    
+    if (message) {
+      toast.success(message);
+      // Clean URL
+      window.history.replaceState({}, '', '/login');
+    }
+    if (error) {
+      if (error === 'account_deletion_failed') {
+        toast.error('Failed to delete account. Please try again.');
+      } else {
+        toast.error('Authentication failed');
+      }
+      // Clean URL
+      window.history.replaceState({}, '', '/login');
+    }
+  }, []);
 
   /**
    * Handle Google Sign-In

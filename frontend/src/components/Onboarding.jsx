@@ -20,7 +20,7 @@ const Onboarding = ({ onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [safeToSpend, setSafeToSpend] = useState(null);
 
-  const totalSteps = 4;
+  const totalSteps = 5; // Income, Expenses, Goals, Insight
   const progress = (step / totalSteps) * 100;
 
   const categories = ['Food', 'Travel', 'Movie', 'Clothes', 'Transportation', 'Rent', 'Utilities', 'Entertainment', 'Shopping', 'Healthcare', 'Others'];
@@ -134,10 +134,39 @@ const Onboarding = ({ onComplete }) => {
       // Only calculate if we have income, otherwise show null
       const safeToday = monthlyIncome ? Math.max(0, dailyIncome - (expenseAmount / 30) - dailyGoalSavings) : null;
       
+      // Mark goals as completed
+      await userAPI.updateProfile({
+        goalsCompleted: true,
+      });
+      
       setSafeToSpend(safeToday);
-      setStep(4);
+      setStep(4); // Move to Insight step
     } catch (error) {
       toast.error('Failed to save goal');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSkipGoal = async () => {
+    setLoading(true);
+    try {
+      // Mark goals as NOT completed, but allow progression
+      await userAPI.updateProfile({
+        goalsCompleted: false,
+      });
+      
+      // Calculate safe-to-spend without goals
+      const monthlyIncome = formData.income ? parseFloat(formData.income) : null;
+      const dailyIncome = monthlyIncome ? monthlyIncome / 30 : 0;
+      const expenseAmount = parseFloat(formData.expenseAmount) || 0;
+      const safeToday = monthlyIncome ? Math.max(0, dailyIncome - (expenseAmount / 30)) : null;
+      
+      setSafeToSpend(safeToday);
+      setStep(4); // Move to Insight step
+      toast.success('You can add goals later from the dashboard');
+    } catch (error) {
+      toast.error('Failed to skip goal step');
     } finally {
       setLoading(false);
     }
@@ -398,12 +427,20 @@ const Onboarding = ({ onComplete }) => {
                   </Button>
                 </div>
                 
-                {/* No skip button on Goal step - it's mandatory */}
-                {(!formData.goalTitle || !formData.goalAmount || !formData.goalDeadline || parseFloat(formData.goalAmount) <= 0) && (
-                  <p className="text-xs text-amber-400 text-center mt-2">
-                    Please fill all fields to continue
-                  </p>
-                )}
+                {/* Skip button - Goals step is optional */}
+                <button
+                  type="button"
+                  onClick={handleSkipGoal}
+                  disabled={loading}
+                  className="w-full py-3 px-4 text-sm font-medium text-slate-400 hover:text-slate-300 border border-white/10 hover:border-white/20 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                >
+                  Skip for now
+                </button>
+                
+                {/* Helper text */}
+                <p className="text-xs text-slate-400 text-center mt-2">
+                  You can add goals later from the dashboard
+                </p>
               </form>
             </div>
           )}
