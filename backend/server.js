@@ -7,6 +7,7 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import connectDB from './config/db.js';
+import { verifySMTPConnection } from './utils/emailService.js';
 import authRoutes from './routes/authRoutes.js';
 import expenseRoutes from './routes/expenseRoutes.js';
 import incomeRoutes from './routes/incomeRoutes.js';
@@ -85,6 +86,19 @@ const startServer = async () => {
     console.log('🔌 Connecting to MongoDB...');
     await connectDB();
     console.log('✅ MongoDB connection established');
+    
+    // Verify Gmail SMTP connection (production requirement)
+    console.log('📧 Verifying Gmail SMTP connection...');
+    try {
+      await verifySMTPConnection();
+    } catch (emailError) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('❌ Cannot start in production without working email service');
+        process.exit(1);
+      } else {
+        console.warn('⚠️  Email service not available - continuing without email functionality');
+      }
+    }
     
     console.log(`🚀 Starting server on port ${PORT}...`);
     app.listen(PORT, () => {
