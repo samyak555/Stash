@@ -54,7 +54,12 @@ const initializeTransporter = () => {
  */
 const getTransporter = () => {
   if (!transporter) {
-    transporter = initializeTransporter();
+    try {
+      transporter = initializeTransporter();
+    } catch (error) {
+      console.error('❌ Failed to initialize email transporter:', error.message);
+      throw new Error('Email service not configured. Please set EMAIL_USER and EMAIL_PASS environment variables.');
+    }
   }
   return transporter;
 };

@@ -90,10 +90,24 @@ export const sendOTP = async (req, res) => {
       // Remove OTP from store if email fails
       otpStore.delete(email.toLowerCase());
       
-      console.error('Failed to send OTP email:', emailError.message);
+      console.error('❌ Failed to send OTP email:', emailError.message);
+      
+      // Log specific error details for debugging
+      if (emailError.message.includes('EMAIL_USER') || emailError.message.includes('EMAIL_PASS')) {
+        console.error('   → Email service not configured');
+        console.error('   → Set EMAIL_USER and EMAIL_PASS in Render environment variables');
+      } else if (emailError.code === 'EAUTH') {
+        console.error('   → Gmail authentication failed');
+        console.error('   → Check EMAIL_USER and EMAIL_PASS are correct');
+        console.error('   → Ensure you are using Gmail App Password, not regular password');
+      } else if (emailError.code === 'ECONNECTION' || emailError.code === 'ETIMEDOUT') {
+        console.error('   → SMTP connection failed');
+        console.error('   → Check EMAIL_HOST and EMAIL_PORT');
+      }
+      
       res.status(500).json({
         success: false,
-        message: 'Failed to send OTP email. Please try again.',
+        message: 'Failed to send verification code. Please check server configuration.',
       });
     }
   } catch (error) {
