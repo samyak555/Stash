@@ -61,7 +61,11 @@ const Login = ({ setUser }) => {
       
       // Check if Google OAuth is configured
       if (!clientId) {
-        toast.error('Google Sign-In is not configured. Please use email login.', { duration: 5000 });
+        console.error('VITE_GOOGLE_CLIENT_ID is not set in environment variables');
+        toast.error(
+          'Google Sign-In is not configured. Please set VITE_GOOGLE_CLIENT_ID in Vercel environment variables.',
+          { duration: 7000 }
+        );
         setGoogleLoading(false);
         return;
       }
