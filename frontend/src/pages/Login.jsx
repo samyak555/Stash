@@ -132,20 +132,8 @@ const Login = ({ setUser }) => {
         }
       });
 
-      // Trigger Google Sign-In
-      window.google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // Fallback: show button click handler
-          window.google.accounts.id.renderButton(
-            document.getElementById('google-signin-button'),
-            {
-              theme: 'outline',
-              size: 'large',
-              width: '100%',
-            }
-          );
-        }
-      });
+      // Trigger one-tap sign-in
+      window.google.accounts.id.prompt();
     } catch (error) {
       console.error('Google sign-in error:', error);
       toast.error('Failed to sign in with Google. Please try email login.');
