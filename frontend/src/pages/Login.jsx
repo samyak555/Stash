@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
@@ -15,6 +15,61 @@ const Login = ({ setUser }) => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Load Google OAuth script and initialize
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    
+    if (!clientId) {
+      console.warn('Google Client ID not configured');
+      return;
+    }
+
+    // Wait for Google script to load
+    const checkGoogleScript = setInterval(() => {
+      if (window.google && window.google.accounts) {
+        clearInterval(checkGoogleScript);
+        
+        // Initialize Google Identity Services for One Tap
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: async (response) => {
+            if (response.credential) {
+              setGoogleLoading(true);
+              try {
+                // Send ID token to backend for verification
+                const authResponse = await authAPI.googleAuth({ idToken: response.credential });
+
+                const { token, ...userData } = authResponse.data;
+                localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(userData));
+                
+                if (userData.onboardingCompleted) {
+                  localStorage.setItem('onboardingCompleted', 'true');
+                }
+                
+                setUser(userData);
+
+                toast.success('Signed in with Google!');
+                navigate('/');
+              } catch (error) {
+                console.error('Google auth error:', error);
+                const errorMessage = error.response?.data?.message || error.message || 'Failed to complete Google sign-in';
+                toast.error(errorMessage);
+              } finally {
+                setGoogleLoading(false);
+              }
+            }
+          },
+        });
+      }
+    }, 100);
+
+    // Cleanup
+    return () => {
+      clearInterval(checkGoogleScript);
+    };
+  }, [navigate, setUser]);
 
   const handleChange = (e) => {
     setFormData({
@@ -52,48 +107,42 @@ const Login = ({ setUser }) => {
     }
   };
 
-
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
+  const handleGoogleSignIn = () => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     
+    if (!clientId) {
+      toast.error('Google Sign-In is not configured. Please use email login.', { duration: 5000 });
+      return;
+    }
+
+    if (!window.google || !window.google.accounts) {
+      toast.error('Google Sign-In is loading. Please wait a moment and try again.', { duration: 5000 });
+      return;
+    }
+
+    setGoogleLoading(true);
+
     try {
-      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-      
-      // Check if Google OAuth is configured
-      if (!clientId) {
-        toast.error('Google Sign-In is not configured. Please use email login.', { duration: 5000 });
-        setGoogleLoading(false);
-        return;
-      }
-
-      // Wait for Google script to load
-      if (!window.google) {
-        // Wait up to 3 seconds for Google script to load
-        let attempts = 0;
-        while (!window.google && attempts < 30) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          attempts++;
-        }
-        
-        if (!window.google) {
-          toast.error('Google Sign-In script not loaded. Please refresh the page.', { duration: 5000 });
-          setGoogleLoading(false);
-          return;
-        }
-      }
-
-      // Use Google Identity Services (gsi) for OAuth - get ID token
-      window.google.accounts.id.initialize({
+      // Use Google Identity Services - Button flow (popup)
+      // This triggers the Google sign-in popup directly
+      window.google.accounts.oauth2.initCodeClient({
         client_id: clientId,
+        scope: 'openid email profile',
+        ux_mode: 'popup',
         callback: async (response) => {
-          if (response.credential) {
+          if (response.code) {
             try {
-              // Send ID token to backend for verification
-              const authResponse = await authAPI.googleAuth(response.credential);
+              // Exchange code for ID token via backend
+              const authResponse = await authAPI.googleAuth({ code: response.code });
 
               const { token, ...userData } = authResponse.data;
               localStorage.setItem('token', token);
               localStorage.setItem('user', JSON.stringify(userData));
+              
+              if (userData.onboardingCompleted) {
+                localStorage.setItem('onboardingCompleted', 'true');
+              }
+              
               setUser(userData);
 
               toast.success('Signed in with Google!');
@@ -102,14 +151,14 @@ const Login = ({ setUser }) => {
               console.error('Google auth error:', error);
               const errorMessage = error.response?.data?.message || error.message || 'Failed to complete Google sign-in';
               toast.error(errorMessage);
+            } finally {
+              setGoogleLoading(false);
             }
+          } else {
+            setGoogleLoading(false);
           }
-          setGoogleLoading(false);
         }
-      });
-
-      // Trigger one-tap sign-in
-      window.google.accounts.id.prompt();
+      }).requestCode();
     } catch (error) {
       console.error('Google sign-in error:', error);
       toast.error('Failed to sign in with Google. Please try email login.');
@@ -143,13 +192,16 @@ const Login = ({ setUser }) => {
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={googleLoading}
-                className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white hover:bg-gray-50 text-gray-900 rounded-xl font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-white/20 shadow-lg"
+                className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white hover:bg-gray-50 text-gray-900 rounded-xl font-semibold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-white/20 shadow-lg hover:shadow-xl"
               >
                 {googleLoading ? (
-                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
+                  <>
+                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Connecting...</span>
+                  </>
                 ) : (
                   <>
                     <svg className="w-5 h-5" viewBox="0 0 24 24">

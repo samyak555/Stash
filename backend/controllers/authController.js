@@ -474,11 +474,16 @@ export const resetPassword = async (req, res) => {
  * - On success: auto mark emailVerified = true
  * - Create account if not exists
  * - No frontend-only fake Google login
+ * 
+ * Accepts either:
+ * - idToken: Direct ID token from Google Identity Services
+ * - code: Authorization code (exchanged for ID token)
  */
 export const googleAuth = async (req, res) => {
   try {
     const JWT_SECRET = process.env.JWT_SECRET;
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+    const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 
     if (!JWT_SECRET) {
       console.error('JWT_SECRET environment variable is not set');
@@ -490,27 +495,58 @@ export const googleAuth = async (req, res) => {
       return res.status(500).json({ message: 'Google OAuth not configured' });
     }
 
-    const { idToken } = req.body;
+    const { idToken, code } = req.body;
 
-    if (!idToken) {
-      return res.status(400).json({ message: 'Google ID token is required' });
+    let payload;
+
+    // If authorization code is provided, exchange it for ID token
+    if (code) {
+      if (!GOOGLE_CLIENT_SECRET) {
+        return res.status(500).json({ message: 'GOOGLE_CLIENT_SECRET not configured for code exchange' });
+      }
+
+      const client = new OAuth2Client(
+        GOOGLE_CLIENT_ID,
+        GOOGLE_CLIENT_SECRET,
+        process.env.FRONTEND_URL || 'http://localhost:5173'
+      );
+
+      try {
+        const { tokens } = await client.getToken(code);
+        if (!tokens.id_token) {
+          return res.status(400).json({ message: 'Failed to get ID token from authorization code' });
+        }
+        
+        // Verify the ID token
+        const ticket = await client.verifyIdToken({
+          idToken: tokens.id_token,
+          audience: GOOGLE_CLIENT_ID,
+        });
+        payload = ticket.getPayload();
+      } catch (error) {
+        console.error('Google code exchange error:', error);
+        return res.status(401).json({ message: 'Invalid authorization code' });
+      }
+    } else if (idToken) {
+      // Direct ID token verification
+      const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+      let ticket;
+
+      try {
+        ticket = await client.verifyIdToken({
+          idToken,
+          audience: GOOGLE_CLIENT_ID,
+        });
+      } catch (verifyError) {
+        console.error('Google token verification error:', verifyError);
+        return res.status(401).json({ message: 'Invalid Google token' });
+      }
+
+      payload = ticket.getPayload();
+    } else {
+      return res.status(400).json({ message: 'Google ID token or authorization code is required' });
     }
 
-    // Verify Google ID token (REAL backend verification)
-    const client = new OAuth2Client(GOOGLE_CLIENT_ID);
-    let ticket;
-
-    try {
-      ticket = await client.verifyIdToken({
-        idToken,
-        audience: GOOGLE_CLIENT_ID,
-      });
-    } catch (verifyError) {
-      console.error('Google token verification error:', verifyError);
-      return res.status(401).json({ message: 'Invalid Google token' });
-    }
-
-    const payload = ticket.getPayload();
     const { email, name } = payload;
 
     if (!email) {

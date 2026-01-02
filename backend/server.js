@@ -30,8 +30,33 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-// CORS middleware
-app.use(cors());
+// CORS middleware - Allow frontend origin
+const allowedOrigins = [
+  'https://stash-beige.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      // In production, only allow specific origins
+      if (process.env.NODE_ENV === 'production') {
+        callback(new Error('Not allowed by CORS'));
+      } else {
+        callback(null, true); // Allow in development
+      }
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
 // Body parsing middleware
 app.use(express.json());
