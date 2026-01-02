@@ -64,6 +64,11 @@ const userSchema = new mongoose.Schema({
       'Above ₹5,00,000',
     ],
   },
+  monthlyIncome: {
+    type: Number,
+    default: null,
+    min: 0,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

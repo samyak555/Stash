@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { incomeAPI, expenseAPI, goalAPI } from '../services/api';
+import { incomeAPI, expenseAPI, goalAPI, userAPI } from '../services/api';
 import Button from './ui/Button';
 import Logo from './Logo';
 import toast from 'react-hot-toast';
@@ -27,22 +27,51 @@ const Onboarding = ({ onComplete }) => {
 
   const handleIncomeSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.income || parseFloat(formData.income) <= 0) {
+    const incomeValue = formData.income.trim();
+    const incomeNum = parseFloat(incomeValue);
+    
+    // Validate only if user entered a value (not empty)
+    if (incomeValue && (isNaN(incomeNum) || incomeNum <= 0)) {
       toast.error('Please enter a valid income amount');
       return;
     }
+    
     setLoading(true);
     try {
-      await incomeAPI.create({
-        amount: formData.income,
-        source: 'Salary',
-        date: new Date().toISOString().split('T')[0],
-        note: 'Onboarding entry',
+      // Save monthlyIncome to user profile (null if skipped)
+      await userAPI.updateProfile({
+        monthlyIncome: incomeValue ? incomeNum : null,
       });
-      localStorage.setItem('hasIncomeData', 'true');
+      
+      // Only create income entry if user provided a value
+      if (incomeValue && incomeNum > 0) {
+        await incomeAPI.create({
+          amount: incomeNum,
+          source: 'Salary',
+          date: new Date().toISOString().split('T')[0],
+          note: 'Onboarding entry',
+        });
+        localStorage.setItem('hasIncomeData', 'true');
+      }
+      
       setStep(2);
     } catch (error) {
       toast.error('Failed to save income');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSkipIncome = async () => {
+    setLoading(true);
+    try {
+      // Save null monthlyIncome to user profile
+      await userAPI.updateProfile({
+        monthlyIncome: null,
+      });
+      setStep(2);
+    } catch (error) {
+      toast.error('Failed to skip income step');
     } finally {
       setLoading(false);
     }
@@ -87,14 +116,16 @@ const Onboarding = ({ onComplete }) => {
       });
       localStorage.setItem('hasGoalData', 'true');
       
-      // Calculate safe-to-spend
-      const monthlyIncome = parseFloat(formData.income);
-      const dailyIncome = monthlyIncome / 30;
-      const expenseAmount = parseFloat(formData.expenseAmount);
-      const goalAmount = parseFloat(formData.goalAmount);
+      // Calculate safe-to-spend (handle null income gracefully)
+      const monthlyIncome = formData.income ? parseFloat(formData.income) : null;
+      const dailyIncome = monthlyIncome ? monthlyIncome / 30 : 0;
+      const expenseAmount = parseFloat(formData.expenseAmount) || 0;
+      const goalAmount = parseFloat(formData.goalAmount) || 0;
       const daysUntilGoal = Math.ceil((new Date(formData.goalDeadline) - new Date()) / (1000 * 60 * 60 * 24));
       const dailyGoalSavings = daysUntilGoal > 0 ? goalAmount / daysUntilGoal : 0;
-      const safeToday = Math.max(0, dailyIncome - (expenseAmount / 30) - dailyGoalSavings);
+      
+      // Only calculate if we have income, otherwise show null
+      const safeToday = monthlyIncome ? Math.max(0, dailyIncome - (expenseAmount / 30) - dailyGoalSavings) : null;
       
       setSafeToSpend(safeToday);
       setStep(4);
@@ -152,22 +183,50 @@ const Onboarding = ({ onComplete }) => {
                   <input
                     type="number"
                     step="0.01"
+                    min="0"
                     value={formData.income}
-                    onChange={(e) => setFormData({ ...formData, income: e.target.value })}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Only allow valid numeric input (no negative values)
+                      if (value === '' || (!isNaN(value) && parseFloat(value) >= 0)) {
+                        setFormData({ ...formData, income: value });
+                      }
+                    }}
                     placeholder="Enter monthly income"
                     className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-lg text-center font-semibold"
                     autoFocus
                   />
                 </div>
-                <Button type="submit" variant="primary" className="w-full" disabled={loading}>
+                
+                {/* Helper text */}
+                <p className="text-xs text-slate-400 text-center">
+                  You can add this later from Settings
+                </p>
+                
+                <Button 
+                  type="submit" 
+                  variant="primary" 
+                  className="w-full" 
+                  disabled={loading || (formData.income && (isNaN(parseFloat(formData.income)) || parseFloat(formData.income) < 0))}
+                >
                   {loading ? 'Saving...' : 'Continue'}
                 </Button>
+                
+                {/* Skip button */}
+                <button
+                  type="button"
+                  onClick={handleSkipIncome}
+                  disabled={loading}
+                  className="w-full py-3 px-4 text-sm font-medium text-slate-400 hover:text-slate-300 border border-white/10 hover:border-white/20 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Skip for now
+                </button>
               </form>
 
               {/* Trust Message */}
               <div className="mt-6 p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-xl">
                 <p className="text-xs text-cyan-300 text-center leading-relaxed">
-                  🔒 We do not access your bank account. You stay in full control of your data.
+                  🔒 This is optional and private. We do not access your bank account. You stay in full control of your data.
                 </p>
               </div>
             </div>
@@ -291,7 +350,7 @@ const Onboarding = ({ onComplete }) => {
           )}
 
           {/* Step 4: Insight */}
-          {step === 4 && safeToSpend !== null && (
+          {step === 4 && (
             <div className="space-y-6 text-center">
               <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center">
                 <svg className="w-10 h-10 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -299,16 +358,25 @@ const Onboarding = ({ onComplete }) => {
                 </svg>
               </div>
               <h2 className="text-3xl font-bold text-white mb-2">You're all set!</h2>
-              <div className="glass-card rounded-xl p-6 border border-cyan-500/20 bg-cyan-500/5">
-                <p className="text-sm text-slate-400 mb-3">Based on your income and goals:</p>
-                <p className="text-4xl font-bold text-cyan-400 mb-2">
-                  ₹{Math.round(safeToSpend).toLocaleString()}
-                </p>
-                <p className="text-lg text-white font-medium">Safe to spend today</p>
-              </div>
-              <p className="text-slate-400 text-sm">
-                This updates daily based on your income, expenses, and goals.
-              </p>
+              {safeToSpend !== null ? (
+                <>
+                  <div className="glass-card rounded-xl p-6 border border-cyan-500/20 bg-cyan-500/5">
+                    <p className="text-sm text-slate-400 mb-3">Based on your income and goals:</p>
+                    <p className="text-4xl font-bold text-cyan-400 mb-2">
+                      ₹{Math.round(safeToSpend).toLocaleString()}
+                    </p>
+                    <p className="text-lg text-white font-medium">Safe to spend today</p>
+                  </div>
+                  <p className="text-slate-400 text-sm">
+                    This updates daily based on your income, expenses, and goals.
+                  </p>
+                </>
+              ) : (
+                <div className="glass-card rounded-xl p-6 border border-slate-500/20 bg-slate-500/5">
+                  <p className="text-sm text-slate-400 mb-3">Add your monthly income in Settings to see your safe-to-spend amount.</p>
+                  <p className="text-lg text-white font-medium">Welcome to Stash!</p>
+                </div>
+              )}
               <Button variant="primary" className="w-full" onClick={handleComplete}>
                 Go to Dashboard
               </Button>

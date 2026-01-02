@@ -98,6 +98,7 @@ export const groupAPI = {
 
 export const userAPI = {
   getAll: () => api.get('/users'),
+  updateProfile: (data) => api.patch('/users/profile', data),
 };
 
 export const transactionAPI = {
