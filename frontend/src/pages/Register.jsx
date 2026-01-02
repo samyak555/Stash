@@ -6,6 +6,7 @@ import Logo from '../components/Logo';
 import Footer from '../components/Footer';
 import Button from '../components/ui/Button';
 
+// Register component with extended onboarding fields
 const Register = ({ setUser }) => {
   const [formData, setFormData] = useState({
     name: '',
