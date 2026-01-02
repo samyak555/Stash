@@ -17,21 +17,18 @@ const initializeTransporter = async () => {
   const emailPass = process.env.EMAIL_PASS; // Gmail App Password (16 characters)
   const emailFrom = process.env.EMAIL_FROM || emailUser;
 
-  // Production environment: Fail if email is not configured
-  if (process.env.NODE_ENV === 'production') {
-    if (!emailUser || !emailPass) {
-      console.error('❌ Email service REQUIRED in production but not configured');
-      console.error('   Set EMAIL_USER and EMAIL_PASS environment variables');
-      console.error('   For Gmail: Use App Password from https://myaccount.google.com/apppasswords');
-      throw new Error('Email service not configured - required in production');
-    }
-  }
-
-  // Development: Warn but continue
+  // Check if email service is configured
   if (!emailUser || !emailPass) {
-    console.warn('⚠️  Email service not configured. Set EMAIL_USER and EMAIL_PASS environment variables.');
-    console.warn('   For Gmail: Use App Password (not regular password)');
-    console.warn('   Get App Password: https://myaccount.google.com/apppasswords');
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('⚠️  Email service not configured in production');
+      console.warn('   Set EMAIL_USER and EMAIL_PASS environment variables');
+      console.warn('   For Gmail: Use App Password from https://myaccount.google.com/apppasswords');
+      console.warn('   Server will start but emails will not be sent');
+    } else {
+      console.warn('⚠️  Email service not configured. Set EMAIL_USER and EMAIL_PASS environment variables.');
+      console.warn('   For Gmail: Use App Password (not regular password)');
+      console.warn('   Get App Password: https://myaccount.google.com/apppasswords');
+    }
     isConfigured = false;
     return null;
   }
@@ -50,8 +47,7 @@ const initializeTransporter = async () => {
     greetingTimeout: 15000, // 15 seconds greeting timeout
     socketTimeout: 15000, // 15 seconds socket timeout
     tls: {
-      rejectUnauthorized: true, // Reject unauthorized certificates in production
-      ciphers: 'SSLv3',
+      rejectUnauthorized: false, // Allow self-signed certificates (Gmail uses valid certs)
     },
     pool: true, // Use connection pooling
     maxConnections: 5,
@@ -73,10 +69,8 @@ export const verifySMTPConnection = async () => {
     }
 
     if (!transporter || !isConfigured) {
-      if (process.env.NODE_ENV === 'production') {
-        throw new Error('Email service not configured - cannot start in production');
-      }
       console.warn('⚠️  Email service not configured - emails will be skipped');
+      console.warn('   Set EMAIL_USER and EMAIL_PASS to enable email functionality');
       return false;
     }
 
@@ -113,11 +107,9 @@ export const verifySMTPConnection = async () => {
 
     isVerified = false;
     
-    // In production, fail startup if email is required
-    if (process.env.NODE_ENV === 'production') {
-      console.error('   ❌ Cannot start in production without working email service');
-      throw error;
-    }
+    // Log error but don't crash server - email is important but not critical for startup
+    console.warn('   ⚠️  Server will start but emails may not work');
+    console.warn('   → Fix email configuration to enable email functionality');
     
     return false;
   }

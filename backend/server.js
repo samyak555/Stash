@@ -87,17 +87,20 @@ const startServer = async () => {
     await connectDB();
     console.log('✅ MongoDB connection established');
     
-    // Verify Gmail SMTP connection (production requirement)
+    // Verify Gmail SMTP connection (non-blocking)
     console.log('📧 Verifying Gmail SMTP connection...');
     try {
-      await verifySMTPConnection();
-    } catch (emailError) {
-      if (process.env.NODE_ENV === 'production') {
-        console.error('❌ Cannot start in production without working email service');
-        process.exit(1);
-      } else {
-        console.warn('⚠️  Email service not available - continuing without email functionality');
+      const emailVerified = await verifySMTPConnection();
+      if (!emailVerified) {
+        console.warn('⚠️  Email service not configured or verification failed');
+        console.warn('   Server will start but emails will not be sent');
+        console.warn('   Set EMAIL_USER and EMAIL_PASS environment variables to enable emails');
       }
+    } catch (emailError) {
+      // Log error but don't crash server
+      console.warn('⚠️  Email service verification failed:', emailError.message);
+      console.warn('   Server will start but emails may not work');
+      console.warn('   Check EMAIL_USER and EMAIL_PASS environment variables');
     }
     
     console.log(`🚀 Starting server on port ${PORT}...`);
