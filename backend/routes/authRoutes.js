@@ -1,6 +1,6 @@
 import express from 'express';
-import { register, login, verifyOTP, resendOTP, forgotPassword, resetPassword, googleAuth } from '../controllers/authController.js';
-import { sendOTP, verifyOTP as verifyOTPController } from '../controllers/otpController.js';
+import { register, login, verifyOTP as verifyRegistrationOTP, resendOTP, forgotPassword, resetPassword, googleAuth } from '../controllers/authController.js';
+import { sendOTP, verifyOTP } from '../controllers/otpController.js';
 import { authRateLimiter, passwordResetRateLimiter, otpRateLimiter } from '../utils/rateLimiter.js';
 
 const router = express.Router();
@@ -8,8 +8,8 @@ const router = express.Router();
 // Registration - sends OTP (no token returned until verified)
 router.post('/register', authRateLimiter, register);
 
-// OTP Verification - activates account and returns token
-router.post('/verify-otp', otpRateLimiter, verifyOTP);
+// Registration OTP Verification - activates account and returns token
+router.post('/verify-registration-otp', otpRateLimiter, verifyRegistrationOTP);
 
 // Resend OTP
 router.post('/resend-otp', otpRateLimiter, resendOTP);
@@ -26,6 +26,6 @@ router.post('/google', authRateLimiter, googleAuth);
 
 // Standalone OTP endpoints (in-memory storage)
 router.post('/send-otp', otpRateLimiter, sendOTP);
-router.post('/verify-otp', otpRateLimiter, verifyOTPController);
+router.post('/verify-otp', otpRateLimiter, verifyOTP);
 
 export default router;
