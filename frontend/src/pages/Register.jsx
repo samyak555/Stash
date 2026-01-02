@@ -45,7 +45,7 @@ const Register = ({ setUser }) => {
       ...formData,
       [name]: value,
     });
-    // Clear error when user starts typing
+    // Clear error when user starts typing (but don't validate on keystroke)
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
     }
@@ -54,20 +54,24 @@ const Register = ({ setUser }) => {
   const validateForm = () => {
     const newErrors = {};
 
+    // Normalize password values with trim
+    const password = formData.password ? formData.password.trim() : '';
+    const confirmPassword = formData.confirmPassword ? formData.confirmPassword.trim() : '';
+
     // Password validation
-    if (!formData.password) {
+    if (!password) {
       newErrors.password = 'Password is required';
     } else {
-      const { errors: passwordErrors } = getPasswordStrength(formData.password);
+      const { errors: passwordErrors } = getPasswordStrength(password);
       if (passwordErrors.length > 0) {
         newErrors.password = `Missing: ${passwordErrors.join(', ')}`;
       }
     }
 
-    // Confirm password
-    if (!formData.confirmPassword) {
+    // Confirm password validation (only on submit)
+    if (!confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
+    } else if (password !== confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
