@@ -220,18 +220,25 @@ export const verifyEmail = async (req, res) => {
     );
 
     // Redirect to frontend auth callback with token and user data (auto-login after verification)
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
-    redirectUrl.searchParams.set('token', token_jwt);
-    redirectUrl.searchParams.set('emailVerified', 'true');
-    redirectUrl.searchParams.set('name', encodeURIComponent(user.name));
-    redirectUrl.searchParams.set('email', encodeURIComponent(user.email));
-    redirectUrl.searchParams.set('role', user.role || 'user');
-    redirectUrl.searchParams.set('onboardingCompleted', user.onboardingCompleted ? 'true' : 'false');
-    redirectUrl.searchParams.set('_id', user._id.toString());
-    redirectUrl.searchParams.set('message', 'Email verified successfully!');
-    
-    res.redirect(redirectUrl.toString());
+    try {
+      const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, ''); // Remove trailing slash
+      const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
+      redirectUrl.searchParams.set('token', token_jwt);
+      redirectUrl.searchParams.set('emailVerified', 'true');
+      redirectUrl.searchParams.set('name', encodeURIComponent(user.name));
+      redirectUrl.searchParams.set('email', encodeURIComponent(user.email));
+      redirectUrl.searchParams.set('role', user.role || 'user');
+      redirectUrl.searchParams.set('onboardingCompleted', user.onboardingCompleted ? 'true' : 'false');
+      redirectUrl.searchParams.set('_id', user._id.toString());
+      redirectUrl.searchParams.set('message', 'Email verified successfully!');
+      
+      res.redirect(redirectUrl.toString());
+    } catch (urlError) {
+      console.error('Error constructing redirect URL:', urlError);
+      // Fallback: redirect to login with token in query
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      res.redirect(`${frontendUrl}/login?token=${token_jwt}&emailVerified=true`);
+    }
   } catch (error) {
     console.error('Email verification error:', error.message);
     res.status(500).json({ message: 'Email verification failed' });
@@ -607,17 +614,25 @@ export const googleAuthCallback = async (req, res) => {
     );
 
     // Redirect to frontend with token and user data (include all data to avoid extra API call)
-    const redirectUrl = new URL(`${FRONTEND_URL}/auth/callback`);
-    redirectUrl.searchParams.set('token', token);
-    redirectUrl.searchParams.set('emailVerified', 'true');
-    redirectUrl.searchParams.set('name', encodeURIComponent(user.name));
-    redirectUrl.searchParams.set('email', encodeURIComponent(user.email));
-    redirectUrl.searchParams.set('role', user.role || 'user');
-    redirectUrl.searchParams.set('onboardingCompleted', user.onboardingCompleted ? 'true' : 'false');
-    redirectUrl.searchParams.set('_id', user._id.toString());
-    
-    console.log(`✅ Google OAuth successful for ${user.email}, redirecting to frontend`);
-    res.redirect(redirectUrl.toString());
+    try {
+      const frontendUrl = (FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, ''); // Remove trailing slash
+      const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
+      redirectUrl.searchParams.set('token', token);
+      redirectUrl.searchParams.set('emailVerified', 'true');
+      redirectUrl.searchParams.set('name', encodeURIComponent(user.name));
+      redirectUrl.searchParams.set('email', encodeURIComponent(user.email));
+      redirectUrl.searchParams.set('role', user.role || 'user');
+      redirectUrl.searchParams.set('onboardingCompleted', user.onboardingCompleted ? 'true' : 'false');
+      redirectUrl.searchParams.set('_id', user._id.toString());
+      
+      console.log(`✅ Google OAuth successful for ${user.email}, redirecting to frontend`);
+      res.redirect(redirectUrl.toString());
+    } catch (urlError) {
+      console.error('Error constructing redirect URL:', urlError);
+      // Fallback: redirect to login with token in query
+      const frontendUrl = FRONTEND_URL || 'http://localhost:5173';
+      res.redirect(`${frontendUrl}/login?token=${token}&emailVerified=true`);
+    }
   } catch (error) {
     console.error('Google OAuth callback error:', error.message);
     const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
