@@ -19,7 +19,6 @@ const connectDB = async () => {
   try {
     // Disable mongoose buffering to prevent slow requests
     mongoose.set('bufferCommands', false);
-    mongoose.set('bufferMaxEntries', 0);
 
     console.log('   Attempting MongoDB connection...');
     const conn = await mongoose.connect(MONGODB_URI, {
