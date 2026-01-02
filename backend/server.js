@@ -60,28 +60,52 @@ process.on('unhandledRejection', (err) => {
 // Start server only after DB connection
 const startServer = async () => {
   try {
+    console.log('📦 Starting server...');
+    console.log('📋 Environment check:');
+    console.log(`   PORT: ${process.env.PORT || 'not set (using default 5000)'}`);
+    console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'not set'}`);
+    console.log(`   MONGODB_URI: ${process.env.MONGODB_URI ? 'set' : '❌ NOT SET'}`);
+    console.log(`   JWT_SECRET: ${process.env.JWT_SECRET ? 'set' : '❌ NOT SET'}`);
+    
     // Validate environment variables before starting
     if (!process.env.MONGODB_URI) {
       console.error('❌ MONGODB_URI environment variable is not set');
+      console.error('   Please set MONGODB_URI in Render dashboard → Environment');
       process.exit(1);
     }
     
     if (!process.env.JWT_SECRET) {
       console.error('❌ JWT_SECRET environment variable is not set');
+      console.error('   Please set JWT_SECRET in Render dashboard → Environment');
       process.exit(1);
     }
 
     console.log('🔌 Connecting to MongoDB...');
     await connectDB();
+    console.log('✅ MongoDB connection established');
     
+    console.log(`🚀 Starting server on port ${PORT}...`);
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`✅ Server running successfully on port ${PORT}`);
+      console.log(`🌐 Health check: http://localhost:${PORT}/api/health`);
     });
   } catch (error) {
-    console.error('❌ Failed to start server:', error.message);
+    console.error('❌ Failed to start server');
+    console.error('   Error type:', error.name);
+    console.error('   Error message:', error.message);
+    if (error.stack) {
+      console.error('   Stack trace:', error.stack);
+    }
     process.exit(1);
   }
 };
+
+// Handle any uncaught errors
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error.message);
+  console.error('   Stack:', error.stack);
+  process.exit(1);
+});
 
 startServer();
 
