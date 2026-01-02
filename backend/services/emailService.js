@@ -146,17 +146,93 @@ export const sendOTPEmail = async (to, otp, subject = 'Your Stash verification c
 
 /**
  * Verify email service configuration
- * @returns {Promise<boolean>} - True if service is configured and working
+ * @returns {Promise<{success: boolean, error?: string, details?: any}>} - Verification result with details
  */
 export const verifyEmailService = async () => {
   try {
-    const mailTransporter = getTransporter();
+    // Check if environment variables are set
+    const emailUser = process.env.EMAIL_USER;
+    const emailPass = process.env.EMAIL_PASS;
+    const emailHost = process.env.EMAIL_HOST || 'smtp.gmail.com';
+    const emailPort = process.env.EMAIL_PORT || '587';
+
+    if (!emailUser || !emailPass) {
+      return {
+        success: false,
+        error: 'EMAIL_USER and EMAIL_PASS environment variables are not set',
+        details: {
+          EMAIL_USER: emailUser ? 'set' : 'not set',
+          EMAIL_PASS: emailPass ? 'set' : 'not set',
+          EMAIL_HOST: emailHost,
+          EMAIL_PORT: emailPort,
+        },
+      };
+    }
+
+    // Get or create transporter
+    let mailTransporter;
+    try {
+      mailTransporter = getTransporter();
+    } catch (transporterError) {
+      return {
+        success: false,
+        error: 'Failed to create email transporter: ' + transporterError.message,
+        details: {
+          EMAIL_USER: 'set',
+          EMAIL_PASS: 'set',
+          EMAIL_HOST: emailHost,
+          EMAIL_PORT: emailPort,
+        },
+      };
+    }
+
+    // Verify SMTP connection
     await mailTransporter.verify();
     console.log('✅ Email service verified successfully');
-    return true;
+    return {
+      success: true,
+      details: {
+        EMAIL_HOST: emailHost,
+        EMAIL_PORT: emailPort,
+        EMAIL_USER: emailUser,
+        EMAIL_FROM: process.env.EMAIL_FROM || emailUser,
+      },
+    };
   } catch (error) {
     console.error('❌ Email service verification failed:', error.message);
-    return false;
+    console.error('   Error code:', error.code);
+    console.error('   Error details:', error);
+
+    let errorMessage = 'Email service verification failed';
+    let errorDetails = {};
+
+    if (error.code === 'EAUTH') {
+      errorMessage = 'Gmail authentication failed - check EMAIL_USER and EMAIL_PASS';
+      errorDetails = {
+        issue: 'Authentication failed',
+        solution: 'Verify EMAIL_PASS is a Gmail App Password (16 characters), not regular password',
+        help: 'Get App Password: https://myaccount.google.com/apppasswords',
+      };
+    } else if (error.code === 'ECONNECTION' || error.code === 'ETIMEDOUT') {
+      errorMessage = 'SMTP connection failed - check EMAIL_HOST and EMAIL_PORT';
+      errorDetails = {
+        issue: 'Connection failed',
+        solution: 'Verify network connectivity to smtp.gmail.com:587',
+        EMAIL_HOST: process.env.EMAIL_HOST || 'smtp.gmail.com',
+        EMAIL_PORT: process.env.EMAIL_PORT || '587',
+      };
+    } else {
+      errorDetails = {
+        errorCode: error.code,
+        errorMessage: error.message,
+      };
+    }
+
+    return {
+      success: false,
+      error: errorMessage,
+      details: errorDetails,
+    };
   }
 };
 

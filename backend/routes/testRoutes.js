@@ -43,19 +43,21 @@ router.get('/email-config', (req, res) => {
  */
 router.get('/email-verify', async (req, res) => {
   try {
-    const isVerified = await verifyEmailService();
+    const result = await verifyEmailService();
     
-    if (isVerified) {
+    if (result.success) {
       res.json({
         success: true,
         message: 'Email service is working correctly!',
         status: 'verified',
+        details: result.details,
       });
     } else {
       res.status(500).json({
         success: false,
-        message: 'Email service verification failed. Check server logs for details.',
+        message: result.error || 'Email service verification failed',
         status: 'failed',
+        details: result.details,
       });
     }
   } catch (error) {
@@ -63,6 +65,7 @@ router.get('/email-verify', async (req, res) => {
       success: false,
       message: 'Email service error: ' + error.message,
       status: 'error',
+      error: error.message,
     });
   }
 });
