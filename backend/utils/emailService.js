@@ -450,10 +450,27 @@ export const sendPasswordChangeConfirmation = async (email, name) => {
  */
 export const sendOTPEmail = async (email, otp, name) => {
   try {
+    // Check if email service is configured
+    if (!isConfigured) {
+      throw new Error('Email service not configured - EMAIL_USER and EMAIL_PASS must be set');
+    }
+
     const mailTransporter = await getTransporter();
     
+    if (!mailTransporter) {
+      throw new Error('Email transporter not available');
+    }
+
+    // Try to verify connection if not already verified
     if (!isVerified) {
-      throw new Error('Email service not verified - cannot send OTP');
+      try {
+        await mailTransporter.verify();
+        isVerified = true;
+        console.log('✅ Email service verified on-demand');
+      } catch (verifyError) {
+        console.error('Email service verification failed:', verifyError.message);
+        throw new Error('Email service not verified - cannot send OTP');
+      }
     }
 
     const mailOptions = {

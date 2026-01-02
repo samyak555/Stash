@@ -144,10 +144,30 @@ export const register = async (req, res) => {
       await sendOTPEmail(user.email, otp, user.name);
       console.log(`✅ OTP sent to ${user.email}`);
     } catch (emailError) {
-      console.error('Failed to send OTP email:', emailError.message);
+      console.error('❌ Failed to send OTP email:', emailError.message);
+      console.error('   Error details:', emailError.code || 'Unknown error');
+      
+      // Log specific error details for debugging
+      if (emailError.code === 'EAUTH') {
+        console.error('   → Gmail authentication failed');
+        console.error('   → Check EMAIL_USER and EMAIL_PASS in Render environment variables');
+        console.error('   → Ensure you are using Gmail App Password, not regular password');
+      } else if (emailError.code === 'ECONNECTION' || emailError.code === 'ETIMEDOUT') {
+        console.error('   → SMTP connection failed');
+        console.error('   → Check EMAIL_HOST and EMAIL_PORT');
+        console.error('   → Verify network connectivity to smtp.gmail.com:587');
+      }
+      
       // Delete user if OTP email fails (user cannot verify without OTP)
       await User.findByIdAndDelete(user._id);
-      return res.status(500).json({ message: 'Failed to send verification code. Please try again.' });
+      
+      // Return more specific error message
+      let errorMessage = 'Failed to send verification code. Please try again.';
+      if (process.env.NODE_ENV !== 'production') {
+        errorMessage = `Failed to send verification code: ${emailError.message}`;
+      }
+      
+      return res.status(500).json({ message: errorMessage });
     }
 
     // Return user data (NO TOKEN - user cannot login until verified)
