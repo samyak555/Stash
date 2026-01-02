@@ -116,49 +116,16 @@ export const updateProfile = async (req, res) => {
 /**
  * Delete user account and all associated data
  * DELETE /api/users/account
- * Requires Google re-authentication (idToken in body)
+ * Requires authenticated user (JWT token)
  */
 export const deleteAccount = async (req, res) => {
   try {
     const userId = req.userId;
-    const { idToken } = req.body; // Google ID token for re-authentication
 
-    if (!idToken) {
-      return res.status(400).json({ 
-        message: 'Google re-authentication required. Please sign in again to confirm account deletion.' 
-      });
-    }
-
-    // Verify Google ID token
-    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-    if (!GOOGLE_CLIENT_ID) {
-      return res.status(500).json({ message: 'Server configuration error' });
-    }
-
-    const { OAuth2Client } = await import('google-auth-library');
-    const client = new OAuth2Client(GOOGLE_CLIENT_ID);
-    
-    let ticket;
-    try {
-      ticket = await client.verifyIdToken({
-        idToken,
-        audience: GOOGLE_CLIENT_ID,
-      });
-    } catch (verifyError) {
-      return res.status(401).json({ message: 'Invalid Google token. Please sign in again.' });
-    }
-
-    const payload = ticket.getPayload();
-    const userEmail = payload.email;
-
-    // Verify the token belongs to the current user
+    // Verify user exists and is authenticated
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
-    }
-
-    if (user.email.toLowerCase() !== userEmail.toLowerCase()) {
-      return res.status(403).json({ message: 'Token does not match current user' });
     }
 
     // Only allow deletion for Google-authenticated users

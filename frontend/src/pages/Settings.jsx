@@ -573,14 +573,37 @@ const DeleteAccountSection = () => {
       return;
     }
 
-    // Store deletion intent in localStorage
-    localStorage.setItem('pendingAccountDeletion', 'true');
-    
-    // Redirect to Google OAuth for re-authentication
-    // The backend will handle deletion after successful auth
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    const backendUrl = API_URL.replace('/api', '');
-    window.location.href = `${backendUrl}/api/auth/google?deleteAccount=true`;
+    // Confirm deletion with user
+    const finalConfirm = window.confirm(
+      'Are you absolutely sure? This will permanently delete your account and ALL data. This action cannot be undone.'
+    );
+
+    if (!finalConfirm) {
+      setShowConfirm(false);
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      // Call delete account API directly
+      const { userAPI } = await import('../services/api');
+      await userAPI.deleteAccount();
+
+      // Clear all local data
+      localStorage.clear();
+      
+      toast.success('Account deleted successfully');
+      
+      // Redirect to login after a brief delay
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 1000);
+    } catch (error) {
+      console.error('Delete account error:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete account. Please try again.');
+      setDeleting(false);
+      setShowConfirm(false);
+    }
   };
 
   return (
