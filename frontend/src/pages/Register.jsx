@@ -6,7 +6,6 @@ import Logo from '../components/Logo';
 import Footer from '../components/Footer';
 import Button from '../components/ui/Button';
 
-// Register component with extended onboarding fields
 const Register = ({ setUser }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -16,8 +15,6 @@ const Register = ({ setUser }) => {
     gender: '',
     age: '',
     profession: '',
-    incomeSources: [],
-    incomeRange: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -25,49 +22,32 @@ const Register = ({ setUser }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Password validation
-  const validatePassword = (password) => {
+  // Password validation with strength indicator
+  const getPasswordStrength = (password) => {
+    if (!password) return { strength: '', errors: [] };
+    
     const errors = [];
-    if (password.length < 8) {
-      errors.push('At least 8 characters');
-    }
-    if (!/[A-Z]/.test(password)) {
-      errors.push('1 uppercase letter');
-    }
-    if (!/[a-z]/.test(password)) {
-      errors.push('1 lowercase letter');
-    }
-    if (!/[0-9]/.test(password)) {
-      errors.push('1 number');
-    }
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-      errors.push('1 special character');
-    }
-    return errors;
+    if (password.length < 8) errors.push('8+ characters');
+    if (!/[A-Z]/.test(password)) errors.push('uppercase');
+    if (!/[a-z]/.test(password)) errors.push('lowercase');
+    if (!/[0-9]/.test(password)) errors.push('number');
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) errors.push('special char');
+    
+    const remaining = errors.length;
+    if (remaining === 0) return { strength: 'strong', errors: [] };
+    if (remaining <= 2) return { strength: 'medium', errors };
+    return { strength: 'weak', errors };
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    if (name === 'incomeSources') {
-      // Handle multi-select for income sources
-      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-      setFormData({
-        ...formData,
-        incomeSources: selectedOptions,
-      });
-      if (errors.incomeSources) {
-        setErrors({ ...errors, incomeSources: '' });
-      }
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-      // Clear error when user starts typing
-      if (errors[name]) {
-        setErrors({ ...errors, [name]: '' });
-      }
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: '' });
     }
   };
 
@@ -78,9 +58,9 @@ const Register = ({ setUser }) => {
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else {
-      const passwordErrors = validatePassword(formData.password);
+      const { errors: passwordErrors } = getPasswordStrength(formData.password);
       if (passwordErrors.length > 0) {
-        newErrors.password = `Password must contain: ${passwordErrors.join(', ')}`;
+        newErrors.password = `Missing: ${passwordErrors.join(', ')}`;
       }
     }
 
@@ -102,16 +82,6 @@ const Register = ({ setUser }) => {
     // Profession validation
     if (!formData.profession) {
       newErrors.profession = 'Profession is required';
-    }
-
-    // Income sources validation
-    if (!formData.incomeSources || formData.incomeSources.length === 0) {
-      newErrors.incomeSources = 'At least one income source is required';
-    }
-
-    // Income range validation
-    if (!formData.incomeRange) {
-      newErrors.incomeRange = 'Income range is required';
     }
 
     setErrors(newErrors);
@@ -148,13 +118,12 @@ const Register = ({ setUser }) => {
     }
   };
 
-  const passwordErrors = formData.password ? validatePassword(formData.password) : [];
+  const passwordStrength = getPasswordStrength(formData.password);
 
-  // Force rebuild - Password fields are required for authentication
   return (
     <div className="min-h-screen flex flex-col bg-app-bg relative overflow-hidden">
       <div className="flex-1 flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="w-full max-w-[540px] space-y-6 animate-fade-in">
+        <div className="w-full max-w-[500px] space-y-6 animate-fade-in">
           {/* STASH Logo */}
           <div className="text-center animate-slide-up mb-6">
             <Logo size="xl" showText={true} iconOnly={false} className="justify-center" />
@@ -222,6 +191,7 @@ const Register = ({ setUser }) => {
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
+                    minLength={8}
                     className={`w-full px-4 py-3 border rounded-xl bg-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 focus:ring-2 focus:ring-cyan-400/20 transition-all text-sm font-normal pr-12 ${
                       errors.password ? 'border-red-400/50' : 'border-white/10'
                     }`}
@@ -246,10 +216,16 @@ const Register = ({ setUser }) => {
                     )}
                   </button>
                 </div>
-                {formData.password && passwordErrors.length > 0 && (
-                  <p className="mt-1.5 text-xs text-amber-400">
-                    Required: {passwordErrors.join(', ')}
-                  </p>
+                {formData.password && (
+                  <div className="mt-1.5">
+                    {passwordStrength.errors.length > 0 ? (
+                      <p className="text-xs text-amber-400">
+                        Need: {passwordStrength.errors.join(', ')}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-green-400">Password strength: {passwordStrength.strength}</p>
+                    )}
+                  </div>
                 )}
                 {errors.password && (
                   <p className="mt-1.5 text-xs text-red-400">{errors.password}</p>
@@ -304,15 +280,18 @@ const Register = ({ setUser }) => {
                 <select
                   id="gender"
                   name="gender"
-                  className="w-full px-4 py-3 border border-white/10 rounded-xl bg-white/5 text-white focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 focus:ring-2 focus:ring-cyan-400/20 transition-all text-sm font-normal"
+                  className="w-full px-4 py-3 border border-white/10 rounded-xl bg-[#1a1d29] text-[#E5E7EB] focus:outline-none focus:border-cyan-400/50 focus:bg-[#1f2332] focus:ring-2 focus:ring-cyan-400/20 transition-all text-sm font-normal [&>option]:bg-[#1a1d29] [&>option]:text-[#E5E7EB]"
                   value={formData.gender}
                   onChange={handleChange}
+                  style={{
+                    colorScheme: 'dark'
+                  }}
                 >
-                  <option value="">Select gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                  <option value="Prefer not to say">Prefer not to say</option>
+                  <option value="" className="bg-[#1a1d29] text-[#E5E7EB]">Select gender</option>
+                  <option value="Male" className="bg-[#1a1d29] text-[#E5E7EB]">Male</option>
+                  <option value="Female" className="bg-[#1a1d29] text-[#E5E7EB]">Female</option>
+                  <option value="Non-binary" className="bg-[#1a1d29] text-[#E5E7EB]">Non-binary</option>
+                  <option value="Prefer not to say" className="bg-[#1a1d29] text-[#E5E7EB]">Prefer not to say</option>
                 </select>
               </div>
 
@@ -348,86 +327,26 @@ const Register = ({ setUser }) => {
                   id="profession"
                   name="profession"
                   required
-                  className={`w-full px-4 py-3 border rounded-xl bg-white/5 text-white focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 focus:ring-2 focus:ring-cyan-400/20 transition-all text-sm font-normal ${
+                  className={`w-full px-4 py-3 border rounded-xl bg-[#1a1d29] text-[#E5E7EB] focus:outline-none focus:border-cyan-400/50 focus:bg-[#1f2332] focus:ring-2 focus:ring-cyan-400/20 transition-all text-sm font-normal [&>option]:bg-[#1a1d29] [&>option]:text-[#E5E7EB] ${
                     errors.profession ? 'border-red-400/50' : 'border-white/10'
                   }`}
                   value={formData.profession}
                   onChange={handleChange}
+                  style={{
+                    colorScheme: 'dark'
+                  }}
                 >
-                  <option value="">Select profession</option>
-                  <option value="Student">Student</option>
-                  <option value="Salaried (Private)">Salaried (Private)</option>
-                  <option value="Salaried (Government)">Salaried (Government)</option>
-                  <option value="Business Owner">Business Owner</option>
-                  <option value="Freelancer">Freelancer</option>
-                  <option value="Self Employed">Self Employed</option>
-                  <option value="Homemaker">Homemaker</option>
-                  <option value="Retired">Retired</option>
-                  <option value="Unemployed">Unemployed</option>
-                  <option value="Other">Other</option>
+                  <option value="" className="bg-[#1a1d29] text-[#E5E7EB]">Select profession</option>
+                  <option value="Student" className="bg-[#1a1d29] text-[#E5E7EB]">Student</option>
+                  <option value="Salaried" className="bg-[#1a1d29] text-[#E5E7EB]">Salaried</option>
+                  <option value="Business" className="bg-[#1a1d29] text-[#E5E7EB]">Business</option>
+                  <option value="Freelancer" className="bg-[#1a1d29] text-[#E5E7EB]">Freelancer</option>
+                  <option value="Homemaker" className="bg-[#1a1d29] text-[#E5E7EB]">Homemaker</option>
+                  <option value="Retired" className="bg-[#1a1d29] text-[#E5E7EB]">Retired</option>
+                  <option value="Other" className="bg-[#1a1d29] text-[#E5E7EB]">Other</option>
                 </select>
                 {errors.profession && (
                   <p className="mt-1.5 text-xs text-red-400">{errors.profession}</p>
-                )}
-              </div>
-
-              {/* Income Sources */}
-              <div>
-                <label htmlFor="incomeSources" className="block text-sm font-medium text-slate-300 mb-2 tracking-tight">
-                  Primary Source of Income <span className="text-red-400">*</span>
-                </label>
-                <select
-                  id="incomeSources"
-                  name="incomeSources"
-                  required
-                  multiple
-                  size="4"
-                  className={`w-full px-4 py-3 border rounded-xl bg-white/5 text-white focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 focus:ring-2 focus:ring-cyan-400/20 transition-all text-sm font-normal ${
-                    errors.incomeSources ? 'border-red-400/50' : 'border-white/10'
-                  }`}
-                  value={formData.incomeSources}
-                  onChange={handleChange}
-                >
-                  <option value="Salary">Salary</option>
-                  <option value="Business">Business</option>
-                  <option value="Freelancing">Freelancing</option>
-                  <option value="Investments">Investments</option>
-                  <option value="Rental Income">Rental Income</option>
-                  <option value="Pension">Pension</option>
-                  <option value="Scholarship">Scholarship</option>
-                  <option value="Other">Other</option>
-                </select>
-                <p className="mt-1.5 text-xs text-slate-400">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</p>
-                {errors.incomeSources && (
-                  <p className="mt-1.5 text-xs text-red-400">{errors.incomeSources}</p>
-                )}
-              </div>
-
-              {/* Income Range */}
-              <div>
-                <label htmlFor="incomeRange" className="block text-sm font-medium text-slate-300 mb-2 tracking-tight">
-                  Monthly Income Range <span className="text-red-400">*</span>
-                </label>
-                <select
-                  id="incomeRange"
-                  name="incomeRange"
-                  required
-                  className={`w-full px-4 py-3 border rounded-xl bg-white/5 text-white focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 focus:ring-2 focus:ring-cyan-400/20 transition-all text-sm font-normal ${
-                    errors.incomeRange ? 'border-red-400/50' : 'border-white/10'
-                  }`}
-                  value={formData.incomeRange}
-                  onChange={handleChange}
-                >
-                  <option value="">Select income range</option>
-                  <option value="Below ₹10,000">Below ₹10,000</option>
-                  <option value="₹10,000 – ₹25,000">₹10,000 – ₹25,000</option>
-                  <option value="₹25,000 – ₹50,000">₹25,000 – ₹50,000</option>
-                  <option value="₹50,000 – ₹1,00,000">₹50,000 – ₹1,00,000</option>
-                  <option value="₹1,00,000 – ₹5,00,000">₹1,00,000 – ₹5,00,000</option>
-                  <option value="Above ₹5,00,000">Above ₹5,00,000</option>
-                </select>
-                {errors.incomeRange && (
-                  <p className="mt-1.5 text-xs text-red-400">{errors.incomeRange}</p>
                 )}
               </div>
             </div>

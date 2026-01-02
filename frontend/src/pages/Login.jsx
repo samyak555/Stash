@@ -181,19 +181,6 @@ const Login = ({ setUser }) => {
                   </>
                 )}
               </button>
-
-              {/* Description */}
-              <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-xl p-4">
-                <p className="text-xs text-cyan-300 font-medium mb-2 flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Automatic Transaction Sync
-                </p>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  When you sign in with Google, we automatically connect your Gmail to fetch transactions from Paytm, PhonePe, banks, and more. No manual setup required!
-                </p>
-              </div>
             </div>
 
             {/* Divider */}
@@ -261,7 +248,7 @@ const Login = ({ setUser }) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="btn-premium w-full py-4 px-6 text-base font-semibold rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none"
+                  className="w-full py-4 px-6 text-base font-semibold rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 hover:from-blue-600 hover:via-cyan-600 hover:to-teal-600 hover:shadow-lg hover:shadow-cyan-500/25 focus:outline-none focus:ring-2 focus:ring-cyan-400/50"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center">

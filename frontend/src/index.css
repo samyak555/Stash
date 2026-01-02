@@ -350,3 +350,41 @@ input:focus, textarea:focus, select:focus {
   scrollbar-width: thin;
   scrollbar-color: rgba(37, 99, 235, 0.2) transparent;
 }
+
+/* Dark dropdown styling - Global fix */
+select {
+  color-scheme: dark;
+  background-color: #1a1d29 !important;
+  color: #E5E7EB !important;
+}
+
+select option {
+  background-color: #1a1d29 !important;
+  color: #E5E7EB !important;
+}
+
+select option:hover,
+select option:focus,
+select option:checked {
+  background-color: #1f2332 !important;
+  color: #E5E7EB !important;
+}
+
+/* Multi-select dropdown styling */
+select[multiple] {
+  background-color: #1a1d29 !important;
+  color: #E5E7EB !important;
+}
+
+select[multiple] option {
+  background-color: #1a1d29 !important;
+  color: #E5E7EB !important;
+  padding: 8px 12px;
+}
+
+select[multiple] option:hover,
+select[multiple] option:focus,
+select[multiple] option:checked {
+  background-color: #2563EB !important;
+  color: #FFFFFF !important;
+}

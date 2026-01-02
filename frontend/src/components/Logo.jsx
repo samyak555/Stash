@@ -6,10 +6,10 @@ import iconSrc from '../assets/logo/icon.png';
 
 const Logo = ({ size = 'default', className = '', showText = true, iconOnly = false }) => {
   const sizeClasses = {
-    small: 'w-10 h-10',
-    default: 'w-14 h-14',
-    large: 'w-20 h-20',
-    xl: 'w-28 h-28',
+    small: 'w-12 h-12',
+    default: 'w-16 h-16',
+    large: 'w-24 h-24',
+    xl: 'w-36 h-36',
   };
 
   const imageSrc = iconOnly ? iconSrc : logoSrc;
@@ -38,8 +38,8 @@ const Logo = ({ size = 'default', className = '', showText = true, iconOnly = fa
       />
       
       {showText && (
-        <span className="text-lg font-semibold text-gradient-brand tracking-tight lowercase">
-          stash
+        <span className="text-lg font-semibold text-gradient-brand tracking-tight">
+          Stash
         </span>
       )}
     </div>
