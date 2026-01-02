@@ -5,6 +5,10 @@ import { authRateLimiter, passwordResetRateLimiter, otpRateLimiter, resendOTPRat
 
 const router = express.Router();
 
+// ============================================
+// PRODUCTION AUTHENTICATION ROUTES
+// ============================================
+
 // Registration - sends OTP (no token returned until verified)
 router.post('/register', authRateLimiter, register);
 
@@ -17,15 +21,17 @@ router.post('/resend-otp', resendOTPRateLimiter, resendOTP);
 // Login - BLOCKED if email not verified
 router.post('/login', authRateLimiter, login);
 
-// Password reset (uses OTP)
+// Password reset (secure token flow)
 router.post('/forgot-password', passwordResetRateLimiter, forgotPassword);
 router.post('/reset-password', passwordResetRateLimiter, resetPassword);
 
-// Google OAuth (skips OTP)
+// Google OAuth (real backend verification)
 router.post('/google', authRateLimiter, googleAuth);
 
-// Standalone OTP endpoints (in-memory storage)
+// ============================================
+// STANDALONE OTP ENDPOINTS (in-memory storage)
+// ============================================
 router.post('/send-otp', otpRateLimiter, sendOTP);
-router.post('/verify-otp', otpRateLimiter, verifyOTP);
+router.post('/verify-otp-standalone', otpRateLimiter, verifyStandaloneOTP);
 
 export default router;
