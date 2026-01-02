@@ -8,7 +8,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
 import connectDB from './config/db.js';
-import { verifySMTPConnection } from './utils/emailService.js';
+import { verifyEmailService } from './services/emailService.js';
 import authRoutes from './routes/authRoutes.js';
 import expenseRoutes from './routes/expenseRoutes.js';
 import incomeRoutes from './routes/incomeRoutes.js';
@@ -136,11 +136,16 @@ const startServer = async () => {
     // Verify Gmail SMTP connection (non-blocking)
     console.log('📧 Verifying Gmail SMTP connection...');
     try {
-      const emailVerified = await verifySMTPConnection();
-      if (!emailVerified) {
+      const emailResult = await verifyEmailService();
+      if (!emailResult.success) {
         console.warn('⚠️  Email service not configured or verification failed');
         console.warn('   Server will start but emails will not be sent');
-        console.warn('   Set EMAIL_USER and EMAIL_PASS environment variables to enable emails');
+        console.warn('   Details:', emailResult.error || 'Unknown error');
+        if (emailResult.details) {
+          console.warn('   Configuration:', emailResult.details);
+        }
+      } else {
+        console.log('✅ Email service verified successfully');
       }
     } catch (emailError) {
       // Log error but don't crash server
