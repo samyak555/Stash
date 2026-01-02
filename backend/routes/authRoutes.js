@@ -1,5 +1,6 @@
 import express from 'express';
 import { register, login, verifyOTP, resendOTP, forgotPassword, resetPassword, googleAuth } from '../controllers/authController.js';
+import { sendOTP, verifyOTP as verifyOTPController } from '../controllers/otpController.js';
 import { authRateLimiter, passwordResetRateLimiter, otpRateLimiter } from '../utils/rateLimiter.js';
 
 const router = express.Router();
@@ -22,5 +23,9 @@ router.post('/reset-password', passwordResetRateLimiter, resetPassword);
 
 // Google OAuth (skips OTP)
 router.post('/google', authRateLimiter, googleAuth);
+
+// Standalone OTP endpoints (in-memory storage)
+router.post('/send-otp', otpRateLimiter, sendOTP);
+router.post('/verify-otp', otpRateLimiter, verifyOTPController);
 
 export default router;
