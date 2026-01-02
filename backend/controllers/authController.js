@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
 import User from '../models/User.js';
 import { validateEmail } from '../utils/emailValidation.js';
-import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/emailService.js';
+import { sendWelcomeEmail, sendVerificationEmail, sendPasswordResetEmail } from '../utils/emailService.js';
 
 // Password validation function
 const validatePassword = (password) => {
@@ -129,13 +129,17 @@ export const register = async (req, res) => {
       verificationTokenExpires,
     });
 
-    // Send verification email
-    try {
-      await sendVerificationEmail(user.email, verificationToken);
-    } catch (emailError) {
-      console.error('Failed to send verification email:', emailError);
-      // Don't fail registration if email fails, but log it
-    }
+    // Send verification email (non-blocking)
+    sendVerificationEmail(user.email, verificationToken).catch((emailError) => {
+      console.error('Failed to send verification email:', emailError.message);
+      // Don't fail registration if email fails
+    });
+
+    // Send welcome email (non-blocking, fire and forget)
+    sendWelcomeEmail(user.email, user.name).catch((emailError) => {
+      console.error('Failed to send welcome email:', emailError.message);
+      // Welcome email failure is completely non-blocking
+    });
 
     // Return user data (exclude password and tokens)
     const userResponse = {

@@ -1,34 +1,143 @@
 import nodemailer from 'nodemailer';
 
-// Create reusable transporter
-const createTransporter = () => {
-  // Use environment variables for email configuration
+// Create reusable transporter with Gmail SMTP configuration
+let transporter = null;
+let isConfigured = false;
+
+const initializeTransporter = () => {
+  // Read credentials from environment variables
   const emailHost = process.env.EMAIL_HOST || 'smtp.gmail.com';
   const emailPort = parseInt(process.env.EMAIL_PORT || '587');
-  const emailSecure = process.env.EMAIL_SECURE === 'true';
   const emailUser = process.env.EMAIL_USER;
-  const emailPassword = process.env.EMAIL_PASSWORD;
+  const emailPass = process.env.EMAIL_PASS; // Gmail App Password
   const emailFrom = process.env.EMAIL_FROM || emailUser;
 
-  if (!emailUser || !emailPassword) {
-    console.warn('⚠️  Email service not configured. Set EMAIL_USER and EMAIL_PASSWORD environment variables.');
+  // Check if email service is configured
+  if (!emailUser || !emailPass) {
+    console.warn('⚠️  Email service not configured. Set EMAIL_USER and EMAIL_PASS environment variables.');
+    console.warn('   For Gmail: Use App Password (not regular password)');
+    isConfigured = false;
     return null;
   }
 
-  return nodemailer.createTransport({
+  // Create transporter with Gmail SMTP settings
+  transporter = nodemailer.createTransport({
     host: emailHost,
     port: emailPort,
-    secure: emailSecure,
+    secure: false, // Use TLS (port 587)
+    requireTLS: true, // Require TLS
     auth: {
       user: emailUser,
-      pass: emailPassword,
+      pass: emailPass, // Gmail App Password
+    },
+    tls: {
+      rejectUnauthorized: false, // Allow self-signed certificates (for development)
     },
   });
+
+  // Verify SMTP connection
+  transporter.verify((error, success) => {
+    if (error) {
+      console.error('❌ SMTP connection failed:', error.message);
+      console.error('   Check your EMAIL_USER and EMAIL_PASS environment variables');
+      console.error('   For Gmail: Ensure you\'re using an App Password, not your regular password');
+      isConfigured = false;
+    } else {
+      console.log('✅ SMTP connection verified successfully');
+      console.log(`   Host: ${emailHost}:${emailPort}`);
+      console.log(`   From: ${emailFrom}`);
+      isConfigured = true;
+    }
+  });
+
+  return transporter;
 };
 
-export const sendVerificationEmail = async (email, token) => {
-  const transporter = createTransporter();
+// Initialize transporter on module load
+transporter = initializeTransporter();
+
+// Get or create transporter
+const getTransporter = () => {
   if (!transporter) {
+    transporter = initializeTransporter();
+  }
+  return transporter;
+};
+
+// Send welcome email (non-blocking)
+export const sendWelcomeEmail = async (email, name) => {
+  const mailTransporter = getTransporter();
+  
+  if (!mailTransporter || !isConfigured) {
+    console.warn('⚠️  Welcome email skipped - email service not configured');
+    return null; // Don't throw error, just skip
+  }
+
+  const mailOptions = {
+    from: `"Stash" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
+    to: email,
+    subject: 'Welcome to Stash! 🎉',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Welcome to Stash</title>
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #0E1116; color: #E5E7EB; padding: 20px;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #181D26; border-radius: 16px; padding: 40px; border: 1px solid #2A2F3A;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #5EEAD4; font-size: 32px; margin: 0;">Stash</h1>
+              <p style="color: #9CA3AF; font-size: 14px; margin-top: 8px;">Secure. Grow. Succeed.</p>
+            </div>
+            
+            <h2 style="color: #E5E7EB; font-size: 24px; margin-bottom: 20px;">Welcome to Stash, ${name || 'there'}! 🎉</h2>
+            
+            <p style="color: #9CA3AF; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              Thank you for joining Stash! We're excited to help you take control of your finances.
+            </p>
+            
+            <p style="color: #9CA3AF; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+              To get started, please verify your email address by checking your inbox for a verification link.
+            </p>
+            
+            <div style="background-color: #1F2530; border-left: 4px solid #5EEAD4; padding: 16px; border-radius: 8px; margin: 30px 0;">
+              <p style="color: #E5E7EB; font-size: 14px; margin: 0; line-height: 1.6;">
+                <strong>Next steps:</strong><br>
+                1. Check your inbox for the verification email<br>
+                2. Click the verification link<br>
+                3. Start tracking your finances!
+              </p>
+            </div>
+            
+            <p style="color: #6B7280; font-size: 12px; margin-top: 40px; padding-top: 20px; border-top: 1px solid #2A2F3A;">
+              If you have any questions, feel free to reach out to our support team.
+            </p>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `Welcome to Stash, ${name || 'there'}! Please verify your email address to get started.`,
+  };
+
+  try {
+    const info = await mailTransporter.sendMail(mailOptions);
+    console.log('✅ Welcome email sent:', info.messageId);
+    return info;
+  } catch (error) {
+    // Log error but don't throw - welcome email is non-blocking
+    console.error('❌ Error sending welcome email:', error.message);
+    console.error('   This will not block user registration');
+    return null;
+  }
+};
+
+// Send verification email
+export const sendVerificationEmail = async (email, token) => {
+  const mailTransporter = getTransporter();
+  
+  if (!mailTransporter || !isConfigured) {
     throw new Error('Email service not configured');
   }
 
@@ -85,18 +194,26 @@ export const sendVerificationEmail = async (email, token) => {
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
+    const info = await mailTransporter.sendMail(mailOptions);
     console.log('✅ Verification email sent:', info.messageId);
+    console.log(`   To: ${email}`);
     return info;
   } catch (error) {
-    console.error('❌ Error sending verification email:', error);
+    console.error('❌ Error sending verification email:', error.message);
+    if (error.code === 'EAUTH') {
+      console.error('   Authentication failed - check EMAIL_USER and EMAIL_PASS');
+    } else if (error.code === 'ECONNECTION') {
+      console.error('   Connection failed - check EMAIL_HOST and EMAIL_PORT');
+    }
     throw error;
   }
 };
 
+// Send password reset email
 export const sendPasswordResetEmail = async (email, token) => {
-  const transporter = createTransporter();
-  if (!transporter) {
+  const mailTransporter = getTransporter();
+  
+  if (!mailTransporter || !isConfigured) {
     throw new Error('Email service not configured');
   }
 
@@ -153,12 +270,20 @@ export const sendPasswordResetEmail = async (email, token) => {
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
+    const info = await mailTransporter.sendMail(mailOptions);
     console.log('✅ Password reset email sent:', info.messageId);
+    console.log(`   To: ${email}`);
     return info;
   } catch (error) {
-    console.error('❌ Error sending password reset email:', error);
+    console.error('❌ Error sending password reset email:', error.message);
+    if (error.code === 'EAUTH') {
+      console.error('   Authentication failed - check EMAIL_USER and EMAIL_PASS');
+    } else if (error.code === 'ECONNECTION') {
+      console.error('   Connection failed - check EMAIL_HOST and EMAIL_PORT');
+    }
     throw error;
   }
 };
 
+// Export transporter status for health checks
+export const isEmailConfigured = () => isConfigured;
