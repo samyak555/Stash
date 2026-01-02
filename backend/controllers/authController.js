@@ -41,7 +41,6 @@ export const register = async (req, res) => {
       name,
       email,
       password,
-      confirmPassword,
       gender,
       age,
       profession,
@@ -52,12 +51,7 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'Name, email, and password are required' });
     }
 
-    // Validate password match
-    if (password !== confirmPassword) {
-      return res.status(400).json({ message: 'Passwords do not match' });
-    }
-
-    // Validate password strength
+    // Validate password strength (confirmPassword validation is handled on frontend)
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.valid) {
       return res.status(400).json({ message: passwordValidation.message });
