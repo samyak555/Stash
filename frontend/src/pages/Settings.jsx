@@ -561,7 +561,9 @@ const DeleteAccountSection = () => {
 
   // Don't show for guests
   const isGuest = localStorage.getItem('isGuest') === 'true';
-  if (isGuest || !user || user.authProvider !== 'google') {
+  // Show delete account for authenticated users (has token)
+  const hasToken = localStorage.getItem('token');
+  if (isGuest || !user || !hasToken) {
     return null;
   }
 
