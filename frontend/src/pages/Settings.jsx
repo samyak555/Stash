@@ -177,7 +177,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-10 animate-fade-in">
+    <div className="max-w-4xl mx-auto px-4 py-4 md:py-8 space-y-6 md:space-y-10 animate-fade-in">
       {/* Header */}
       <div className="space-y-3">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight">Settings</h1>
@@ -642,12 +642,12 @@ const DeleteAccountSection = () => {
                   <li>All transaction sync settings</li>
                 </ul>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   variant="ghost"
                   onClick={() => setShowConfirm(false)}
                   disabled={deleting}
-                  className="flex-1"
+                  className="flex-1 w-full sm:w-auto"
                 >
                   Cancel
                 </Button>
@@ -655,7 +655,7 @@ const DeleteAccountSection = () => {
                   variant="danger"
                   onClick={handleDeleteAccount}
                   disabled={deleting}
-                  className="flex-1"
+                  className="flex-1 w-full sm:w-auto"
                 >
                   {deleting ? 'Deleting...' : 'Confirm Deletion'}
                 </Button>
