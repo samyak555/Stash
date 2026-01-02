@@ -27,3 +27,15 @@ export const passwordResetRateLimiter = rateLimit({
   },
 });
 
+// Rate limiter for OTP requests (prevent abuse)
+export const otpRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3, // Limit each IP to 3 OTP requests per 15 minutes
+  message: 'Too many verification code requests. Please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    return process.env.NODE_ENV === 'development';
+  },
+});
+

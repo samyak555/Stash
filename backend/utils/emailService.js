@@ -444,6 +444,159 @@ export const sendPasswordChangeConfirmation = async (email, name) => {
   }
 };
 
+/**
+ * Send OTP email for email verification (MANDATORY)
+ * This is the primary verification method - users cannot login without OTP verification
+ */
+export const sendOTPEmail = async (email, otp, name) => {
+  try {
+    const mailTransporter = await getTransporter();
+    
+    if (!isVerified) {
+      throw new Error('Email service not verified - cannot send OTP');
+    }
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      to: email,
+      subject: 'Your Stash verification code',
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Your Stash verification code</title>
+          </head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #0E1116; color: #E5E7EB; padding: 20px;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #181D26; border-radius: 16px; padding: 40px; border: 1px solid #2A2F3A;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #5EEAD4; font-size: 32px; margin: 0;">Stash</h1>
+                <p style="color: #9CA3AF; font-size: 14px; margin-top: 8px;">Secure. Grow. Succeed.</p>
+              </div>
+              
+              <h2 style="color: #E5E7EB; font-size: 24px; margin-bottom: 20px;">Verify your email address</h2>
+              
+              <p style="color: #9CA3AF; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+                Hi ${name || 'there'},<br><br>
+                Use this verification code to activate your Stash account:
+              </p>
+              
+              <div style="text-align: center; margin: 40px 0;">
+                <div style="display: inline-block; background: linear-gradient(135deg, #5EEAD4 0%, #2563EB 50%, #6EE7B7 100%); padding: 20px 40px; border-radius: 12px;">
+                  <div style="font-size: 36px; font-weight: 700; color: #0E1116; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                    ${otp}
+                  </div>
+                </div>
+              </div>
+              
+              <p style="color: #9CA3AF; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+                This code will expire in <strong>5 minutes</strong>.
+              </p>
+              
+              <div style="background-color: #1F2530; border-left: 4px solid #F59E0B; padding: 16px; border-radius: 8px; margin: 30px 0;">
+                <p style="color: #E5E7EB; font-size: 14px; margin: 0; line-height: 1.6;">
+                  <strong>Security notice:</strong> Never share this code with anyone. Stash will never ask for your verification code.
+                </p>
+              </div>
+              
+              <p style="color: #6B7280; font-size: 12px; margin-top: 40px; padding-top: 20px; border-top: 1px solid #2A2F3A;">
+                If you didn't create a Stash account, you can safely ignore this email.
+              </p>
+            </div>
+          </body>
+        </html>
+      `,
+      text: `Your Stash verification code is: ${otp}\n\nThis code will expire in 5 minutes.\n\nIf you didn't create a Stash account, you can safely ignore this email.`,
+    };
+
+    const info = await mailTransporter.sendMail(mailOptions);
+    console.log('✅ OTP email sent successfully');
+    console.log(`   Message ID: ${info.messageId}`);
+    console.log(`   To: ${email}`);
+    return info;
+  } catch (error) {
+    console.error('❌ Error sending OTP email:', error.message);
+    if (error.code === 'EAUTH') {
+      console.error('   Authentication failed - check EMAIL_USER and EMAIL_PASS');
+    } else if (error.code === 'ECONNECTION' || error.code === 'ETIMEDOUT') {
+      console.error('   Connection failed - check EMAIL_HOST and EMAIL_PORT');
+    }
+    throw error; // OTP email failure must be reported
+  }
+};
+
+/**
+ * Send OTP for password reset
+ */
+export const sendPasswordResetOTP = async (email, otp) => {
+  try {
+    const mailTransporter = await getTransporter();
+    
+    if (!isVerified) {
+      throw new Error('Email service not verified - cannot send OTP');
+    }
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      to: email,
+      subject: 'Reset your Stash password',
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Reset your Stash password</title>
+          </head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #0E1116; color: #E5E7EB; padding: 20px;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #181D26; border-radius: 16px; padding: 40px; border: 1px solid #2A2F3A;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #5EEAD4; font-size: 32px; margin: 0;">Stash</h1>
+                <p style="color: #9CA3AF; font-size: 14px; margin-top: 8px;">Secure. Grow. Succeed.</p>
+              </div>
+              
+              <h2 style="color: #E5E7EB; font-size: 24px; margin-bottom: 20px;">Reset your password</h2>
+              
+              <p style="color: #9CA3AF; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+                Use this verification code to reset your password:
+              </p>
+              
+              <div style="text-align: center; margin: 40px 0;">
+                <div style="display: inline-block; background: linear-gradient(135deg, #5EEAD4 0%, #2563EB 50%, #6EE7B7 100%); padding: 20px 40px; border-radius: 12px;">
+                  <div style="font-size: 36px; font-weight: 700; color: #0E1116; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                    ${otp}
+                  </div>
+                </div>
+              </div>
+              
+              <p style="color: #9CA3AF; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+                This code will expire in <strong>5 minutes</strong>.
+              </p>
+              
+              <div style="background-color: #1F2530; border-left: 4px solid #F59E0B; padding: 16px; border-radius: 8px; margin: 30px 0;">
+                <p style="color: #E5E7EB; font-size: 14px; margin: 0; line-height: 1.6;">
+                  <strong>Security notice:</strong> If you didn't request a password reset, please ignore this email.
+                </p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+      text: `Your password reset code is: ${otp}\n\nThis code will expire in 5 minutes.\n\nIf you didn't request a password reset, please ignore this email.`,
+    };
+
+    const info = await mailTransporter.sendMail(mailOptions);
+    console.log('✅ Password reset OTP email sent successfully');
+    console.log(`   Message ID: ${info.messageId}`);
+    console.log(`   To: ${email}`);
+    return info;
+  } catch (error) {
+    console.error('❌ Error sending password reset OTP email:', error.message);
+    throw error;
+  }
+};
+
 // Export status for health checks
 export const isEmailConfigured = () => isConfigured;
 export const isEmailVerified = () => isVerified;

@@ -69,6 +69,36 @@ const userSchema = new mongoose.Schema({
     default: null,
     min: 0,
   },
+  // Email OTP Verification (Mandatory)
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
+  otp: {
+    type: String,
+    default: null,
+  },
+  otpExpires: {
+    type: Date,
+    default: null,
+  },
+  otpAttempts: {
+    type: Number,
+    default: 0,
+  },
+  // Authentication Provider
+  authProvider: {
+    type: String,
+    enum: ['email', 'google'],
+    default: 'email',
+  },
+  // User Role
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+  },
+  // Legacy fields (kept for backward compatibility)
   isVerified: {
     type: Boolean,
     default: false,
