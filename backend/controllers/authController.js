@@ -585,8 +585,13 @@ export const googleAuthCallback = async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    // Redirect to frontend with token
-    res.redirect(`${FRONTEND_URL}/auth/callback?token=${token}&emailVerified=true`);
+    // Redirect to frontend with token and user data
+    const redirectUrl = new URL(`${FRONTEND_URL}/auth/callback`);
+    redirectUrl.searchParams.set('token', token);
+    redirectUrl.searchParams.set('emailVerified', 'true');
+    
+    console.log(`✅ Google OAuth successful for ${user.email}, redirecting to frontend`);
+    res.redirect(redirectUrl.toString());
   } catch (error) {
     console.error('Google OAuth callback error:', error.message);
     const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
