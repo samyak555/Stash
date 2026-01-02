@@ -150,6 +150,7 @@ const Register = ({ setUser }) => {
 
   const passwordErrors = formData.password ? validatePassword(formData.password) : [];
 
+  // Force rebuild - Password fields are required for authentication
   return (
     <div className="min-h-screen flex flex-col bg-app-bg relative overflow-hidden">
       <div className="flex-1 flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8 relative z-10">
