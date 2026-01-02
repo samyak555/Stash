@@ -52,27 +52,6 @@ const Login = ({ setUser }) => {
     }
   };
 
-  const [showResendVerification, setShowResendVerification] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
-
-  const handleResendVerification = async () => {
-    if (!formData.email) {
-      toast.error('Please enter your email address');
-      return;
-    }
-
-    setResendLoading(true);
-    try {
-      await authAPI.resendVerification(formData.email);
-      toast.success('Verification email sent! Please check your inbox.');
-      setShowResendVerification(false);
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to resend verification email';
-      toast.error(errorMessage, { duration: 5000 });
-    } finally {
-      setResendLoading(false);
-    }
-  };
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -265,21 +244,6 @@ const Login = ({ setUser }) => {
                   )}
                 </button>
               </div>
-
-              {/* Resend Verification */}
-              {showResendVerification && (
-                <div className="p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-xl">
-                  <p className="text-sm text-cyan-300 mb-3">Email not verified. Click below to resend verification email.</p>
-                  <button
-                    type="button"
-                    onClick={handleResendVerification}
-                    disabled={resendLoading}
-                    className="w-full py-2 px-4 text-sm font-medium text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:border-cyan-500/50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {resendLoading ? 'Sending...' : 'Resend Verification Email'}
-                  </button>
-                </div>
-              )}
 
               {/* Forgot Password Link */}
               <div className="text-right">
