@@ -25,11 +25,11 @@ const userSchema = new mongoose.Schema({
     default: false,
     required: true,
   },
-  otpHash: {
+  verificationToken: {
     type: String,
     default: null,
   },
-  otpExpiry: {
+  verificationTokenExpiry: {
     type: Date,
     default: null,
   },
@@ -45,6 +45,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['local', 'google'],
     default: 'local',
+  },
+  googleId: {
+    type: String,
+    default: null,
+    sparse: true, // Allow multiple nulls
   },
   role: {
     type: String,
@@ -87,10 +92,11 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// Index for faster lookups
+// Indexes for faster lookups
 userSchema.index({ email: 1 });
-userSchema.index({ otpHash: 1 });
+userSchema.index({ verificationToken: 1 });
 userSchema.index({ resetTokenHash: 1 });
+userSchema.index({ googleId: 1 });
 
 const User = mongoose.model('User', userSchema);
 

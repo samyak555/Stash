@@ -1,7 +1,7 @@
 /**
  * Production-Grade Authentication Controller for Stash
- * Implements secure email + password + OTP authentication
- * Similar to Zomato/Facebook authentication flow
+ * Implements secure email + password + verification token authentication
+ * and Google OAuth 2.0 Authorization Code Flow
  */
 
 import jwt from 'jsonwebtoken';
@@ -10,7 +10,7 @@ import crypto from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
 import User from '../models/User.js';
 import { validateEmail } from '../utils/emailValidation.js';
-import { sendOTPEmail, sendPasswordResetEmail, sendPasswordChangeConfirmation } from '../services/emailService.js';
+import { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirmation } from '../services/emailService.js';
 
 // Password validation function
 const validatePassword = (password) => {
@@ -38,9 +38,9 @@ const validatePassword = (password) => {
   return { valid: true };
 };
 
-// Generate 6-digit OTP
-const generateOTP = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+// Generate secure verification token
+const generateVerificationToken = () => {
+  return crypto.randomBytes(32).toString('hex');
 };
 
 // Hash token using SHA-256
@@ -52,14 +52,13 @@ const hashToken = (token) => {
 const ADMIN_EMAIL = 'administrator-stash.auth7@gmail.com';
 
 /**
- * Register new user with mandatory OTP verification
+ * Register new user with email verification
  * POST /api/auth/register
  * - Validates email format
  * - Hashes password with bcrypt (12 rounds)
- * - Generates 6-digit OTP
- * - Stores OTP hashed in DB with 10-minute expiry
- * - Sends OTP via Gmail SMTP
- * - Blocks login until OTP verified
+ * - Creates user with emailVerified=false
+ * - Generates secure verification token
+ * - Sends welcome + verification email via SMTP
  */
 export const register = async (req, res) => {
   try {
@@ -72,7 +71,7 @@ export const register = async (req, res) => {
 
     const { name, email, password, gender, age, profession } = req.body;
     
-    // Validate required fields
+    // Validate required fields (confirmPassword is NOT sent to backend)
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email, and password are required' });
     }
@@ -115,11 +114,9 @@ export const register = async (req, res) => {
     // Hash password with bcrypt (12 rounds - production-ready)
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Generate 6-digit OTP
-    const otp = generateOTP();
-    // Hash OTP before storing (using bcrypt for security)
-    const otpHash = await bcrypt.hash(otp, 12);
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    // Generate secure verification token
+    const verificationToken = generateVerificationToken();
+    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     // Determine role (admin if email matches)
     const role = email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'user';
@@ -133,22 +130,22 @@ export const register = async (req, res) => {
       age,
       profession,
       emailVerified: false, // MANDATORY - user cannot login until verified
-      otpHash,
-      otpExpiry,
+      verificationToken,
+      verificationTokenExpiry,
       authProvider: 'local',
       role,
       onboardingCompleted: false,
     });
 
-    // Send OTP email (MANDATORY - user needs this to verify)
+    // Send welcome + verification email via SMTP
     try {
-      await sendOTPEmail(user.email, otp, user.name);
-      console.log(`✅ OTP sent to ${user.email}`);
+      await sendVerificationEmail(user.email, user.name, verificationToken);
+      console.log(`✅ Verification email sent to ${user.email}`);
     } catch (emailError) {
-      console.error('❌ Failed to send OTP email:', emailError.message);
-      // Delete user if OTP email fails (user cannot verify without OTP)
+      console.error('❌ Failed to send verification email:', emailError.message);
+      // Delete user if email fails (user cannot verify without email)
       await User.findByIdAndDelete(user._id);
-      return res.status(500).json({ message: 'Failed to send verification code. Please try again.' });
+      return res.status(500).json({ message: 'Failed to send verification email. Please try again.' });
     }
 
     // Return user data (NO TOKEN - user cannot login until verified)
@@ -157,7 +154,7 @@ export const register = async (req, res) => {
       name: user.name,
       email: user.email,
       emailVerified: false,
-      message: 'Registration successful! Please check your email for the verification code.',
+      message: 'Registration successful! Please check your email to verify your account.',
     });
   } catch (error) {
     if (error.code === 11000) {
@@ -169,93 +166,66 @@ export const register = async (req, res) => {
 };
 
 /**
- * Verify OTP and activate user account
- * POST /api/auth/verify-otp
- * - Compares OTP with stored hash
- * - If correct → delete OTP and mark emailVerified = true
+ * Verify email with token
+ * GET /api/auth/verify-email?token=...
+ * - Verifies token and expiry
+ * - Marks emailVerified = true
  * - Returns JWT token
  */
-export const verifyOTP = async (req, res) => {
+export const verifyEmail = async (req, res) => {
   try {
     const JWT_SECRET = process.env.JWT_SECRET;
+    const { token } = req.query;
 
     if (!JWT_SECRET) {
       console.error('JWT_SECRET environment variable is not set');
       return res.status(500).json({ message: 'Server configuration error' });
     }
 
-    const { email, otp } = req.body;
-
-    if (!email || !otp) {
-      return res.status(400).json({ message: 'Email and OTP are required' });
+    if (!token) {
+      return res.status(400).json({ message: 'Verification token is required' });
     }
 
-    // Find user
-    const user = await User.findOne({ email: email.toLowerCase() });
+    // Find user with matching verification token
+    const user = await User.findOne({
+      verificationToken: token,
+      verificationTokenExpiry: { $gt: new Date() },
+    });
+
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(400).json({ message: 'Invalid or expired verification token' });
     }
 
-    // Check if already verified
-    if (user.emailVerified) {
-      return res.status(400).json({ message: 'Email is already verified' });
-    }
-
-    // Check if OTP exists
-    if (!user.otpHash || !user.otpExpiry) {
-      return res.status(400).json({ message: 'No verification code found. Please request a new one.' });
-    }
-
-    // Check if OTP expired
-    if (user.otpExpiry < new Date()) {
-      user.otpHash = null;
-      user.otpExpiry = null;
-      await user.save();
-      return res.status(400).json({ message: 'Verification code has expired. Please request a new one.' });
-    }
-
-    // Verify OTP using bcrypt.compare
-    const isOTPValid = await bcrypt.compare(otp, user.otpHash);
-    if (!isOTPValid) {
-      return res.status(400).json({ message: 'Invalid verification code' });
-    }
-
-    // OTP verified successfully - activate user account
+    // Mark email as verified and clear token
     user.emailVerified = true;
-    user.otpHash = null; // Delete OTP after successful verification (one-time use)
-    user.otpExpiry = null;
+    user.verificationToken = null;
+    user.verificationTokenExpiry = null;
     await user.save();
 
     // Generate JWT token (user can now login)
-    const token = jwt.sign(
+    const token_jwt = jwt.sign(
       { userId: user._id.toString() },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    res.json({
-      token,
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      emailVerified: true,
-      role: user.role,
-      onboardingCompleted: user.onboardingCompleted,
-      message: 'Email verified successfully! You can now use your account.',
-    });
+    // Redirect to frontend with token (or return JSON)
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${frontendUrl}/verify-email-success?token=${token_jwt}`);
   } catch (error) {
-    console.error('OTP verification error:', error.message);
-    res.status(500).json({ message: 'OTP verification failed' });
+    console.error('Email verification error:', error.message);
+    res.status(500).json({ message: 'Email verification failed' });
   }
 };
 
 /**
- * Resend OTP email
- * POST /api/auth/resend-otp
+ * Resend verification email
+ * POST /api/auth/resend-verification
  * - Rate limited (max 3 per hour)
- * - Invalidates previous OTP
+ * - Generates new verification token
+ * - Sends verification email
  */
-export const resendOTP = async (req, res) => {
+export const resendVerification = async (req, res) => {
   try {
     const { email } = req.body;
     
@@ -267,33 +237,32 @@ export const resendOTP = async (req, res) => {
 
     if (!user) {
       // Don't reveal if user exists or not (security best practice)
-      return res.json({ message: 'If an account exists with this email, a verification code has been sent.' });
+      return res.json({ message: 'If an account exists with this email, a verification email has been sent.' });
     }
 
     if (user.emailVerified) {
       return res.status(400).json({ message: 'Email is already verified' });
     }
 
-    // Generate new OTP (invalidate previous)
-    const otp = generateOTP();
-    const otpHash = await bcrypt.hash(otp, 12);
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    // Generate new verification token (invalidate previous)
+    const verificationToken = generateVerificationToken();
+    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    user.otpHash = otpHash;
-    user.otpExpiry = otpExpiry;
+    user.verificationToken = verificationToken;
+    user.verificationTokenExpiry = verificationTokenExpiry;
     await user.save();
 
-    // Send OTP email
+    // Send verification email
     try {
-      await sendOTPEmail(user.email, otp, user.name);
-      res.json({ message: 'Verification code sent. Please check your email.' });
+      await sendVerificationEmail(user.email, user.name, verificationToken);
+      res.json({ message: 'Verification email sent. Please check your inbox.' });
     } catch (emailError) {
-      console.error('Failed to send OTP email:', emailError);
-      res.status(500).json({ message: 'Failed to send verification code' });
+      console.error('Failed to send verification email:', emailError);
+      res.status(500).json({ message: 'Failed to send verification email' });
     }
   } catch (error) {
-    console.error('Resend OTP error:', error.message);
-    res.status(500).json({ message: 'Failed to resend verification code' });
+    console.error('Resend verification error:', error.message);
+    res.status(500).json({ message: 'Failed to resend verification email' });
   }
 };
 
@@ -327,7 +296,7 @@ export const login = async (req, res) => {
     // MANDATORY: Block login if email is not verified
     if (!user.emailVerified) {
       return res.status(403).json({ 
-        message: 'Please verify your email address before logging in. Check your inbox for the verification code.',
+        message: 'Please verify your email address before logging in. Check your inbox for the verification link.',
         emailVerified: false,
       });
     }
@@ -374,7 +343,7 @@ export const forgotPassword = async (req, res) => {
 
     if (!email) {
       return res.status(400).json({ message: 'Email is required' });
-  }
+    }
 
     const user = await User.findOne({ email: email.toLowerCase() });
 
@@ -392,9 +361,9 @@ export const forgotPassword = async (req, res) => {
     user.resetTokenExpiry = resetTokenExpiry;
     await user.save();
 
-    // Send password reset email
+    // Send password reset email via SMTP
     try {
-      await sendPasswordResetEmail(user.email, resetToken);
+      await sendPasswordResetEmail(user.email, resetToken, user.name);
       res.json({ message: 'If an account exists with this email, a password reset link has been sent.' });
     } catch (emailError) {
       console.error('Failed to send password reset email:', emailError);
@@ -467,13 +436,167 @@ export const resetPassword = async (req, res) => {
 };
 
 /**
- * Google OAuth - Real backend verification
+ * Google OAuth 2.0 - Initiate authorization
+ * GET /api/auth/google
+ * - Redirects to Google OAuth consent screen
+ */
+export const googleAuthInitiate = async (req, res) => {
+  try {
+    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+    const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+
+    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+      return res.status(500).json({ message: 'Google OAuth not configured' });
+    }
+
+    const oauth2Client = new OAuth2Client(
+      GOOGLE_CLIENT_ID,
+      GOOGLE_CLIENT_SECRET,
+      `${BACKEND_URL}/api/auth/google/callback`
+    );
+
+    // Generate authorization URL
+    const authUrl = oauth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: ['profile', 'email'],
+      prompt: 'consent',
+    });
+
+    res.redirect(authUrl);
+  } catch (error) {
+    console.error('Google OAuth initiate error:', error.message);
+    res.status(500).json({ message: 'Failed to initiate Google OAuth' });
+  }
+};
+
+/**
+ * Google OAuth 2.0 - Callback handler
+ * GET /api/auth/google/callback
+ * - Exchanges authorization code for tokens
+ * - Verifies Google ID token
+ * - Creates or logs in user
+ * - Issues JWT and redirects to frontend
+ */
+export const googleAuthCallback = async (req, res) => {
+  try {
+    const JWT_SECRET = process.env.JWT_SECRET;
+    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+    const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+
+    if (!JWT_SECRET || !GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
+
+    const { code } = req.query;
+
+    if (!code) {
+      return res.redirect(`${FRONTEND_URL}/login?error=no_code`);
+    }
+
+    const oauth2Client = new OAuth2Client(
+      GOOGLE_CLIENT_ID,
+      GOOGLE_CLIENT_SECRET,
+      `${BACKEND_URL}/api/auth/google/callback`
+    );
+
+    // Exchange authorization code for tokens
+    let tokens;
+    try {
+      const { tokens: tokenData } = await oauth2Client.getToken(code);
+      tokens = tokenData;
+    } catch (error) {
+      console.error('Google token exchange error:', error);
+      return res.redirect(`${FRONTEND_URL}/login?error=token_exchange_failed`);
+    }
+
+    if (!tokens.id_token) {
+      return res.redirect(`${FRONTEND_URL}/login?error=no_id_token`);
+    }
+
+    // Verify ID token
+    let ticket;
+    try {
+      ticket = await oauth2Client.verifyIdToken({
+        idToken: tokens.id_token,
+        audience: GOOGLE_CLIENT_ID,
+      });
+    } catch (verifyError) {
+      console.error('Google token verification error:', verifyError);
+      return res.redirect(`${FRONTEND_URL}/login?error=token_verification_failed`);
+    }
+
+    const payload = ticket.getPayload();
+    const { email, name, sub: googleId, email_verified } = payload;
+
+    if (!email) {
+      return res.redirect(`${FRONTEND_URL}/login?error=no_email`);
+    }
+
+    // MANDATORY: Only allow login if Google email is verified
+    if (!email_verified) {
+      return res.redirect(`${FRONTEND_URL}/login?error=email_not_verified`);
+    }
+
+    // Determine role (admin if email matches)
+    const role = email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'user';
+
+    // Check if user exists
+    let user = await User.findOne({ email: email.toLowerCase() });
+
+    if (user) {
+      // Existing user - update if needed
+      if (!user.emailVerified) {
+        user.emailVerified = true; // Google emails are pre-verified
+      }
+      if (user.role !== role) {
+        user.role = role;
+      }
+      if (!user.googleId) {
+        user.googleId = googleId;
+      }
+      user.authProvider = 'google';
+      await user.save();
+    } else {
+      // New user - create account with emailVerified = true (Google emails are verified)
+      user = await User.create({
+        name: name || email.split('@')[0],
+        email: email.toLowerCase(),
+        passwordHash: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12), // Random password (won't be used)
+        emailVerified: true, // Google emails are pre-verified
+        authProvider: 'google',
+        googleId,
+        role,
+        onboardingCompleted: false,
+      });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id.toString() },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Redirect to frontend with token
+    res.redirect(`${FRONTEND_URL}/auth/callback?token=${token}&emailVerified=true`);
+  } catch (error) {
+    console.error('Google OAuth callback error:', error.message);
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
+  }
+};
+
+/**
+ * Google OAuth - Direct ID token verification (for frontend Google Sign-In button)
  * POST /api/auth/google
- * - Uses Google OAuth 2.0
- * - Backend verification (google-auth-library)
- * - On success: auto mark emailVerified = true
- * - Create account if not exists
- * - No frontend-only fake Google login
+ * - Accepts Google ID token from frontend
+ * - Verifies token on backend
+ * - Creates or logs in user
+ * - Returns JWT
  */
 export const googleAuth = async (req, res) => {
   try {
@@ -511,10 +634,15 @@ export const googleAuth = async (req, res) => {
     }
 
     const payload = ticket.getPayload();
-    const { email, name } = payload;
+    const { email, name, sub: googleId, email_verified } = payload;
 
     if (!email) {
       return res.status(400).json({ message: 'Email not provided by Google' });
+    }
+
+    // MANDATORY: Only allow login if Google email is verified
+    if (!email_verified) {
+      return res.status(403).json({ message: 'Google email is not verified' });
     }
 
     // Determine role (admin if email matches)
@@ -529,7 +657,10 @@ export const googleAuth = async (req, res) => {
         user.emailVerified = true; // Google emails are pre-verified
       }
       if (user.role !== role) {
-        user.role = role; // Update role if changed
+        user.role = role;
+      }
+      if (!user.googleId) {
+        user.googleId = googleId;
       }
       user.authProvider = 'google';
       await user.save();
@@ -541,6 +672,7 @@ export const googleAuth = async (req, res) => {
         passwordHash: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12), // Random password (won't be used)
         emailVerified: true, // Google emails are pre-verified
         authProvider: 'google',
+        googleId,
         role,
         onboardingCompleted: false,
       });
