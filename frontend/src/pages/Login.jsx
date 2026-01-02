@@ -45,17 +45,8 @@ const Login = ({ setUser }) => {
       navigate('/');
     } catch (error) {
       console.error('Login error:', error);
-      const errorData = error.response?.data || {};
-      const errorMessage = errorData.message || error.message || 'Login failed';
-      
-      // Handle email verification requirement
-      if (errorData.requiresVerification) {
-        toast.error(errorMessage, { duration: 8000 });
-        // Show resend verification option
-        setShowResendVerification(true);
-      } else {
-        toast.error(errorMessage, { duration: 5000 });
-      }
+      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
+      toast.error(errorMessage, { duration: 5000 });
     } finally {
       setLoading(false);
     }

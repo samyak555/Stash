@@ -116,7 +116,7 @@ export const register = async (req, res) => {
     const hashedVerificationToken = hashToken(verificationToken);
     const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    // Create user with isVerified = false
+    // Create user (email verification is optional, doesn't block login)
     const user = await User.create({
       name: name.trim(),
       email: email.toLowerCase().trim(),
@@ -124,7 +124,7 @@ export const register = async (req, res) => {
       gender,
       age,
       profession,
-      isVerified: false,
+      isVerified: false, // Can be verified later, doesn't block login
       verificationToken: hashedVerificationToken,
       verificationTokenExpires,
     });
@@ -198,13 +198,8 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Check if email is verified
-    if (!user.isVerified) {
-      return res.status(403).json({ 
-        message: 'Please verify your email address before logging in. Check your inbox for the verification link.',
-        requiresVerification: true,
-      });
-    }
+    // Note: Email verification does NOT block login (welcome email only)
+    // Users can log in even if email is not verified
     
     // Generate JWT token with userId (7 days expiry)
     const token = jwt.sign(
