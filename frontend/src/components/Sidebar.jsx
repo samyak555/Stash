@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import Button from './ui/Button';
+import GuestBadge from './GuestBadge';
 // Import logo icon for sidebar header
 import iconSrc from '../assets/logo/icon.png';
 import { 
@@ -43,6 +44,7 @@ const Sidebar = ({ user, setUser }) => {
     try {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('isGuest');
       setUser(null);
       toast.success('Logged out successfully');
     } catch (error) {
@@ -139,6 +141,12 @@ const Sidebar = ({ user, setUser }) => {
               <p className="text-xs text-text-secondary truncate">{user?.email || ''}</p>
             </div>
           </div>
+          {/* Guest Mode Badge */}
+          {user?.isGuest && (
+            <div className="mt-3 flex justify-center">
+              <GuestBadge />
+            </div>
+          )}
         </div>
         <Button
           onClick={handleLogout}

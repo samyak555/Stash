@@ -15,24 +15,37 @@ import { authRateLimiter, passwordResetRateLimiter, resendOTPRateLimiter } from 
 const router = express.Router();
 
 // ============================================
-// EMAIL AUTHENTICATION ROUTES
+// EMAIL AUTHENTICATION ROUTES (DISABLED)
 // ============================================
+// Email/password auth temporarily disabled - using Google OAuth only
 
-// Registration - sends verification email (no token returned until verified)
-router.post('/register', authRateLimiter, register);
+// Registration - DISABLED
+router.post('/register', (req, res) => {
+  res.status(403).json({ message: 'Email registration is currently disabled. Please use Google Sign-In.' });
+});
 
-// Email verification - GET endpoint for email link
-router.get('/verify-email', verifyEmail);
+// Email verification - DISABLED
+router.get('/verify-email', (req, res) => {
+  res.status(403).json({ message: 'Email verification is currently disabled. Please use Google Sign-In.' });
+});
 
-// Resend verification email (rate limited: max 3 per hour)
-router.post('/resend-verification', resendOTPRateLimiter, resendVerification);
+// Resend verification - DISABLED
+router.post('/resend-verification', (req, res) => {
+  res.status(403).json({ message: 'Email verification is currently disabled. Please use Google Sign-In.' });
+});
 
-// Login - BLOCKED if email not verified
-router.post('/login', authRateLimiter, login);
+// Login - DISABLED
+router.post('/login', (req, res) => {
+  res.status(403).json({ message: 'Email login is currently disabled. Please use Google Sign-In.' });
+});
 
-// Password reset (secure token flow)
-router.post('/forgot-password', passwordResetRateLimiter, forgotPassword);
-router.post('/reset-password', passwordResetRateLimiter, resetPassword);
+// Password reset - DISABLED
+router.post('/forgot-password', (req, res) => {
+  res.status(403).json({ message: 'Password reset is currently disabled. Please use Google Sign-In.' });
+});
+router.post('/reset-password', (req, res) => {
+  res.status(403).json({ message: 'Password reset is currently disabled. Please use Google Sign-In.' });
+});
 
 // ============================================
 // GOOGLE OAUTH 2.0 ROUTES

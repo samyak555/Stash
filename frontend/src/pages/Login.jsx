@@ -1,93 +1,74 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { authAPI } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Logo from '../components/Logo';
 import Footer from '../components/Footer';
 
-// Login component with password authentication
+/**
+ * Login Page - Google OAuth Only
+ * - Google Sign-In (production-grade)
+ * - Continue as Guest (read-only mode)
+ * - Email auth disabled
+ */
 const Login = ({ setUser }) => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const response = await authAPI.login(formData);
-      const { token, ...userData } = response.data;
-
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Sync onboardingCompleted to localStorage
-      if (userData.onboardingCompleted) {
-        localStorage.setItem('onboardingCompleted', 'true');
-      }
-      
-      setUser(userData);
-
-      toast.success('Login successful!');
-      navigate('/');
-    } catch (error) {
-      console.error('Login error:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
-      toast.error(errorMessage, { duration: 5000 });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   /**
    * Handle Google Sign-In
    * Redirects to backend OAuth endpoint (Authorization Code Flow)
-   * Backend handles all Google authentication logic
    */
   const handleGoogleSignIn = () => {
     setGoogleLoading(true);
     
     try {
-      // Get backend URL - use production URL if API_URL is not set
+      // Get backend URL
       const API_URL = import.meta.env.VITE_API_URL;
       
       let backendBaseUrl;
       if (API_URL) {
-        // Remove /api suffix if present
         backendBaseUrl = API_URL.replace('/api', '');
       } else {
-        // Default to production backend URL
         backendBaseUrl = 'https://stash-backend-4wty.onrender.com';
       }
       
-      // Construct full OAuth URL
       const oauthUrl = `${backendBaseUrl}/api/auth/google`;
       
       console.log('🔐 Redirecting to Google OAuth:', oauthUrl);
-      console.log('   API_URL from env:', API_URL);
-      console.log('   Backend base URL:', backendBaseUrl);
       
       // Redirect to backend OAuth endpoint
-      // Backend will handle Google OAuth and redirect back with token
       window.location.href = oauthUrl;
     } catch (error) {
       console.error('❌ Google sign-in error:', error);
       toast.error('Failed to initiate Google sign-in. Please try again.');
       setGoogleLoading(false);
     }
+  };
+
+  /**
+   * Handle Continue as Guest
+   * Sets guest mode in localStorage and navigates to app
+   */
+  const handleGuestMode = () => {
+    // Set guest mode
+    const guestUser = {
+      isGuest: true,
+      name: 'Guest',
+      email: null,
+      emailVerified: false,
+      role: 'guest',
+    };
+    
+    localStorage.setItem('isGuest', 'true');
+    localStorage.setItem('user', JSON.stringify(guestUser));
+    setUser(guestUser);
+    
+    toast.success('Welcome! You\'re browsing in guest mode. Sign in to save your data.', {
+      duration: 5000,
+      icon: '👋',
+    });
+    
+    navigate('/');
   };
 
   return (
@@ -101,10 +82,10 @@ const Login = ({ setUser }) => {
           {/* Header */}
           <div className="text-center animate-slide-up space-y-3">
             <h1 className="text-4xl sm:text-5xl font-bold gradient-text tracking-tight">
-              Welcome Back
+              Welcome to Stash
             </h1>
             <p className="text-slate-400 text-base font-normal">
-              Sign in to continue managing your finances
+              Sign in to save your data, or continue as guest to explore
             </p>
           </div>
           
@@ -143,105 +124,35 @@ const Login = ({ setUser }) => {
                 <div className="w-full border-t border-white/10"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-transparent text-slate-500">Or continue with email</span>
+                <span className="px-4 bg-transparent text-slate-500">Or</span>
               </div>
             </div>
 
-            {/* Email Login Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="w-full px-4 py-4 border border-white/10 rounded-xl bg-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    className="w-full px-4 py-4 border border-white/10 rounded-xl bg-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal pr-12"
-                    placeholder="Enter your password"
-                    value={formData.password}
-                    onChange={handleChange}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors"
-                  >
-                    {showPassword ? (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    )}
-                  </button>
+            {/* Continue as Guest Button */}
+            <button
+              type="button"
+              onClick={handleGuestMode}
+              className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-semibold text-base transition-all"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span>Continue as Guest</span>
+            </button>
+
+            {/* Guest Mode Info */}
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 space-y-2">
+              <div className="flex items-start gap-2">
+                <svg className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="text-sm text-amber-200">
+                  <p className="font-medium mb-1">Guest Mode</p>
+                  <p className="text-amber-300/80">
+                    You can explore the app, but your data won't be saved. Sign in with Google to save your progress.
+                  </p>
                 </div>
               </div>
-
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-4 px-6 text-base font-semibold rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 hover:from-blue-600 hover:via-cyan-600 hover:to-teal-600 hover:shadow-lg hover:shadow-cyan-500/25 focus:outline-none focus:ring-2 focus:ring-cyan-400/50"
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Signing in...
-                    </span>
-                  ) : (
-                    'Sign in'
-                  )}
-                </button>
-              </div>
-
-              {/* Forgot Password Link */}
-              <div className="text-right">
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-            </form>
-
-            <div className="text-center pt-4 border-t border-white/5">
-              <p className="text-sm text-slate-400">
-                Don't have an account?{' '}
-                <Link
-                  to="/register"
-                  className="font-medium text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center"
-                >
-                  Sign up
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </p>
             </div>
           </div>
         </div>
