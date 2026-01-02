@@ -4,7 +4,7 @@
  */
 
 import express from 'express';
-import { sendOTPEmail, verifyEmailService } from '../services/emailService.js';
+import { verifyEmailService, sendVerificationEmail } from '../services/emailService.js';
 
 const router = express.Router();
 
@@ -71,11 +71,11 @@ router.get('/email-verify', async (req, res) => {
 });
 
 /**
- * Test send OTP email (for testing only)
- * POST /api/test/send-test-otp
+ * Test send verification email (for testing only)
+ * POST /api/test/send-test-email
  * Body: { email: "test@example.com" }
  */
-router.post('/send-test-otp', async (req, res) => {
+router.post('/send-test-email', async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -86,13 +86,14 @@ router.post('/send-test-otp', async (req, res) => {
       });
     }
 
-    const testOTP = '123456';
-    await sendOTPEmail(email, testOTP, 'Test OTP from Stash');
+    // Generate a test verification token
+    const testToken = 'test-token-' + Date.now();
+    await sendVerificationEmail(email, 'Test User', testToken);
 
     res.json({
       success: true,
-      message: `Test OTP email sent to ${email}`,
-      otp: testOTP, // Only for testing
+      message: `Test verification email sent to ${email}`,
+      token: testToken, // Only for testing
     });
   } catch (error) {
     res.status(500).json({
