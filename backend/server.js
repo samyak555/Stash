@@ -1,6 +1,10 @@
+// Load environment variables first
+import dotenv from 'dotenv';
+dotenv.config();
+
+// Now import everything else
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
@@ -12,8 +16,6 @@ import dashboardRoutes from './routes/dashboardRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import groupRoutes from './routes/groupRoutes.js';
 import userRoutes from './routes/userRoutes.js';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -103,10 +105,22 @@ const startServer = async () => {
 // Handle any uncaught errors
 process.on('uncaughtException', (error) => {
   console.error('❌ Uncaught Exception:', error.message);
+  console.error('   Error name:', error.name);
   console.error('   Stack:', error.stack);
   process.exit(1);
 });
 
-startServer();
+// Wrap everything in try-catch to catch any import errors
+try {
+  startServer();
+} catch (error) {
+  console.error('❌ Failed to initialize server');
+  console.error('   Error type:', error.name);
+  console.error('   Error message:', error.message);
+  if (error.stack) {
+    console.error('   Stack trace:', error.stack);
+  }
+  process.exit(1);
+}
 
 
