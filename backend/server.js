@@ -5,6 +5,7 @@ dotenv.config();
 // Now import everything else
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import mongoose from 'mongoose';
 import connectDB from './config/db.js';
 import { verifySMTPConnection } from './utils/emailService.js';
@@ -23,8 +24,16 @@ import testRoutes from './routes/testRoutes.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// Security middleware (Helmet)
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable CSP for API
+  crossOriginEmbedderPolicy: false,
+}));
+
+// CORS middleware
 app.use(cors());
+
+// Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

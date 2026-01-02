@@ -1,10 +1,16 @@
+/**
+ * Production-Grade Authentication Controller for Stash
+ * Implements secure email + password + OTP authentication
+ * Similar to Zomato/Facebook authentication flow
+ */
+
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
 import User from '../models/User.js';
 import { validateEmail } from '../utils/emailValidation.js';
-import { sendOTPEmail, sendPasswordResetOTP, sendPasswordChangeConfirmation } from '../utils/emailService.js';
+import { sendOTPEmail, sendPasswordResetEmail, sendPasswordChangeConfirmation } from '../services/emailService.js';
 
 // Password validation function
 const validatePassword = (password) => {
@@ -34,7 +40,12 @@ const validatePassword = (password) => {
 
 // Generate 6-digit OTP
 const generateOTP = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+// Hash token using SHA-256
+const hashToken = (token) => {
+  return crypto.createHash('sha256').update(token).digest('hex');
 };
 
 // Admin email (hardcoded for security)
@@ -42,7 +53,13 @@ const ADMIN_EMAIL = 'administrator-stash.auth7@gmail.com';
 
 /**
  * Register new user with mandatory OTP verification
- * User cannot login until email is verified via OTP
+ * POST /api/auth/register
+ * - Validates email format
+ * - Hashes password with bcrypt (12 rounds)
+ * - Generates 6-digit OTP
+ * - Stores OTP hashed in DB with 10-minute expiry
+ * - Sends OTP via Gmail SMTP
+ * - Blocks login until OTP verified
  */
 export const register = async (req, res) => {
   try {
@@ -53,14 +70,7 @@ export const register = async (req, res) => {
       return res.status(500).json({ message: 'Server configuration error' });
     }
 
-    const {
-      name,
-      email,
-      password,
-      gender,
-      age,
-      profession,
-    } = req.body;
+    const { name, email, password, gender, age, profession } = req.body;
 
     // Validate required fields
     if (!name || !email || !password) {
@@ -85,15 +95,7 @@ export const register = async (req, res) => {
     }
 
     // Validate profession
-    const validProfessions = [
-      'Student',
-      'Salaried',
-      'Business',
-      'Freelancer',
-      'Homemaker',
-      'Retired',
-      'Other',
-    ];
+    const validProfessions = ['Student', 'Salaried', 'Business', 'Freelancer', 'Homemaker', 'Retired', 'Other'];
     if (profession && !validProfessions.includes(profession)) {
       return res.status(400).json({ message: 'Invalid profession' });
     }
@@ -110,14 +112,14 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash password with salt rounds 12 (production-ready)
-    const hashedPassword = await bcrypt.hash(password, 12);
+    // Hash password with bcrypt (12 rounds - production-ready)
+    const passwordHash = await bcrypt.hash(password, 12);
 
     // Generate 6-digit OTP
     const otp = generateOTP();
     // Hash OTP before storing (using bcrypt for security)
-    const hashedOTP = await bcrypt.hash(otp, 12);
-    const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    const otpHash = await bcrypt.hash(otp, 12);
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // Determine role (admin if email matches)
     const role = email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'user';
@@ -126,15 +128,14 @@ export const register = async (req, res) => {
     const user = await User.create({
       name: name.trim(),
       email: email.toLowerCase().trim(),
-      password: hashedPassword,
+      passwordHash,
       gender,
       age,
       profession,
       emailVerified: false, // MANDATORY - user cannot login until verified
-      otp: hashedOTP,
-      otpExpires,
-      otpAttempts: 0,
-      authProvider: 'email',
+      otpHash,
+      otpExpiry,
+      authProvider: 'local',
       role,
       onboardingCompleted: false,
     });
@@ -145,29 +146,9 @@ export const register = async (req, res) => {
       console.log(`✅ OTP sent to ${user.email}`);
     } catch (emailError) {
       console.error('❌ Failed to send OTP email:', emailError.message);
-      console.error('   Error details:', emailError.code || 'Unknown error');
-      
-      // Log specific error details for debugging
-      if (emailError.code === 'EAUTH') {
-        console.error('   → Gmail authentication failed');
-        console.error('   → Check EMAIL_USER and EMAIL_PASS in Render environment variables');
-        console.error('   → Ensure you are using Gmail App Password, not regular password');
-      } else if (emailError.code === 'ECONNECTION' || emailError.code === 'ETIMEDOUT') {
-        console.error('   → SMTP connection failed');
-        console.error('   → Check EMAIL_HOST and EMAIL_PORT');
-        console.error('   → Verify network connectivity to smtp.gmail.com:587');
-      }
-      
       // Delete user if OTP email fails (user cannot verify without OTP)
       await User.findByIdAndDelete(user._id);
-      
-      // Return more specific error message
-      let errorMessage = 'Failed to send verification code. Please try again.';
-      if (process.env.NODE_ENV !== 'production') {
-        errorMessage = `Failed to send verification code: ${emailError.message}`;
-      }
-      
-      return res.status(500).json({ message: errorMessage });
+      return res.status(500).json({ message: 'Failed to send verification code. Please try again.' });
     }
 
     // Return user data (NO TOKEN - user cannot login until verified)
@@ -182,19 +163,17 @@ export const register = async (req, res) => {
     if (error.code === 11000) {
       return res.status(400).json({ message: 'User already exists' });
     }
-    if (process.env.NODE_ENV === 'production') {
-      console.error('Registration error:', error.message);
-      res.status(500).json({ message: 'Registration failed' });
-    } else {
-      console.error('Registration error:', error);
-      res.status(500).json({ message: error.message || 'Registration failed' });
-    }
+    console.error('Registration error:', error.message);
+    res.status(500).json({ message: 'Registration failed' });
   }
 };
 
 /**
  * Verify OTP and activate user account
- * Maximum 3 attempts, OTP expires in 5 minutes
+ * POST /api/auth/verify-otp
+ * - Compares OTP with stored hash
+ * - If correct → delete OTP and mark emailVerified = true
+ * - Returns JWT token
  */
 export const verifyOTP = async (req, res) => {
   try {
@@ -223,47 +202,28 @@ export const verifyOTP = async (req, res) => {
     }
 
     // Check if OTP exists
-    if (!user.otp || !user.otpExpires) {
+    if (!user.otpHash || !user.otpExpiry) {
       return res.status(400).json({ message: 'No verification code found. Please request a new one.' });
     }
 
     // Check if OTP expired
-    if (user.otpExpires < new Date()) {
-      user.otp = null;
-      user.otpExpires = null;
-      user.otpAttempts = 0;
+    if (user.otpExpiry < new Date()) {
+      user.otpHash = null;
+      user.otpExpiry = null;
       await user.save();
       return res.status(400).json({ message: 'Verification code has expired. Please request a new one.' });
     }
 
-    // Check attempt limit (maximum 3 attempts)
-    if (user.otpAttempts >= 3) {
-      // Reset OTP after max attempts
-      user.otp = null;
-      user.otpExpires = null;
-      user.otpAttempts = 0;
-      await user.save();
-      return res.status(400).json({ message: 'Maximum verification attempts exceeded. Please request a new code.' });
-    }
-
     // Verify OTP using bcrypt.compare
-    const isOTPValid = await bcrypt.compare(otp, user.otp);
+    const isOTPValid = await bcrypt.compare(otp, user.otpHash);
     if (!isOTPValid) {
-      user.otpAttempts += 1;
-      await user.save();
-      const remainingAttempts = 3 - user.otpAttempts;
-      return res.status(400).json({ 
-        message: `Invalid verification code. ${remainingAttempts > 0 ? `${remainingAttempts} attempt(s) remaining.` : 'Maximum attempts exceeded.'}` 
-      });
+      return res.status(400).json({ message: 'Invalid verification code' });
     }
 
     // OTP verified successfully - activate user account
     user.emailVerified = true;
-    user.otp = null; // Delete OTP after successful verification
-    user.otpExpires = null;
-    user.otpAttempts = 0;
-    // Sync isVerified for backward compatibility
-    user.isVerified = true;
+    user.otpHash = null; // Delete OTP after successful verification (one-time use)
+    user.otpExpiry = null;
     await user.save();
 
     // Generate JWT token (user can now login)
@@ -291,6 +251,9 @@ export const verifyOTP = async (req, res) => {
 
 /**
  * Resend OTP email
+ * POST /api/auth/resend-otp
+ * - Rate limited (max 3 per hour)
+ * - Invalidates previous OTP
  */
 export const resendOTP = async (req, res) => {
   try {
@@ -303,7 +266,7 @@ export const resendOTP = async (req, res) => {
     const user = await User.findOne({ email: email.toLowerCase() });
 
     if (!user) {
-      // Don't reveal if user exists or not
+      // Don't reveal if user exists or not (security best practice)
       return res.json({ message: 'If an account exists with this email, a verification code has been sent.' });
     }
 
@@ -311,14 +274,13 @@ export const resendOTP = async (req, res) => {
       return res.status(400).json({ message: 'Email is already verified' });
     }
 
-    // Generate new OTP
+    // Generate new OTP (invalidate previous)
     const otp = generateOTP();
-    const hashedOTP = await bcrypt.hash(otp, 12);
-    const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    const otpHash = await bcrypt.hash(otp, 12);
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    user.otp = hashedOTP;
-    user.otpExpires = otpExpires;
-    user.otpAttempts = 0; // Reset attempts
+    user.otpHash = otpHash;
+    user.otpExpiry = otpExpiry;
     await user.save();
 
     // Send OTP email
@@ -337,7 +299,9 @@ export const resendOTP = async (req, res) => {
 
 /**
  * Login - BLOCKED if email is not verified
- * Users MUST verify email via OTP before login
+ * POST /api/auth/login
+ * - Rejects login if emailVerified = false
+ * - Returns JWT only after verification
  */
 export const login = async (req, res) => {
   try {
@@ -369,7 +333,7 @@ export const login = async (req, res) => {
     }
     
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -397,7 +361,12 @@ export const login = async (req, res) => {
 };
 
 /**
- * Forgot password - send OTP instead of reset link
+ * Forgot password - generate secure reset token
+ * POST /api/auth/forgot-password
+ * - Generate one-time reset token (crypto.randomBytes)
+ * - Hash token in DB
+ * - Expire in 15 minutes
+ * - Send reset link via SMTP
  */
 export const forgotPassword = async (req, res) => {
   try {
@@ -411,31 +380,29 @@ export const forgotPassword = async (req, res) => {
 
     // Don't reveal if user exists or not (security best practice)
     if (!user) {
-      return res.json({ message: 'If an account exists with this email, a password reset code has been sent.' });
+      return res.json({ message: 'If an account exists with this email, a password reset link has been sent.' });
     }
 
-    // Generate OTP for password reset
-    const otp = generateOTP();
-    const hashedOTP = await bcrypt.hash(otp, 12);
-    const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    // Generate secure reset token using crypto.randomBytes
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenHash = hashToken(resetToken);
+    const resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
-    user.otp = hashedOTP;
-    user.otpExpires = otpExpires;
-    user.otpAttempts = 0;
+    user.resetTokenHash = resetTokenHash;
+    user.resetTokenExpiry = resetTokenExpiry;
     await user.save();
 
-    // Send password reset OTP email
+    // Send password reset email
     try {
-      await sendPasswordResetOTP(user.email, otp);
-      res.json({ message: 'If an account exists with this email, a password reset code has been sent.' });
+      await sendPasswordResetEmail(user.email, resetToken);
+      res.json({ message: 'If an account exists with this email, a password reset link has been sent.' });
     } catch (emailError) {
-      console.error('Failed to send password reset OTP:', emailError);
-      // Clear OTP if email fails
-      user.otp = null;
-      user.otpExpires = null;
-      user.otpAttempts = 0;
+      console.error('Failed to send password reset email:', emailError);
+      // Clear tokens if email fails
+      user.resetTokenHash = null;
+      user.resetTokenExpiry = null;
       await user.save();
-      res.status(500).json({ message: 'Failed to send password reset code' });
+      res.status(500).json({ message: 'Failed to send password reset email' });
     }
   } catch (error) {
     console.error('Forgot password error:', error.message);
@@ -444,14 +411,19 @@ export const forgotPassword = async (req, res) => {
 };
 
 /**
- * Reset password with OTP verification
+ * Reset password with secure token
+ * POST /api/auth/reset-password
+ * - Verify token hash + expiry
+ * - Allow password reset once
+ * - Invalidate token after use
+ * - Hash new password using bcrypt
  */
 export const resetPassword = async (req, res) => {
   try {
-    const { email, otp, password } = req.body;
+    const { token, password } = req.body;
 
-    if (!email || !otp || !password) {
-      return res.status(400).json({ message: 'Email, OTP, and password are required' });
+    if (!token || !password) {
+      return res.status(400).json({ message: 'Token and password are required' });
     }
 
     // Validate password strength
@@ -460,52 +432,26 @@ export const resetPassword = async (req, res) => {
       return res.status(400).json({ message: passwordValidation.message });
     }
 
-    // Find user
-    const user = await User.findOne({ email: email.toLowerCase() });
+    // Hash the token to compare with stored hash
+    const resetTokenHash = hashToken(token);
+
+    // Find user with matching token and not expired
+    const user = await User.findOne({
+      resetTokenHash,
+      resetTokenExpiry: { $gt: new Date() },
+    });
+
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(400).json({ message: 'Invalid or expired reset token' });
     }
 
-    // Check if OTP exists
-    if (!user.otp || !user.otpExpires) {
-      return res.status(400).json({ message: 'No password reset code found. Please request a new one.' });
-    }
+    // Hash new password
+    const passwordHash = await bcrypt.hash(password, 12);
 
-    // Check if OTP expired
-    if (user.otpExpires < new Date()) {
-      user.otp = null;
-      user.otpExpires = null;
-      user.otpAttempts = 0;
-      await user.save();
-      return res.status(400).json({ message: 'Password reset code has expired. Please request a new one.' });
-    }
-
-    // Check attempt limit
-    if (user.otpAttempts >= 3) {
-      user.otp = null;
-      user.otpExpires = null;
-      user.otpAttempts = 0;
-      await user.save();
-      return res.status(400).json({ message: 'Maximum verification attempts exceeded. Please request a new code.' });
-    }
-
-    // Verify OTP
-    const isOTPValid = await bcrypt.compare(otp, user.otp);
-    if (!isOTPValid) {
-      user.otpAttempts += 1;
-      await user.save();
-      const remainingAttempts = 3 - user.otpAttempts;
-      return res.status(400).json({ 
-        message: `Invalid verification code. ${remainingAttempts > 0 ? `${remainingAttempts} attempt(s) remaining.` : 'Maximum attempts exceeded.'}` 
-      });
-    }
-
-    // OTP verified - reset password
-    const hashedPassword = await bcrypt.hash(password, 12);
-    user.password = hashedPassword;
-    user.otp = null; // Delete OTP after use
-    user.otpExpires = null;
-    user.otpAttempts = 0;
+    // Update password and invalidate token (one-time use)
+    user.passwordHash = passwordHash;
+    user.resetTokenHash = null;
+    user.resetTokenExpiry = null;
     await user.save();
 
     // Send password change confirmation email (non-blocking)
@@ -521,7 +467,13 @@ export const resetPassword = async (req, res) => {
 };
 
 /**
- * Google OAuth - Skip OTP (Google emails are pre-verified)
+ * Google OAuth - Real backend verification
+ * POST /api/auth/google
+ * - Uses Google OAuth 2.0
+ * - Backend verification (google-auth-library)
+ * - On success: auto mark emailVerified = true
+ * - Create account if not exists
+ * - No frontend-only fake Google login
  */
 export const googleAuth = async (req, res) => {
   try {
@@ -544,7 +496,7 @@ export const googleAuth = async (req, res) => {
       return res.status(400).json({ message: 'Google ID token is required' });
     }
 
-    // Verify Google ID token
+    // Verify Google ID token (REAL backend verification)
     const client = new OAuth2Client(GOOGLE_CLIENT_ID);
     let ticket;
 
@@ -575,7 +527,6 @@ export const googleAuth = async (req, res) => {
       // Existing user - update if needed
       if (!user.emailVerified) {
         user.emailVerified = true; // Google emails are pre-verified
-        user.isVerified = true; // Sync for backward compatibility
       }
       if (user.role !== role) {
         user.role = role; // Update role if changed
@@ -587,9 +538,8 @@ export const googleAuth = async (req, res) => {
       user = await User.create({
         name: name || email.split('@')[0],
         email: email.toLowerCase(),
-        password: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12), // Random password (won't be used)
+        passwordHash: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12), // Random password (won't be used)
         emailVerified: true, // Google emails are pre-verified
-        isVerified: true, // Sync for backward compatibility
         authProvider: 'google',
         role,
         onboardingCompleted: false,

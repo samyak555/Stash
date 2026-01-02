@@ -14,9 +14,42 @@ const userSchema = new mongoose.Schema({
     trim: true,
     index: true,
   },
-  password: {
+  passwordHash: {
     type: String,
+    required: function() {
+      return this.authProvider === 'local';
+    },
+  },
+  emailVerified: {
+    type: Boolean,
+    default: false,
     required: true,
+  },
+  otpHash: {
+    type: String,
+    default: null,
+  },
+  otpExpiry: {
+    type: Date,
+    default: null,
+  },
+  resetTokenHash: {
+    type: String,
+    default: null,
+  },
+  resetTokenExpiry: {
+    type: Date,
+    default: null,
+  },
+  authProvider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local',
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
   },
   gender: {
     type: String,
@@ -39,85 +72,10 @@ const userSchema = new mongoose.Schema({
       'Other',
     ],
   },
-  // Income fields kept for future dashboard onboarding (not required at signup)
-  incomeSources: {
-    type: [String],
-    enum: [
-      'Salary',
-      'Business',
-      'Freelancing',
-      'Investments',
-      'Rental Income',
-      'Pension',
-      'Scholarship',
-      'Other',
-    ],
-  },
-  incomeRange: {
-    type: String,
-    enum: [
-      'Below ₹10,000',
-      '₹10,000 – ₹25,000',
-      '₹25,000 – ₹50,000',
-      '₹50,000 – ₹1,00,000',
-      '₹1,00,000 – ₹5,00,000',
-      'Above ₹5,00,000',
-    ],
-  },
   monthlyIncome: {
     type: Number,
     default: null,
     min: 0,
-  },
-  // Email OTP Verification (Mandatory)
-  emailVerified: {
-    type: Boolean,
-    default: false,
-  },
-  otp: {
-    type: String,
-    default: null,
-  },
-  otpExpires: {
-    type: Date,
-    default: null,
-  },
-  otpAttempts: {
-    type: Number,
-    default: 0,
-  },
-  // Authentication Provider
-  authProvider: {
-    type: String,
-    enum: ['email', 'google'],
-    default: 'email',
-  },
-  // User Role
-  role: {
-    type: String,
-    enum: ['user', 'admin'],
-    default: 'user',
-  },
-  // Legacy fields (kept for backward compatibility)
-  isVerified: {
-    type: Boolean,
-    default: false,
-  },
-  verificationToken: {
-    type: String,
-    default: null,
-  },
-  verificationTokenExpires: {
-    type: Date,
-    default: null,
-  },
-  resetPasswordToken: {
-    type: String,
-    default: null,
-  },
-  resetPasswordExpires: {
-    type: Date,
-    default: null,
   },
   onboardingCompleted: {
     type: Boolean,
@@ -129,7 +87,11 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+// Index for faster lookups
+userSchema.index({ email: 1 });
+userSchema.index({ otpHash: 1 });
+userSchema.index({ resetTokenHash: 1 });
+
 const User = mongoose.model('User', userSchema);
 
 export default User;
-

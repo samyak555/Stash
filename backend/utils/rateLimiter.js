@@ -39,3 +39,15 @@ export const otpRateLimiter = rateLimit({
   },
 });
 
+// Rate limiter for resend OTP (max 3 per hour)
+export const resendOTPRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // Limit each IP to 3 resend requests per hour
+  message: 'Too many resend requests. Please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    return process.env.NODE_ENV === 'development';
+  },
+});
+
