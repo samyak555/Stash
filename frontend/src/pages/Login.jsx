@@ -33,6 +33,12 @@ const Login = ({ setUser }) => {
 
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Sync onboardingCompleted to localStorage
+      if (userData.onboardingCompleted) {
+        localStorage.setItem('onboardingCompleted', 'true');
+      }
+      
       setUser(userData);
 
       toast.success('Login successful!');

@@ -216,6 +216,7 @@ export const login = async (req, res) => {
       age: user.age,
       profession: user.profession,
       isVerified: user.isVerified,
+      onboardingCompleted: user.onboardingCompleted,
     });
   } catch (error) {
     console.error('Login error:', error.message);
@@ -464,6 +465,7 @@ export const googleAuth = async (req, res) => {
       age: user.age,
       profession: user.profession,
       isVerified: user.isVerified,
+      onboardingCompleted: user.onboardingCompleted,
     });
   } catch (error) {
     console.error('Google auth error:', error.message);

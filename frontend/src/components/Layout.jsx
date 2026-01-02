@@ -7,9 +7,19 @@ const Layout = ({ children, user, setUser }) => {
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
 
   useEffect(() => {
-    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-    if (!onboardingCompleted && user) {
+    // Check both localStorage and backend user data
+    const localOnboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
+    const backendOnboardingCompleted = user?.onboardingCompleted === true;
+    
+    // Show onboarding only if both are false and user exists
+    if (!localOnboardingCompleted && !backendOnboardingCompleted && user) {
       setShowOnboarding(true);
+    } else {
+      // If onboarding is completed, ensure localStorage is synced
+      if (backendOnboardingCompleted && !localOnboardingCompleted) {
+        localStorage.setItem('onboardingCompleted', 'true');
+      }
+      setShowOnboarding(false);
     }
     setCheckingOnboarding(false);
   }, [user]);
