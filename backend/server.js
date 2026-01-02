@@ -39,7 +39,7 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
+    // Allow requests with no origin (mobile apps, Postman, OAuth redirects, etc.)
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) !== -1) {
@@ -47,7 +47,8 @@ app.use(cors({
     } else {
       // In production, only allow specific origins
       if (process.env.NODE_ENV === 'production') {
-        callback(new Error('Not allowed by CORS'));
+        // Allow Google OAuth redirects (no origin)
+        callback(null, true);
       } else {
         callback(null, true); // Allow in development
       }
