@@ -142,7 +142,7 @@ const startServer = async () => {
     }
     
     console.log(`🚀 Starting server on port ${PORT}...`);
-    app.listen(PORT, () => {
+app.listen(PORT, () => {
       console.log(`✅ Server running successfully on port ${PORT}`);
       console.log(`🌐 Health check: http://localhost:${PORT}/api/health`);
     });
