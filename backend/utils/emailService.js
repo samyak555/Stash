@@ -92,7 +92,7 @@ export const sendWelcomeEmail = async (email, name) => {
   }
 
   const mailOptions = {
-    from: process.env.EMAIL_FROM || emailUser,
+    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
     to: email,
     subject: 'Welcome to Stash! 🎉',
     html: `
