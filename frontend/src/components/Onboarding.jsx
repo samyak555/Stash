@@ -92,9 +92,33 @@ const Onboarding = ({ onComplete }) => {
         note: 'Onboarding entry',
       });
       localStorage.setItem('hasExpenseData', 'true');
+      
+      // Mark expenses as completed
+      await userAPI.updateProfile({
+        expensesCompleted: true,
+      });
+      
       setStep(3);
     } catch (error) {
       toast.error('Failed to save expense');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSkipExpense = async () => {
+    setLoading(true);
+    try {
+      // Mark expenses as NOT completed, but allow progression
+      await userAPI.updateProfile({
+        expensesCompleted: false,
+      });
+      
+      // Move to next step (goal)
+      setStep(3);
+      toast.success('You can add expenses later from the dashboard');
+    } catch (error) {
+      toast.error('Failed to skip expense step');
     } finally {
       setLoading(false);
     }
@@ -245,20 +269,17 @@ const Onboarding = ({ onComplete }) => {
                   type="submit" 
                   variant="primary" 
                   className="w-full" 
-                  disabled={loading || (formData.income && (isNaN(parseFloat(formData.income)) || parseFloat(formData.income) < 0))}
+                  disabled={loading || !formData.income || isNaN(parseFloat(formData.income)) || parseFloat(formData.income) <= 0}
                 >
                   {loading ? 'Saving...' : 'Continue'}
                 </Button>
                 
-                {/* Skip button */}
-                <button
-                  type="button"
-                  onClick={handleSkipIncome}
-                  disabled={loading}
-                  className="w-full py-3 px-4 text-sm font-medium text-slate-400 hover:text-slate-300 border border-white/10 hover:border-white/20 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Skip for now
-                </button>
+                {/* No skip button on Income step - it's mandatory */}
+                {(!formData.income || isNaN(parseFloat(formData.income)) || parseFloat(formData.income) <= 0) && (
+                  <p className="text-xs text-amber-400 text-center mt-2">
+                    Please enter your monthly income to continue
+                  </p>
+                )}
               </form>
 
               {/* Trust Message */}
@@ -326,19 +347,19 @@ const Onboarding = ({ onComplete }) => {
                   </Button>
                 </div>
                 
-                {/* Skip button */}
+                {/* Skip button - ONLY on Expenses step */}
                 <button
                   type="button"
-                  onClick={handleSkipOnboarding}
+                  onClick={handleSkipExpense}
                   disabled={loading}
-                  className="w-full py-3 px-4 text-sm font-medium text-slate-400 hover:text-slate-300 border border-white/10 hover:border-white/20 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3 px-4 text-sm font-medium text-slate-400 hover:text-slate-300 border border-white/10 hover:border-white/20 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2"
                 >
                   Skip for now
                 </button>
                 
                 {/* Helper text */}
-                <p className="text-xs text-slate-400 text-center">
-                  You can complete this later from Settings.
+                <p className="text-xs text-slate-400 text-center mt-2">
+                  You can add expenses later from the dashboard
                 </p>
               </form>
             </div>
@@ -394,25 +415,17 @@ const Onboarding = ({ onComplete }) => {
                   <Button type="button" variant="ghost" onClick={() => setStep(2)} className="flex-1">
                     Back
                   </Button>
-                  <Button type="submit" variant="primary" className="flex-1" disabled={loading}>
+                  <Button type="submit" variant="primary" className="flex-1" disabled={loading || !formData.goalTitle || !formData.goalAmount || !formData.goalDeadline || parseFloat(formData.goalAmount) <= 0}>
                     {loading ? 'Saving...' : 'Continue'}
                   </Button>
                 </div>
                 
-                {/* Skip button */}
-                <button
-                  type="button"
-                  onClick={handleSkipOnboarding}
-                  disabled={loading}
-                  className="w-full py-3 px-4 text-sm font-medium text-slate-400 hover:text-slate-300 border border-white/10 hover:border-white/20 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Skip for now
-                </button>
-                
-                {/* Helper text */}
-                <p className="text-xs text-slate-400 text-center">
-                  You can complete this later from Settings.
-                </p>
+                {/* No skip button on Goal step - it's mandatory */}
+                {(!formData.goalTitle || !formData.goalAmount || !formData.goalDeadline || parseFloat(formData.goalAmount) <= 0) && (
+                  <p className="text-xs text-amber-400 text-center mt-2">
+                    Please fill all fields to continue
+                  </p>
+                )}
               </form>
             </div>
           )}

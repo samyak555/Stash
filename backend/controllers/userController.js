@@ -33,6 +33,7 @@ export const getProfile = async (req, res) => {
       profession: user.profession,
       monthlyIncome: user.monthlyIncome,
       onboardingCompleted: user.onboardingCompleted,
+      expensesCompleted: user.expensesCompleted || false,
       role: user.role,
       authProvider: user.authProvider,
     });
@@ -44,7 +45,7 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { monthlyIncome, onboardingCompleted } = req.body;
+    const { monthlyIncome, onboardingCompleted, expensesCompleted } = req.body;
     const userId = req.userId;
 
     // Validate monthlyIncome if provided
@@ -63,12 +64,15 @@ export const updateProfile = async (req, res) => {
     if (onboardingCompleted !== undefined) {
       updateData.onboardingCompleted = onboardingCompleted === true || onboardingCompleted === 'true';
     }
+    if (expensesCompleted !== undefined) {
+      updateData.expensesCompleted = expensesCompleted === true || expensesCompleted === 'true';
+    }
 
     const user = await User.findByIdAndUpdate(
       userId,
       { $set: updateData },
       { new: true, runValidators: true }
-    ).select('-password');
+    ).select('-passwordHash -verificationToken -resetTokenHash');
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -83,6 +87,7 @@ export const updateProfile = async (req, res) => {
       profession: user.profession,
       monthlyIncome: user.monthlyIncome,
       onboardingCompleted: user.onboardingCompleted,
+      expensesCompleted: user.expensesCompleted || false,
     });
   } catch (error) {
     console.error('Update profile error:', error.message);
