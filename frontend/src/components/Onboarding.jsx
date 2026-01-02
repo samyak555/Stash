@@ -30,48 +30,31 @@ const Onboarding = ({ onComplete }) => {
     const incomeValue = formData.income.trim();
     const incomeNum = parseFloat(incomeValue);
     
-    // Validate only if user entered a value (not empty)
-    if (incomeValue && (isNaN(incomeNum) || incomeNum <= 0)) {
-      toast.error('Please enter a valid income amount');
+    // Income is MANDATORY - validate required
+    if (!incomeValue || isNaN(incomeNum) || incomeNum <= 0) {
+      toast.error('Please enter a valid monthly income amount');
       return;
     }
     
     setLoading(true);
     try {
-      // Save monthlyIncome to user profile (null if skipped)
+      // Save monthlyIncome to user profile
       await userAPI.updateProfile({
-        monthlyIncome: incomeValue ? incomeNum : null,
+        monthlyIncome: incomeNum,
       });
       
-      // Only create income entry if user provided a value
-      if (incomeValue && incomeNum > 0) {
-        await incomeAPI.create({
-          amount: incomeNum,
-          source: 'Salary',
-          date: new Date().toISOString().split('T')[0],
-          note: 'Onboarding entry',
-        });
-        localStorage.setItem('hasIncomeData', 'true');
-      }
+      // Create income entry
+      await incomeAPI.create({
+        amount: incomeNum,
+        source: 'Salary',
+        date: new Date().toISOString().split('T')[0],
+        note: 'Onboarding entry',
+      });
+      localStorage.setItem('hasIncomeData', 'true');
       
       setStep(2);
     } catch (error) {
       toast.error('Failed to save income');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSkipIncome = async () => {
-    setLoading(true);
-    try {
-      // Save null monthlyIncome to user profile
-      await userAPI.updateProfile({
-        monthlyIncome: null,
-      });
-      setStep(2);
-    } catch (error) {
-      toast.error('Failed to skip income step');
     } finally {
       setLoading(false);
     }
@@ -260,11 +243,6 @@ const Onboarding = ({ onComplete }) => {
                   />
                 </div>
                 
-                {/* Helper text */}
-                <p className="text-xs text-slate-400 text-center">
-                  You can add this later from Settings
-                </p>
-                
                 <Button 
                   type="submit" 
                   variant="primary" 
@@ -274,7 +252,7 @@ const Onboarding = ({ onComplete }) => {
                   {loading ? 'Saving...' : 'Continue'}
                 </Button>
                 
-                {/* No skip button on Income step - it's mandatory */}
+                {/* Validation message - Income is mandatory */}
                 {(!formData.income || isNaN(parseFloat(formData.income)) || parseFloat(formData.income) <= 0) && (
                   <p className="text-xs text-amber-400 text-center mt-2">
                     Please enter your monthly income to continue
