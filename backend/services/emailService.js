@@ -34,6 +34,7 @@ const initializeTransporter = () => {
   const useSSL = emailPort === 465 || process.env.EMAIL_SECURE === 'true';
   
   // Create transporter with production-ready configuration
+  // Increased timeouts for Render's network conditions
   transporter = nodemailer.createTransport({
     host: emailHost,
     port: emailPort,
@@ -43,15 +44,16 @@ const initializeTransporter = () => {
       user: emailUser,
       pass: emailPass,
     },
-    connectionTimeout: 30000, // 30 seconds for Render
+    connectionTimeout: 60000, // 60 seconds (increased for Render)
     greetingTimeout: 30000,
-    socketTimeout: 30000,
+    socketTimeout: 60000, // 60 seconds (increased for Render)
     tls: {
       rejectUnauthorized: false, // Allow self-signed certificates
+      ciphers: 'SSLv3', // Try different cipher suites
     },
-    pool: true, // Use connection pooling
+    pool: false, // Disable pooling for better reliability on Render
     maxConnections: 1,
-    maxMessages: 3,
+    maxMessages: 1,
     logger: false,
     debug: false,
   });
@@ -83,7 +85,14 @@ const getTransporter = () => {
  */
 export const sendVerificationEmail = async (to, name, verificationToken) => {
   try {
-    const mailTransporter = getTransporter();
+    let mailTransporter;
+    try {
+      mailTransporter = getTransporter();
+    } catch (transporterError) {
+      console.error('❌ Failed to get email transporter:', transporterError.message);
+      throw new Error('Email service not configured. Please check EMAIL_USER and EMAIL_PASS.');
+    }
+    
     const emailFrom = process.env.EMAIL_FROM || process.env.EMAIL_USER;
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const verificationUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
@@ -326,28 +335,63 @@ export const verifyEmailService = async () => {
       };
     }
 
-    // Verify SMTP connection
+    // Verify SMTP connection with timeout handling
     let lastError = null;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        console.log(`Attempting SMTP verification (attempt ${attempt}/3)...`);
-        await mailTransporter.verify();
-        console.log('✅ Email service verified successfully');
-        return {
-          success: true,
-          details: {
-            EMAIL_HOST: emailHost,
-            EMAIL_PORT: emailPort,
-            EMAIL_USER: emailUser,
-            EMAIL_FROM: process.env.EMAIL_FROM || emailUser,
-            attempts: attempt,
-          },
-        };
-      } catch (verifyError) {
-        lastError = verifyError;
-        console.error(`Attempt ${attempt} failed:`, verifyError.message);
-        if (attempt < 3) {
-          await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+    const portsToTry = emailPort === 465 ? [465, 587] : [emailPort, 465]; // Try both ports
+    
+    for (const testPort of portsToTry) {
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          console.log(`Attempting SMTP verification on port ${testPort} (attempt ${attempt}/2)...`);
+          
+          // Create a new transporter for this port if different
+          let testTransporter = mailTransporter;
+          if (testPort !== emailPort) {
+            const useSSL = testPort === 465;
+            testTransporter = nodemailer.createTransport({
+              host: emailHost,
+              port: testPort,
+              secure: useSSL,
+              requireTLS: !useSSL,
+              auth: {
+                user: emailUser,
+                pass: emailPass,
+              },
+              connectionTimeout: 60000,
+              greetingTimeout: 30000,
+              socketTimeout: 60000,
+              tls: {
+                rejectUnauthorized: false,
+              },
+            });
+          }
+          
+          // Verify with timeout
+          const verifyPromise = testTransporter.verify();
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Verification timeout after 60 seconds')), 60000)
+          );
+          
+          await Promise.race([verifyPromise, timeoutPromise]);
+          
+          console.log(`✅ Email service verified successfully on port ${testPort}`);
+          return {
+            success: true,
+            details: {
+              EMAIL_HOST: emailHost,
+              EMAIL_PORT: testPort,
+              EMAIL_USER: emailUser,
+              EMAIL_FROM: process.env.EMAIL_FROM || emailUser,
+              attempts: attempt,
+              note: testPort !== emailPort ? `Using port ${testPort} instead of ${emailPort}` : undefined,
+            },
+          };
+        } catch (verifyError) {
+          lastError = verifyError;
+          console.error(`Port ${testPort}, attempt ${attempt} failed:`, verifyError.message);
+          if (attempt < 2) {
+            await new Promise(resolve => setTimeout(resolve, 3000));
+          }
         }
       }
     }
@@ -355,12 +399,30 @@ export const verifyEmailService = async () => {
     throw lastError;
   } catch (error) {
     console.error('❌ Email service verification failed:', error.message);
+    
+    // Provide helpful error messages
+    let errorMessage = error.message || 'Email service verification failed';
+    let suggestion = '';
+    
+    if (error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+      errorMessage = 'Connection timeout - Render free tier may block SMTP connections';
+      suggestion = 'Try: 1) Switch to port 587 (TLS) instead of 465 (SSL), 2) Upgrade Render plan, or 3) Use a different email service like SendGrid';
+    } else if (error.code === 'ECONNREFUSED') {
+      errorMessage = 'Connection refused - Check EMAIL_HOST and EMAIL_PORT';
+      suggestion = 'Verify Gmail SMTP settings are correct';
+    } else if (error.code === 'EAUTH') {
+      errorMessage = 'Authentication failed - Check EMAIL_USER and EMAIL_PASS';
+      suggestion = 'Verify Gmail App Password is correct and has no spaces';
+    }
+    
     return {
       success: false,
-      error: error.message || 'Email service verification failed',
+      error: errorMessage,
       details: {
         errorCode: error.code,
         errorMessage: error.message,
+        suggestion: suggestion,
+        troubleshooting: 'Email sending may still work even if verification fails. Try sending a test email.',
       },
     };
   }
