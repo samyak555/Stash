@@ -32,12 +32,23 @@ function App() {
       try {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
+        const isGuest = localStorage.getItem('isGuest') === 'true';
         
-        // Only allow authenticated users (no guest mode)
-        if (token && userData) {
+        if (isGuest && userData) {
+          // Guest mode - no token needed
           try {
             const parsedUser = JSON.parse(userData);
-            // Clear any guest mode flags
+            setUser(parsedUser);
+          } catch (parseError) {
+            console.error('Error parsing user data:', parseError);
+            localStorage.removeItem('isGuest');
+            localStorage.removeItem('user');
+          }
+        } else if (token && userData) {
+          // Authenticated user
+          try {
+            const parsedUser = JSON.parse(userData);
+            // Clear guest mode if user is authenticated
             localStorage.removeItem('isGuest');
             setUser(parsedUser);
           } catch (parseError) {
@@ -46,9 +57,6 @@ function App() {
             localStorage.removeItem('user');
             localStorage.removeItem('isGuest');
           }
-        } else {
-          // Clear guest mode if no token
-          localStorage.removeItem('isGuest');
         }
         setLoading(false);
       } catch (err) {

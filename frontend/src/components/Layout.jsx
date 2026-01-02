@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
+import MobileSidebar from './MobileSidebar';
 import Onboarding from './Onboarding';
 import FirstTimeOnboarding from './FirstTimeOnboarding';
 import GuestUpgradeBanner from './GuestUpgradeBanner';
@@ -79,12 +80,17 @@ const Layout = ({ children, user, setUser }) => {
       </div>
       
       <div className="flex flex-1 pt-0">
-        {/* Left Sidebar */}
-        <Sidebar user={user} setUser={setUser} />
+        {/* Left Sidebar - Hidden on mobile, visible on desktop */}
+        <div className="hidden md:block">
+          <Sidebar user={user} setUser={setUser} />
+        </div>
+
+        {/* Mobile Sidebar - Sliding menu */}
+        <MobileSidebar user={user} setUser={setUser} />
 
         {/* Main Content Area */}
-        <main className={`flex-1 ml-60 min-h-screen relative z-10 ${isGuest ? 'pt-12' : 'pt-0'}`}>
-          <div className="p-6 sm:p-8 lg:p-10">
+        <main className={`flex-1 md:ml-60 min-h-screen relative z-10 ${isGuest ? 'pt-12' : 'pt-0'}`}>
+          <div className="p-4 sm:p-6 md:p-8 lg:p-10">
             <div className="max-w-7xl mx-auto">
               {children}
             </div>

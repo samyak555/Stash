@@ -607,7 +607,7 @@ const DeleteAccountSection = () => {
   };
 
   return (
-    <div className="glass-card p-8 rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-500/5 to-orange-500/5">
+    <div className="glass-card p-4 md:p-8 rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-500/5 to-orange-500/5">
       <div className="flex items-start gap-4">
         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
           <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -624,7 +624,7 @@ const DeleteAccountSection = () => {
             <Button
               variant="danger"
               onClick={handleDeleteAccount}
-              className="mt-4"
+              className="mt-4 w-full md:w-auto"
             >
               Delete Account
             </Button>

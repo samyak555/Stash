@@ -106,7 +106,7 @@
   }
   
   /* Better touch targets for mobile */
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     button, a {
       min-height: 44px; /* iOS recommended touch target */
       min-width: 44px;
@@ -387,4 +387,84 @@ select[multiple] option:focus,
 select[multiple] option:checked {
   background-color: #2563EB !important;
   color: #FFFFFF !important;
+}
+
+/* ============================================
+   MOBILE-ONLY OPTIMIZATIONS (max-width: 768px)
+   Desktop remains completely unchanged
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Remove hover effects on mobile - use active/tap instead */
+  .glass-light:hover,
+  .glass-card:hover {
+    transform: none;
+  }
+
+  /* Mobile-friendly tap feedback */
+  button:active,
+  a:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+
+  /* Prevent text selection on tap targets */
+  button, a {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Smooth scrolling on mobile */
+  html {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Prevent horizontal scroll */
+  body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* Mobile dashboard optimizations */
+  .glass-card {
+    padding: 1rem !important;
+  }
+
+  /* Full-width buttons on mobile */
+  button {
+    width: 100%;
+  }
+
+  /* Mobile-friendly spacing */
+  .space-y-8 > * + * {
+    margin-top: 1.5rem;
+  }
+
+  /* Settings page mobile optimization */
+  .settings-container {
+    padding: 1rem;
+  }
+
+  /* Delete account button full width on mobile */
+  .delete-account-button {
+    width: 100%;
+  }
+
+  /* Mobile form inputs */
+  input, textarea, select {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 0.75rem;
+  }
+
+  /* Mobile card spacing */
+  .grid {
+    gap: 1rem;
+  }
+
+  /* Mobile-friendly modals */
+  .modal-content {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+  }
 }
