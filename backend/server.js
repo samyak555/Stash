@@ -60,12 +60,25 @@ process.on('unhandledRejection', (err) => {
 // Start server only after DB connection
 const startServer = async () => {
   try {
+    // Validate environment variables before starting
+    if (!process.env.MONGODB_URI) {
+      console.error('❌ MONGODB_URI environment variable is not set');
+      process.exit(1);
+    }
+    
+    if (!process.env.JWT_SECRET) {
+      console.error('❌ JWT_SECRET environment variable is not set');
+      process.exit(1);
+    }
+
+    console.log('🔌 Connecting to MongoDB...');
     await connectDB();
+    
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
   } catch (error) {
-    console.error('Failed to start server:', error.message);
+    console.error('❌ Failed to start server:', error.message);
     process.exit(1);
   }
 };

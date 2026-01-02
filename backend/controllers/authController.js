@@ -2,14 +2,15 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is not set');
-}
-
 export const register = async (req, res) => {
   try {
+    const JWT_SECRET = process.env.JWT_SECRET;
+
+    if (!JWT_SECRET) {
+      console.error('JWT_SECRET environment variable is not set');
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
+
     const { name, email, password } = req.body;
     
     if (!name || !email || !password) {
@@ -49,12 +50,20 @@ export const register = async (req, res) => {
     if (error.code === 11000) {
       return res.status(400).json({ message: 'User already exists' });
     }
+    console.error('Registration error:', error.message);
     res.status(500).json({ message: 'Registration failed' });
   }
 };
 
 export const login = async (req, res) => {
   try {
+    const JWT_SECRET = process.env.JWT_SECRET;
+
+    if (!JWT_SECRET) {
+      console.error('JWT_SECRET environment variable is not set');
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
+
     const { email, password } = req.body;
     
     if (!email || !password) {
@@ -87,6 +96,7 @@ export const login = async (req, res) => {
       email: user.email,
     });
   } catch (error) {
+    console.error('Login error:', error.message);
     res.status(500).json({ message: 'Login failed' });
   }
 };
