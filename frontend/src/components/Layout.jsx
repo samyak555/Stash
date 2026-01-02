@@ -3,14 +3,12 @@ import Sidebar from './Sidebar';
 import Onboarding from './Onboarding';
 import FirstTimeOnboarding from './FirstTimeOnboarding';
 import GuestUpgradeBanner from './GuestUpgradeBanner';
-import SlidingMenu from './SlidingMenu';
 import { useGuestMode } from '../hooks/useGuestMode';
 
 const Layout = ({ children, user, setUser }) => {
   const [showFirstTimeOnboarding, setShowFirstTimeOnboarding] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
-  const [menuOpen, setMenuOpen] = useState(false);
   const { isGuest } = useGuestMode();
 
   useEffect(() => {
@@ -81,26 +79,11 @@ const Layout = ({ children, user, setUser }) => {
       </div>
       
       <div className="flex flex-1 pt-0">
-        {/* Left Sidebar - Hidden on mobile, visible on desktop */}
-        <div className="hidden lg:block">
-          <Sidebar user={user} setUser={setUser} />
-        </div>
+        {/* Left Sidebar */}
+        <Sidebar user={user} setUser={setUser} />
 
         {/* Main Content Area */}
-        <main className={`flex-1 lg:ml-60 min-h-screen relative z-10 ${isGuest ? 'pt-12' : 'pt-0'}`}>
-          {/* Hamburger Menu Button - Visible on mobile/tablet */}
-          <div className="lg:hidden fixed top-4 left-4 z-30">
-            <button
-              onClick={() => setMenuOpen(true)}
-              className="p-2 bg-white/10 hover:bg-white/20 rounded-lg backdrop-blur-sm border border-white/10 transition-all"
-              aria-label="Open menu"
-            >
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
-
+        <main className={`flex-1 ml-60 min-h-screen relative z-10 ${isGuest ? 'pt-12' : 'pt-0'}`}>
           <div className="p-6 sm:p-8 lg:p-10">
             <div className="max-w-7xl mx-auto">
               {children}
@@ -108,14 +91,6 @@ const Layout = ({ children, user, setUser }) => {
           </div>
         </main>
       </div>
-
-      {/* Sliding Menu */}
-      <SlidingMenu 
-        user={user} 
-        setUser={setUser} 
-        isOpen={menuOpen} 
-        onClose={() => setMenuOpen(false)} 
-      />
     </div>
   );
 };
