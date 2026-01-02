@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
   },
   gender: {
     type: String,
-    enum: ['Male', 'Female', 'Other', 'Prefer not to say'],
+    enum: ['Male', 'Female', 'Non-binary', 'Prefer not to say'],
   },
   age: {
     type: Number,
@@ -31,17 +31,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: [
       'Student',
-      'Salaried (Private)',
-      'Salaried (Government)',
-      'Business Owner',
+      'Salaried',
+      'Business',
       'Freelancer',
-      'Self Employed',
       'Homemaker',
       'Retired',
-      'Unemployed',
       'Other',
     ],
   },
+  // Income fields kept for future dashboard onboarding (not required at signup)
   incomeSources: {
     type: [String],
     enum: [

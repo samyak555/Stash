@@ -45,8 +45,6 @@ export const register = async (req, res) => {
       gender,
       age,
       profession,
-      incomeSources,
-      incomeRange,
     } = req.body;
 
     // Validate required fields
@@ -73,49 +71,21 @@ export const register = async (req, res) => {
     // Validate profession
     const validProfessions = [
       'Student',
-      'Salaried (Private)',
-      'Salaried (Government)',
-      'Business Owner',
+      'Salaried',
+      'Business',
       'Freelancer',
-      'Self Employed',
       'Homemaker',
       'Retired',
-      'Unemployed',
       'Other',
     ];
     if (profession && !validProfessions.includes(profession)) {
       return res.status(400).json({ message: 'Invalid profession' });
     }
 
-    // Validate income sources
-    const validIncomeSources = [
-      'Salary',
-      'Business',
-      'Freelancing',
-      'Investments',
-      'Rental Income',
-      'Pension',
-      'Scholarship',
-      'Other',
-    ];
-    if (incomeSources && Array.isArray(incomeSources)) {
-      const invalidSources = incomeSources.filter((source) => !validIncomeSources.includes(source));
-      if (invalidSources.length > 0) {
-        return res.status(400).json({ message: 'Invalid income source' });
-      }
-    }
-
-    // Validate income range
-    const validIncomeRanges = [
-      'Below ₹10,000',
-      '₹10,000 – ₹25,000',
-      '₹25,000 – ₹50,000',
-      '₹50,000 – ₹1,00,000',
-      '₹1,00,000 – ₹5,00,000',
-      'Above ₹5,00,000',
-    ];
-    if (incomeRange && !validIncomeRanges.includes(incomeRange)) {
-      return res.status(400).json({ message: 'Invalid income range' });
+    // Validate gender
+    const validGenders = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
+    if (gender && !validGenders.includes(gender)) {
+      return res.status(400).json({ message: 'Invalid gender' });
     }
 
     // Check if user already exists
@@ -135,8 +105,6 @@ export const register = async (req, res) => {
       gender,
       age,
       profession,
-      incomeSources: Array.isArray(incomeSources) ? incomeSources : [],
-      incomeRange,
     });
 
     // Generate JWT token with userId (7 days expiry)
