@@ -17,8 +17,8 @@ const GuestUpgradeBanner = () => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-b border-amber-500/20 px-4 py-3">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+    <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-b border-amber-500/20 px-4 py-3 backdrop-blur-sm">
+      <div className="max-w-full mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1">
           <div className="flex-shrink-0">
             <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

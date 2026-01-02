@@ -8,6 +8,7 @@ const Layout = ({ children, user, setUser }) => {
   const [showFirstTimeOnboarding, setShowFirstTimeOnboarding] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+  const { isGuest } = useGuestMode();
 
   useEffect(() => {
     // Check both localStorage and backend user data
@@ -71,15 +72,17 @@ const Layout = ({ children, user, setUser }) => {
 
   return (
     <div className="min-h-screen bg-app-bg relative flex flex-col">
-      {/* Guest Upgrade Banner */}
-      <GuestUpgradeBanner />
+      {/* Guest Upgrade Banner - Fixed at top */}
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <GuestUpgradeBanner />
+      </div>
       
-      <div className="flex flex-1">
+      <div className="flex flex-1 pt-0">
         {/* Left Sidebar */}
         <Sidebar user={user} setUser={setUser} />
 
-        {/* Main Content Area */}
-        <main className="flex-1 ml-60 min-h-screen relative z-10">
+        {/* Main Content Area - Add padding top if banner is visible */}
+        <main className={`flex-1 ml-60 min-h-screen relative z-10 ${isGuest ? 'pt-16' : 'pt-0'}`}>
           <div className="p-6 sm:p-8 lg:p-10">
             <div className="max-w-7xl mx-auto">
               {children}

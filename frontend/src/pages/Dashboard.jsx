@@ -11,6 +11,7 @@ import GuidedCoach from '../components/GuidedCoach';
 import Button from '../components/ui/Button';
 import AddCardModal from '../components/AddCardModal';
 import { formatIncome, formatExpense } from '../utils/formatDisplayValue';
+import LoadingDots from '../components/LoadingDots';
 
 const Dashboard = () => {
   const { expenses, refreshTrigger, fetchExpenses } = useExpenses();
