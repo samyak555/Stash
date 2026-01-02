@@ -5,6 +5,9 @@ import { ExpenseProvider } from './contexts/ExpenseContext';
 import { CardsProvider } from './contexts/CardsContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Cards from './pages/Cards';
 import Transactions from './pages/Transactions';
@@ -91,6 +94,18 @@ function App() {
         <Route
           path="/register"
           element={user ? <Navigate to="/" replace /> : <Register setUser={setUser} />}
+        />
+        <Route
+          path="/verify-email"
+          element={<VerifyEmail />}
+        />
+        <Route
+          path="/forgot-password"
+          element={user ? <Navigate to="/" replace /> : <ForgotPassword />}
+        />
+        <Route
+          path="/reset-password"
+          element={user ? <Navigate to="/" replace /> : <ResetPassword />}
         />
         <Route
           path="/"

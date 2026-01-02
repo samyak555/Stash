@@ -39,10 +39,41 @@ const Login = ({ setUser }) => {
       navigate('/');
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
-      toast.error(errorMessage, { duration: 5000 });
+      const errorData = error.response?.data || {};
+      const errorMessage = errorData.message || error.message || 'Login failed';
+      
+      // Handle email verification requirement
+      if (errorData.requiresVerification) {
+        toast.error(errorMessage, { duration: 8000 });
+        // Show resend verification option
+        setShowResendVerification(true);
+      } else {
+        toast.error(errorMessage, { duration: 5000 });
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const [showResendVerification, setShowResendVerification] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+
+  const handleResendVerification = async () => {
+    if (!formData.email) {
+      toast.error('Please enter your email address');
+      return;
+    }
+
+    setResendLoading(true);
+    try {
+      await authAPI.resendVerification(formData.email);
+      toast.success('Verification email sent! Please check your inbox.');
+      setShowResendVerification(false);
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to resend verification email';
+      toast.error(errorMessage, { duration: 5000 });
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -75,50 +106,21 @@ const Login = ({ setUser }) => {
         }
       }
 
-      // Use Google Identity Services (gsi) for OAuth
-      window.google.accounts.oauth2.initTokenClient({
+      // Use Google Identity Services (gsi) for OAuth - get ID token
+      window.google.accounts.id.initialize({
         client_id: clientId,
-        scope: 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
         callback: async (response) => {
-          if (response.error) {
-            console.error('Google OAuth error:', response.error);
-            toast.error('Google sign-in was cancelled or failed');
-            setGoogleLoading(false);
-            return;
-          }
-
-          if (response.access_token) {
+          if (response.credential) {
             try {
-              // Get user info from Google
-              const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-                headers: {
-                  'Authorization': `Bearer ${response.access_token}`
-                }
-              });
-              
-              if (!userInfoResponse.ok) {
-                throw new Error('Failed to fetch user info from Google');
-              }
-              
-              const userInfo = await userInfoResponse.json();
-
-              // Send to backend
-              const authResponse = await authAPI.googleAuth({
-                accessToken: response.access_token,
-                email: userInfo.email,
-                name: userInfo.name || userInfo.email
-              });
+              // Send ID token to backend for verification
+              const authResponse = await authAPI.googleAuth(response.credential);
 
               const { token, ...userData } = authResponse.data;
               localStorage.setItem('token', token);
               localStorage.setItem('user', JSON.stringify(userData));
               setUser(userData);
 
-              if (userData.emailAutoConnected) {
-                toast.success('Signed in with Google! Email sync automatically configured.', { duration: 6000 });
-              } else {
-                toast.success('Signed in with Google!');
-              }
+              toast.success('Signed in with Google!');
               navigate('/');
             } catch (error) {
               console.error('Google auth error:', error);
@@ -128,7 +130,22 @@ const Login = ({ setUser }) => {
           }
           setGoogleLoading(false);
         }
-      }).requestAccessToken();
+      });
+
+      // Trigger Google Sign-In
+      window.google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // Fallback: show button click handler
+          window.google.accounts.id.renderButton(
+            document.getElementById('google-signin-button'),
+            {
+              theme: 'outline',
+              size: 'large',
+              width: '100%',
+            }
+          );
+        }
+      });
     } catch (error) {
       console.error('Google sign-in error:', error);
       toast.error('Failed to sign in with Google. Please try email login.');
@@ -262,6 +279,31 @@ const Login = ({ setUser }) => {
                     'Sign in'
                   )}
                 </button>
+              </div>
+
+              {/* Resend Verification */}
+              {showResendVerification && (
+                <div className="p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-xl">
+                  <p className="text-sm text-cyan-300 mb-3">Email not verified. Click below to resend verification email.</p>
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={resendLoading}
+                    className="w-full py-2 px-4 text-sm font-medium text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:border-cyan-500/50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {resendLoading ? 'Sending...' : 'Resend Verification Email'}
+                  </button>
+                </div>
+              )}
+
+              {/* Forgot Password Link */}
+              <div className="text-right">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+                >
+                  Forgot password?
+                </Link>
               </div>
             </form>
 

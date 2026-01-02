@@ -103,14 +103,18 @@ const Register = ({ setUser }) => {
       // Don't send confirmPassword to backend - only send password (will be hashed server-side)
       const { confirmPassword: _, ...submitData } = formData;
       const response = await authAPI.register(submitData);
-      const { token, ...userData } = response.data;
+      const userData = response.data;
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-
-      toast.success('Registration successful!');
-      navigate('/');
+      // Registration successful - show verification message
+      toast.success(userData.message || 'Registration successful! Please check your email to verify your account.', { duration: 8000 });
+      
+      // Redirect to login with message
+      navigate('/login', { 
+        state: { 
+          message: 'Registration successful! Please check your email to verify your account before logging in.',
+          email: formData.email,
+        } 
+      });
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
       toast.error(errorMessage, { duration: 5000 });
