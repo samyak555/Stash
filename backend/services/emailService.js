@@ -1,13 +1,24 @@
 /**
  * Production-Grade Email Service for Stash
- * Uses nodemailer with Gmail SMTP (Port 465 SSL)
+ * Supports both SendGrid (recommended) and Gmail SMTP
  * 
  * Environment Variables Required:
- * - EMAIL_HOST (default: smtp.gmail.com)
- * - EMAIL_PORT (default: 465)
- * - EMAIL_USER (Gmail address)
- * - EMAIL_PASS (Gmail App Password)
- * - EMAIL_FROM (optional, defaults to EMAIL_USER)
+ * 
+ * For SendGrid (Recommended):
+ * - EMAIL_HOST: smtp.sendgrid.net
+ * - EMAIL_PORT: 587 (TLS) or 465 (SSL)
+ * - EMAIL_USER: apikey
+ * - EMAIL_PASS: Your SendGrid API Key
+ * - EMAIL_FROM: Your verified sender email (e.g., noreply@yourdomain.com)
+ * 
+ * For Gmail (Alternative):
+ * - EMAIL_HOST: smtp.gmail.com
+ * - EMAIL_PORT: 465 (SSL) or 587 (TLS)
+ * - EMAIL_USER: Your Gmail address
+ * - EMAIL_PASS: Gmail App Password
+ * - EMAIL_FROM: Your Gmail address or formatted name
+ * 
+ * Common:
  * - FRONTEND_URL (for verification links)
  */
 
@@ -20,8 +31,8 @@ let transporter = null;
  * Creates a reusable transporter instance
  */
 const initializeTransporter = () => {
-  const emailHost = process.env.EMAIL_HOST || 'smtp.gmail.com';
-  const emailPort = parseInt(process.env.EMAIL_PORT || '465');
+  const emailHost = process.env.EMAIL_HOST || 'smtp.sendgrid.net';
+  const emailPort = parseInt(process.env.EMAIL_PORT || '587');
   const emailUser = process.env.EMAIL_USER;
   const emailPass = process.env.EMAIL_PASS;
 
@@ -33,8 +44,11 @@ const initializeTransporter = () => {
   // Determine if using SSL (port 465) or TLS (port 587)
   const useSSL = emailPort === 465 || process.env.EMAIL_SECURE === 'true';
   
+  // Detect if using SendGrid (username is 'apikey')
+  const isSendGrid = emailHost.includes('sendgrid.net') || emailUser === 'apikey';
+  
   // Create transporter with production-ready configuration
-  // Increased timeouts for Render's network conditions
+  // Optimized for both SendGrid and Gmail
   transporter = nodemailer.createTransport({
     host: emailHost,
     port: emailPort,
@@ -44,12 +58,12 @@ const initializeTransporter = () => {
       user: emailUser,
       pass: emailPass,
     },
-    connectionTimeout: 60000, // 60 seconds (increased for Render)
+    connectionTimeout: isSendGrid ? 30000 : 60000, // SendGrid is faster
     greetingTimeout: 30000,
-    socketTimeout: 60000, // 60 seconds (increased for Render)
+    socketTimeout: isSendGrid ? 30000 : 60000, // SendGrid is faster
     tls: {
-      rejectUnauthorized: false, // Allow self-signed certificates
-      ciphers: 'SSLv3', // Try different cipher suites
+      rejectUnauthorized: true, // SendGrid uses valid certificates
+      ciphers: isSendGrid ? undefined : 'SSLv3', // Let SendGrid choose
     },
     pool: false, // Disable pooling for better reliability on Render
     maxConnections: 1,
@@ -303,8 +317,8 @@ export const verifyEmailService = async () => {
   try {
     const emailUser = process.env.EMAIL_USER;
     const emailPass = process.env.EMAIL_PASS;
-    const emailHost = process.env.EMAIL_HOST || 'smtp.gmail.com';
-    const emailPort = process.env.EMAIL_PORT || '465';
+    const emailHost = process.env.EMAIL_HOST || 'smtp.sendgrid.net';
+    const emailPort = process.env.EMAIL_PORT || '587';
 
     if (!emailUser || !emailPass) {
       return {
@@ -406,13 +420,17 @@ export const verifyEmailService = async () => {
     
     if (error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
       errorMessage = 'Connection timeout - Render free tier may block SMTP connections';
-      suggestion = 'Try: 1) Switch to port 587 (TLS) instead of 465 (SSL), 2) Upgrade Render plan, or 3) Use a different email service like SendGrid';
+      suggestion = 'SendGrid works better on Render. Switch to SendGrid: 1) Sign up at sendgrid.com, 2) Create API key, 3) Update EMAIL_HOST=smtp.sendgrid.net, EMAIL_USER=apikey, EMAIL_PASS=your_api_key';
     } else if (error.code === 'ECONNREFUSED') {
       errorMessage = 'Connection refused - Check EMAIL_HOST and EMAIL_PORT';
-      suggestion = 'Verify Gmail SMTP settings are correct';
+      suggestion = emailHost.includes('sendgrid') 
+        ? 'Verify SendGrid SMTP settings: smtp.sendgrid.net:587'
+        : 'Verify SMTP settings are correct (SendGrid recommended)';
     } else if (error.code === 'EAUTH') {
       errorMessage = 'Authentication failed - Check EMAIL_USER and EMAIL_PASS';
-      suggestion = 'Verify Gmail App Password is correct and has no spaces';
+      suggestion = emailHost.includes('sendgrid')
+        ? 'Verify SendGrid API key is correct (EMAIL_USER should be "apikey")'
+        : 'Verify Gmail App Password is correct and has no spaces';
     }
     
     return {
