@@ -10,24 +10,19 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
     lowercase: true,
+    trim: true,
   },
-  googleAuth: {
-    type: Boolean,
-    default: false,
+  password: {
+    type: String,
+    required: true,
   },
-  emailConfig: {
-    email: String,
-    password: String,
-    accessToken: String,
-    host: String,
-    port: Number,
-    enabled: Boolean,
-    lastSync: Date,
-    authType: String,
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
-}, {
-  timestamps: true,
 });
 
-export default mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+
+export default User;
 

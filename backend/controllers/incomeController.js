@@ -1,8 +1,8 @@
-import Income from '../models/Income.js';
+import fileDB from '../utils/fileDB.js';
 
 export const getAll = async (req, res) => {
   try {
-    const incomes = await Income.find({ user: req.user._id }).sort({ date: -1 });
+    const incomes = fileDB.findIncomes({ user: req.userId });
     res.json(incomes);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -11,9 +11,9 @@ export const getAll = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const income = await Income.create({
+    const income = fileDB.createIncome({
       ...req.body,
-      user: req.user._id,
+      user: req.userId,
     });
     res.status(201).json(income);
   } catch (error) {
@@ -23,11 +23,7 @@ export const create = async (req, res) => {
 
 export const update = async (req, res) => {
   try {
-    const income = await Income.findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id },
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const income = fileDB.updateIncome(req.params.id, req.body);
     if (!income) {
       return res.status(404).json({ message: 'Income not found' });
     }
@@ -39,12 +35,10 @@ export const update = async (req, res) => {
 
 export const remove = async (req, res) => {
   try {
-    const income = await Income.findOneAndDelete({ _id: req.params.id, user: req.user._id });
-    if (!income) {
-      return res.status(404).json({ message: 'Income not found' });
-    }
+    fileDB.deleteIncome(req.params.id);
     res.json({ message: 'Income deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+

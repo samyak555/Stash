@@ -1,13 +1,8 @@
-import Group from '../models/Group.js';
+import fileDB from '../utils/fileDB.js';
 
 export const getAll = async (req, res) => {
   try {
-    const groups = await Group.find({
-      $or: [
-        { owner: req.user._id },
-        { members: req.user._id }
-      ]
-    }).populate('owner', 'name email').populate('members', 'name email');
+    const groups = fileDB.findGroups({ user: req.userId });
     res.json(groups);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -16,12 +11,14 @@ export const getAll = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const group = await Group.create({
+    const group = fileDB.createGroup({
       ...req.body,
-      owner: req.user._id,
+      owner: req.userId,
     });
     res.status(201).json(group);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+

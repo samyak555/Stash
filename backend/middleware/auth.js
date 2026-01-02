@@ -1,20 +1,43 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is not set');
+}
 
 export const authenticate = (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'No token provided' });
+    }
+    
+    const token = authHeader.split(' ')[1];
     
     if (!token) {
       return res.status(401).json({ message: 'No token provided' });
     }
     
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
+    
+    // Attach userId to request object
+    req.userId = decoded.userId;
+    
+    if (!req.userId) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+    
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Invalid token' });
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token expired' });
+    }
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+    return res.status(401).json({ message: 'Authentication failed' });
   }
 };
 

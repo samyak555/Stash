@@ -1,14 +1,11 @@
-import Expense from '../models/Expense.js';
-import Income from '../models/Income.js';
-import Budget from '../models/Budget.js';
-import Goal from '../models/Goal.js';
+import fileDB from '../utils/fileDB.js';
 
 export const getDashboard = async (req, res) => {
   try {
-    const expenses = await Expense.find({ user: req.user._id });
-    const incomes = await Income.find({ user: req.user._id });
-    const budgets = await Budget.find({ user: req.user._id });
-    const goals = await Goal.find({ user: req.user._id });
+    const expenses = fileDB.findExpenses({ user: req.userId });
+    const incomes = fileDB.findIncomes({ user: req.userId });
+    const budgets = fileDB.findBudgets({ user: req.userId });
+    const goals = fileDB.findGoals({ user: req.userId });
     
     const totalIncome = incomes.reduce((sum, i) => sum + (parseFloat(i.amount) || 0), 0);
     const totalExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
@@ -29,3 +26,5 @@ export const getDashboard = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+

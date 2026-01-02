@@ -1,8 +1,8 @@
-import Expense from '../models/Expense.js';
+import fileDB from '../utils/fileDB.js';
 
 export const getAll = async (req, res) => {
   try {
-    const expenses = await Expense.find({ user: req.user._id }).sort({ date: -1 });
+    const expenses = fileDB.findExpenses({ user: req.userId });
     res.json(expenses);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -11,9 +11,9 @@ export const getAll = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
-    const expense = await Expense.create({
+    const expense = fileDB.createExpense({
       ...req.body,
-      user: req.user._id,
+      user: req.userId,
     });
     res.status(201).json(expense);
   } catch (error) {
@@ -23,11 +23,7 @@ export const create = async (req, res) => {
 
 export const update = async (req, res) => {
   try {
-    const expense = await Expense.findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id },
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const expense = fileDB.updateExpense(req.params.id, req.body);
     if (!expense) {
       return res.status(404).json({ message: 'Expense not found' });
     }
@@ -39,12 +35,11 @@ export const update = async (req, res) => {
 
 export const remove = async (req, res) => {
   try {
-    const expense = await Expense.findOneAndDelete({ _id: req.params.id, user: req.user._id });
-    if (!expense) {
-      return res.status(404).json({ message: 'Expense not found' });
-    }
+    fileDB.deleteExpense(req.params.id);
     res.json({ message: 'Expense deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+
