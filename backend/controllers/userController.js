@@ -11,7 +11,7 @@ export const getAllUsers = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { monthlyIncome } = req.body;
+    const { monthlyIncome, onboardingCompleted } = req.body;
     const userId = req.userId;
 
     // Validate monthlyIncome if provided
@@ -26,6 +26,9 @@ export const updateProfile = async (req, res) => {
     const updateData = {};
     if (monthlyIncome !== undefined) {
       updateData.monthlyIncome = monthlyIncome === null || monthlyIncome === '' ? null : parseFloat(monthlyIncome);
+    }
+    if (onboardingCompleted !== undefined) {
+      updateData.onboardingCompleted = onboardingCompleted === true || onboardingCompleted === 'true';
     }
 
     const user = await User.findByIdAndUpdate(
@@ -46,6 +49,7 @@ export const updateProfile = async (req, res) => {
       age: user.age,
       profession: user.profession,
       monthlyIncome: user.monthlyIncome,
+      onboardingCompleted: user.onboardingCompleted,
     });
   } catch (error) {
     console.error('Update profile error:', error.message);

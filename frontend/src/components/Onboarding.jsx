@@ -136,10 +136,48 @@ const Onboarding = ({ onComplete }) => {
     }
   };
 
-  const handleComplete = () => {
-    localStorage.setItem('onboardingCompleted', 'true');
-    onComplete();
-    navigate('/');
+  const handleSkipOnboarding = async () => {
+    setLoading(true);
+    try {
+      // Mark onboarding as completed on backend
+      await userAPI.updateProfile({
+        onboardingCompleted: true,
+      });
+      
+      // Mark in localStorage
+      localStorage.setItem('onboardingCompleted', 'true');
+      
+      // Complete onboarding and redirect
+      onComplete();
+      navigate('/');
+    } catch (error) {
+      console.error('Failed to skip onboarding:', error);
+      toast.error('Failed to skip onboarding');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleComplete = async () => {
+    setLoading(true);
+    try {
+      // Mark onboarding as completed on backend
+      await userAPI.updateProfile({
+        onboardingCompleted: true,
+      });
+      
+      // Mark in localStorage
+      localStorage.setItem('onboardingCompleted', 'true');
+      
+      // Complete onboarding and redirect
+      onComplete();
+      navigate('/');
+    } catch (error) {
+      console.error('Failed to complete onboarding:', error);
+      toast.error('Failed to complete onboarding');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -287,6 +325,21 @@ const Onboarding = ({ onComplete }) => {
                     {loading ? 'Saving...' : 'Continue'}
                   </Button>
                 </div>
+                
+                {/* Skip button */}
+                <button
+                  type="button"
+                  onClick={handleSkipOnboarding}
+                  disabled={loading}
+                  className="w-full py-3 px-4 text-sm font-medium text-slate-400 hover:text-slate-300 border border-white/10 hover:border-white/20 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Skip for now
+                </button>
+                
+                {/* Helper text */}
+                <p className="text-xs text-slate-400 text-center">
+                  You can complete this later from Settings.
+                </p>
               </form>
             </div>
           )}
@@ -345,6 +398,21 @@ const Onboarding = ({ onComplete }) => {
                     {loading ? 'Saving...' : 'Continue'}
                   </Button>
                 </div>
+                
+                {/* Skip button */}
+                <button
+                  type="button"
+                  onClick={handleSkipOnboarding}
+                  disabled={loading}
+                  className="w-full py-3 px-4 text-sm font-medium text-slate-400 hover:text-slate-300 border border-white/10 hover:border-white/20 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Skip for now
+                </button>
+                
+                {/* Helper text */}
+                <p className="text-xs text-slate-400 text-center">
+                  You can complete this later from Settings.
+                </p>
               </form>
             </div>
           )}
@@ -377,8 +445,8 @@ const Onboarding = ({ onComplete }) => {
                   <p className="text-lg text-white font-medium">Welcome to Stash!</p>
                 </div>
               )}
-              <Button variant="primary" className="w-full" onClick={handleComplete}>
-                Go to Dashboard
+              <Button variant="primary" className="w-full" onClick={handleComplete} disabled={loading}>
+                {loading ? 'Completing...' : 'Go to Dashboard'}
               </Button>
             </div>
           )}
