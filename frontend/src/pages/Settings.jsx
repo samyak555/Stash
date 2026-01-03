@@ -23,29 +23,10 @@ const Settings = () => {
   const [profileLoading, setProfileLoading] = useState(false);
 
   useEffect(() => {
-    checkGuestMode();
-    
-    // Only load data if not guest
-    const guestStatus = localStorage.getItem('isGuest') === 'true';
-    if (!guestStatus) {
-      loadSyncStatus();
-      loadProfile();
-    }
+    // AuthGuard handles guest mode, so just load data
+    loadSyncStatus();
+    loadProfile();
   }, []);
-
-  const checkGuestMode = () => {
-    const guestStatus = localStorage.getItem('isGuest') === 'true';
-    setIsGuest(guestStatus);
-    
-    // Redirect guest users to login
-    if (guestStatus) {
-      toast.error('Please sign in to access Settings');
-      // Use setTimeout to avoid navigation during render
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 1000);
-    }
-  };
 
   const loadProfile = async () => {
     try {

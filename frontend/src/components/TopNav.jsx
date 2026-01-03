@@ -85,7 +85,7 @@ const TopNav = ({ user, setUser }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 md:h-16">
             {/* Stash Branding - Large logo + text on LEFT */}
-            <div className="flex items-center gap-3 md:gap-4">
+            <div className="flex items-center gap-4 md:gap-5">
               <img
                 src={iconSrc}
                 alt="Stash"
@@ -133,7 +133,7 @@ const TopNav = ({ user, setUser }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 md:h-16">
           {/* Stash Branding - Large logo + text on LEFT */}
-          <div className="flex items-center gap-3 md:gap-4">
+          <div className="flex items-center gap-4 md:gap-5">
             <img
               src={iconSrc}
               alt="Stash"

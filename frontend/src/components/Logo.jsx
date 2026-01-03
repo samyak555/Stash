@@ -16,7 +16,7 @@ const Logo = ({ size = 'default', className = '', showText = true, iconOnly = fa
   const imageSrc = iconOnly ? iconSrc : logoSrc;
   const logoSize = authPage ? sizeClasses['auth-large'] : (sizeClasses[size] || sizeClasses.default);
   const textSize = authPage ? 'text-3xl md:text-4xl font-bold' : 'text-lg font-semibold';
-  const spacing = authPage ? 'space-x-4 md:space-x-5' : 'space-x-3';
+  const spacing = authPage ? 'space-x-4 md:space-x-5' : 'space-x-4';
 
   return (
     <div className={`flex items-center ${showText ? spacing : ''} ${className}`} style={{ background: 'transparent' }}>
