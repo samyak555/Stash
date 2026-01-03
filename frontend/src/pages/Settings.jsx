@@ -547,6 +547,23 @@ const Settings = () => {
 
       {/* Delete Account Section */}
       <DeleteAccountSection />
+
+      {/* Legal Links */}
+      <div className="pt-8 border-t border-white/10">
+        <div className="flex flex-wrap justify-center gap-4 text-sm text-slate-400">
+          <Link to="/privacy" className="hover:text-cyan-400 transition-colors">
+            Privacy Policy
+          </Link>
+          <span className="text-slate-600">•</span>
+          <Link to="/terms" className="hover:text-cyan-400 transition-colors">
+            Terms of Service
+          </Link>
+          <span className="text-slate-600">•</span>
+          <Link to="/data-deletion" className="hover:text-cyan-400 transition-colors">
+            Data Deletion Policy
+          </Link>
+        </div>
+      </div>
     </div>
   );
 };
