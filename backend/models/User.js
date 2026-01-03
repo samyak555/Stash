@@ -68,9 +68,9 @@ const userSchema = new mongoose.Schema({
     type: Number,
     min: 13,
     max: 100,
-    required: function() {
-      return this.authProvider === 'google' && !this.onboardingCompleted;
-    },
+    // NOT required during OAuth login - will be set during onboarding
+    // Only validate if provided
+    required: false,
   },
   profession: {
     type: String,
@@ -83,9 +83,9 @@ const userSchema = new mongoose.Schema({
       'Retired',
       'Other',
     ],
-    required: function() {
-      return this.authProvider === 'google' && !this.onboardingCompleted;
-    },
+    // NOT required during OAuth login - will be set during onboarding
+    // Only validate if provided
+    required: false,
   },
   monthlyIncome: {
     type: Number,

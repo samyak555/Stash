@@ -728,8 +728,10 @@ export const googleAuthCallback = async (req, res) => {
       console.log(`🆕 Creating new user: ${email}`);
       isNewUser = true;
       try {
+        // Create user with minimal required fields - age and profession are NOT required
+        // They will be set during onboarding
         user = await User.create({
-          name: name || email.split('@')[0],
+          name: name || email.split('@')[0] || 'User',
           email: email.toLowerCase(),
           passwordHash: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12), // Random password (won't be used)
           emailVerified: true, // Google emails are pre-verified
@@ -737,6 +739,8 @@ export const googleAuthCallback = async (req, res) => {
           googleId,
           role,
           onboardingCompleted: false, // New users must complete onboarding
+          // age and profession are NOT set here - will be set during onboarding
+          // This prevents validation errors during OAuth login
         });
         console.log(`✅ Successfully created new user: ${user.email} (ID: ${user._id})`);
       } catch (createError) {
