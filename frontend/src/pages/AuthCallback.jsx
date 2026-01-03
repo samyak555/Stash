@@ -18,6 +18,7 @@ const AuthCallback = ({ setUser }) => {
         // Get token and status from URL query params
         const token = searchParams.get('token');
         const status = searchParams.get('status'); // 'new_user' or 'existing_user'
+        const needsOnboarding = searchParams.get('needsOnboarding') === 'true';
         const error = searchParams.get('error');
         const emailVerified = searchParams.get('emailVerified');
 
@@ -143,27 +144,15 @@ const AuthCallback = ({ setUser }) => {
         // Show success message
         toast.success(message || 'Signed in successfully!');
         
-        // Redirect based on status and onboarding completion
-        if (status === 'new_user') {
-          // New user - always redirect to onboarding
-          console.log('🆕 New user, redirecting to onboarding');
+        // Redirect based on status and needsOnboarding flag
+        if (status === 'new_user' || needsOnboarding) {
+          // New user or user needing onboarding - redirect to onboarding
+          console.log('🆕 User needs onboarding, redirecting to onboarding');
           navigate('/onboarding');
-        } else if (status === 'existing_user') {
-          // Existing user - redirect based on onboarding status
-          if (onboardingCompleted) {
-            console.log('✅ Existing user with completed onboarding, redirecting to dashboard');
-            navigate('/');
-          } else {
-            console.log('⚠️ Existing user without onboarding, redirecting to onboarding');
-            navigate('/onboarding');
-          }
         } else {
-          // Fallback: use onboarding status
-          if (onboardingCompleted) {
-            navigate('/');
-          } else {
-            navigate('/onboarding');
-          }
+          // Existing user with completed onboarding - redirect to dashboard
+          console.log('✅ User onboarding complete, redirecting to dashboard');
+          navigate('/');
         }
       } catch (error) {
         console.error('Auth callback error:', error);

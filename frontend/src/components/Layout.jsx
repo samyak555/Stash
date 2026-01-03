@@ -45,7 +45,14 @@ const Layout = ({ children, user, setUser }) => {
   }, [user]);
 
   if (checkingOnboarding) {
-    return null; // Or a loading state
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-slate-400">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   // First-time onboarding (Name, Age, Profession) - mandatory for new Google users

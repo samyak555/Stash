@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { GoalsIcon } from '../components/Icons';
 import Logo from '../components/Logo';
 import ProgressInput from '../components/ProgressInput';
+import AuthGuard from '../components/AuthGuard';
 
 const Goals = () => {
   const [goals, setGoals] = useState([]);

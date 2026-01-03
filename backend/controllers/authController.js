@@ -594,8 +594,21 @@ export const googleAuthCallback = async (req, res) => {
     // Determine role (admin if email matches)
     const role = email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'user';
 
-    // Check if user exists by googleId ONLY (primary identifier for Google users)
+    // Check if user exists by googleId first, then by email (for migration)
     let user = await User.findOne({ googleId: googleId });
+    
+    // If not found by googleId, check by email (for existing users who signed up before Google auth)
+    if (!user) {
+      user = await User.findOne({ email: email.toLowerCase() });
+      // If found by email but no googleId, link the googleId
+      if (user && !user.googleId) {
+        user.googleId = googleId;
+        user.authProvider = 'google';
+        user.emailVerified = true;
+        await user.save();
+        console.log(`   Linked Google ID to existing email user`);
+      }
+    }
 
     if (user) {
       // CASE A: Existing user - DO NOT update profile during login
@@ -618,7 +631,9 @@ export const googleAuthCallback = async (req, res) => {
         redirectUrl.searchParams.set('name', encodeURIComponent(user.name || name || ''));
         redirectUrl.searchParams.set('email', encodeURIComponent(user.email || ''));
         redirectUrl.searchParams.set('role', user.role || 'user');
+        const needsOnboarding = user.onboardingCompleted !== true;
         redirectUrl.searchParams.set('onboardingCompleted', user.onboardingCompleted === true ? 'true' : 'false');
+        redirectUrl.searchParams.set('needsOnboarding', needsOnboarding ? 'true' : 'false');
         redirectUrl.searchParams.set('_id', user._id.toString());
         
         // Add age and profession if available
@@ -629,7 +644,7 @@ export const googleAuthCallback = async (req, res) => {
           redirectUrl.searchParams.set('profession', encodeURIComponent(user.profession));
         }
         
-        console.log(`✅ Existing user login successful: ${user.email}`);
+        console.log(`✅ Existing user login successful: ${user.email} (needsOnboarding: ${needsOnboarding})`);
         res.redirect(redirectUrl.toString());
         return;
       } catch (urlError) {
@@ -706,6 +721,7 @@ export const googleAuthCallback = async (req, res) => {
         redirectUrl.searchParams.set('email', encodeURIComponent(email));
         redirectUrl.searchParams.set('role', role);
         redirectUrl.searchParams.set('onboardingCompleted', 'false');
+        redirectUrl.searchParams.set('needsOnboarding', 'true'); // New users always need onboarding
         redirectUrl.searchParams.set('_id', user._id.toString());
         
         console.log(`✅ New user created: ${user.email}, redirecting to onboarding`);

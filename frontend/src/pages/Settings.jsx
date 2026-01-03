@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { transactionAPI, userAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import Button from '../components/ui/Button';
+import AuthGuard from '../components/AuthGuard';
 
 const Settings = () => {
   const [email, setEmail] = useState('');

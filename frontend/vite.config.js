@@ -13,6 +13,31 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    // Disable eval in production builds
+    target: 'esnext',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: false, // Keep console for debugging
+        drop_debugger: true,
+      },
+      format: {
+        comments: false,
+      },
+    },
+    rollupOptions: {
+      output: {
+        // Prevent eval usage
+        format: 'es',
+        strict: true,
+      },
+    },
+  },
+  // Disable source maps in production to avoid eval
+  esbuild: {
+    legalComments: 'none',
+  },
 })
 
 

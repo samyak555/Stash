@@ -93,9 +93,9 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <div className="text-white">Loading...</div>
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-slate-400 text-lg">Loading Stash...</p>
         </div>
       </div>
     );

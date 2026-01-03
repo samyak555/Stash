@@ -33,11 +33,8 @@ if (!rootElement) {
 } else {
   try {
     const root = ReactDOM.createRoot(rootElement);
-    root.render(
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
-    );
+    // Remove StrictMode to prevent double renders and CSP issues
+    root.render(<App />);
   } catch (error) {
     console.error('Failed to render app:', error);
     rootElement.innerHTML = `
