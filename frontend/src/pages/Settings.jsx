@@ -21,7 +21,6 @@ const Settings = () => {
     profession: '',
   });
   const [profileLoading, setProfileLoading] = useState(false);
-  const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
     checkGuestMode();
