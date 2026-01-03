@@ -30,19 +30,43 @@ const Login = ({ setUser }) => {
       const errorMessage = params.get('message') || '';
       const decodedMessage = errorMessage ? decodeURIComponent(errorMessage) : '';
       
-      // Show specific error messages
+      // Show specific error messages with detailed backend error
+      console.error('❌ OAuth error detected:', error, decodedMessage);
       if (error === 'account_deletion_failed') {
         toast.error('Failed to delete account. Please try again.');
       } else if (error === 'user_creation_failed') {
-        toast.error(decodedMessage || 'Failed to create account. Please try again.');
+        toast.error(decodedMessage || 'Failed to create account. Please try again.', {
+          duration: 8000, // Show longer for detailed errors
+        });
       } else if (error === 'oauth_failed') {
-        toast.error(decodedMessage || 'Google authentication failed. Please try again.');
+        toast.error(decodedMessage || 'Google authentication failed. Please try again.', {
+          duration: 8000,
+        });
       } else if (error === 'token_exchange_failed') {
         toast.error('Authentication code expired. Please try signing in again.');
       } else if (error === 'email_not_verified') {
         toast.error('Please verify your Google account email and try again.');
+      } else if (error === 'url_construction_failed') {
+        toast.error(decodedMessage || 'Failed to redirect after login. Please try again.', {
+          duration: 8000,
+        });
+      } else if (error === 'server_config_error') {
+        toast.error(decodedMessage || 'Server configuration error. Please contact support.', {
+          duration: 8000,
+        });
+      } else if (error === 'no_code') {
+        toast.error('Authentication code not received. Please try signing in again.');
+      } else if (error === 'no_id_token') {
+        toast.error('Authentication token missing. Please try signing in again.');
+      } else if (error === 'token_verification_failed') {
+        toast.error('Token verification failed. Please try signing in again.');
+      } else if (error === 'no_email') {
+        toast.error('Email not provided by Google. Please try again.');
       } else {
-        toast.error(decodedMessage || 'Authentication failed. Please try again.');
+        // Show the actual backend error message for any other error
+        toast.error(decodedMessage || 'Authentication failed. Please try again.', {
+          duration: 8000,
+        });
       }
       // Clean URL
       window.history.replaceState({}, '', '/login');

@@ -50,10 +50,9 @@ function App() {
         
         if (tokenFromUrl) {
           // OAuth redirect - save token and user data from URL params
+          console.log('🔐 OAuth callback detected - processing token from URL');
           try {
-            localStorage.setItem('token', tokenFromUrl);
-            
-            // Get user data from URL params
+            // Get user data from URL params BEFORE cleaning
             const name = urlParams.get('name');
             const email = urlParams.get('email');
             const role = urlParams.get('role') || 'user';
@@ -62,6 +61,8 @@ function App() {
             const emailVerified = urlParams.get('emailVerified') === 'true';
             const age = urlParams.get('age');
             const profession = urlParams.get('profession');
+            
+            console.log('📋 OAuth data extracted:', { email, userId, role, onboardingCompleted });
             
             // Clear guest mode when signing in
             localStorage.removeItem('isGuest');
@@ -79,8 +80,10 @@ function App() {
               profession: profession ? decodeURIComponent(profession) : null,
             };
             
-            // Validate and save user data
-            if (userData.email) {
+            // Validate user data - must have email and _id
+            if (userData.email && userData._id) {
+              // Save token and user data to localStorage
+              localStorage.setItem('token', tokenFromUrl);
               localStorage.setItem('user', JSON.stringify(userData));
               
               // Sync onboardingCompleted
@@ -90,10 +93,12 @@ function App() {
                 localStorage.removeItem('onboardingCompleted');
               }
               
-              // Set user state
+              console.log('✅ User data saved to localStorage:', userData.email);
+              
+              // Set user state BEFORE cleaning URL (critical for React state update)
               setUser(userData);
               
-              // Clean URL - remove query params
+              // Clean URL AFTER user state is set
               window.history.replaceState({}, '', '/');
               
               // Show success message if available
@@ -104,13 +109,27 @@ function App() {
                 toast.success('Signed in successfully!');
               }
               
+              console.log('✅ OAuth login successful - user state set, redirecting to dashboard');
               // Token handling complete - skip localStorage check below
               // Continue to finally block to set loading = false
+            } else {
+              console.error('❌ Invalid user data from OAuth callback:', { 
+                email: userData.email, 
+                _id: userData._id,
+                hasEmail: !!userData.email,
+                hasId: !!userData._id
+              });
+              // Clean URL even on error
+              window.history.replaceState({}, '', '/');
+              toast.error('Failed to sign in. Missing user data. Please try again.');
+              // Continue to localStorage check on error
             }
           } catch (tokenError) {
-            console.error('Error handling OAuth token:', tokenError);
+            console.error('❌ Error handling OAuth token:', tokenError);
+            console.error('   Error stack:', tokenError.stack);
             // Clean URL even on error
             window.history.replaceState({}, '', '/');
+            toast.error('Failed to process sign-in. Please try again.');
             // Continue to localStorage check on error
           }
         }

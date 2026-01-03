@@ -774,22 +774,22 @@ export const googleAuthCallback = async (req, res) => {
             
             // Redirect to frontend with user data
             try {
-              const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
+            const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
               const redirectUrl = new URL(`${frontendUrl}/`);
-              redirectUrl.searchParams.set('status', 'existing_user');
-              redirectUrl.searchParams.set('token', token);
-              redirectUrl.searchParams.set('emailVerified', 'true');
-              redirectUrl.searchParams.set('name', encodeURIComponent(existingUser.name || name || email.split('@')[0] || 'User'));
-              redirectUrl.searchParams.set('email', encodeURIComponent(existingUser.email || email || ''));
-              redirectUrl.searchParams.set('role', existingUser.role || 'user');
-              redirectUrl.searchParams.set('onboardingCompleted', existingUser.onboardingCompleted === true ? 'true' : 'false');
-              redirectUrl.searchParams.set('needsOnboarding', existingUser.onboardingCompleted !== true ? 'true' : 'false');
-              redirectUrl.searchParams.set('isNewUser', 'false');
-              redirectUrl.searchParams.set('_id', existingUser._id.toString());
+            redirectUrl.searchParams.set('status', 'existing_user');
+            redirectUrl.searchParams.set('token', token);
+            redirectUrl.searchParams.set('emailVerified', 'true');
+            redirectUrl.searchParams.set('name', encodeURIComponent(existingUser.name || name || email.split('@')[0] || 'User'));
+            redirectUrl.searchParams.set('email', encodeURIComponent(existingUser.email || email || ''));
+            redirectUrl.searchParams.set('role', existingUser.role || 'user');
+            redirectUrl.searchParams.set('onboardingCompleted', existingUser.onboardingCompleted === true ? 'true' : 'false');
+            redirectUrl.searchParams.set('needsOnboarding', existingUser.onboardingCompleted !== true ? 'true' : 'false');
+            redirectUrl.searchParams.set('isNewUser', 'false');
+            redirectUrl.searchParams.set('_id', existingUser._id.toString());
               
               console.log(`✅ Existing user login successful after duplicate error: ${existingUser.email}`);
-              res.redirect(redirectUrl.toString());
-              return;
+            res.redirect(redirectUrl.toString());
+            return;
             } catch (urlError) {
               console.error('❌ Error constructing redirect URL after duplicate error:', urlError);
               return res.redirect(`${FRONTEND_URL}/login?error=url_construction_failed&message=${encodeURIComponent('Failed to redirect after login. Please try again.')}`);
