@@ -58,7 +58,8 @@ const DataDeletionPolicy = () => {
             <p className="text-slate-300 leading-relaxed mt-4">
               <strong className="text-white">This deletion is permanent and irreversible.</strong> Once your account is deleted, 
               we cannot recover any of your data.
-            </section>
+            </p>
+          </section>
 
           {/* Deletion Timeline */}
           <section>
