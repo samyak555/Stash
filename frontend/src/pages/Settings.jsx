@@ -5,6 +5,141 @@ import toast from 'react-hot-toast';
 import Button from '../components/ui/Button';
 import AuthGuard from '../components/AuthGuard';
 
+/**
+ * Delete Account Component
+ * Only shown for authenticated Google users (not guests)
+ */
+const DeleteAccountSection = () => {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Get user from localStorage
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+      } catch (e) {
+        console.error('Failed to parse user data:', e);
+      }
+    }
+  }, []);
+
+  // Don't show for guests
+  const isGuest = localStorage.getItem('isGuest') === 'true';
+  // Show delete account for authenticated users (has token)
+  const hasToken = localStorage.getItem('token');
+  if (isGuest || !user || !hasToken) {
+    return null;
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!showConfirm) {
+      setShowConfirm(true);
+      return;
+    }
+
+    // Confirm deletion with user
+    const finalConfirm = window.confirm(
+      'Are you absolutely sure? This will permanently delete your account and ALL data. This action cannot be undone.'
+    );
+
+    if (!finalConfirm) {
+      setShowConfirm(false);
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      // Call delete account API directly
+      const { userAPI } = await import('../services/api');
+      await userAPI.deleteAccount();
+
+      // Clear all local data
+      localStorage.clear();
+      
+      toast.success('Account deleted successfully');
+      
+      // Redirect to login after a brief delay
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 1000);
+    } catch (error) {
+      console.error('Delete account error:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete account. Please try again.');
+      setDeleting(false);
+      setShowConfirm(false);
+    }
+  };
+
+  return (
+    <div className="glass-card p-4 md:p-8 rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-500/5 to-orange-500/5">
+      <div className="flex items-start gap-4">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+          <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </div>
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Delete Account</h2>
+          <p className="text-slate-300 text-sm leading-relaxed mb-4">
+            Permanently delete your account and all associated data. This action cannot be undone.{' '}
+            <Link to="/data-deletion" className="text-cyan-400 hover:text-cyan-300 underline">
+              Learn more about our data deletion policy
+            </Link>.
+          </p>
+
+          {!showConfirm ? (
+            <Button
+              variant="danger"
+              onClick={handleDeleteAccount}
+              className="mt-4 w-full md:w-auto"
+            >
+              Delete Account
+            </Button>
+          ) : (
+            <div className="space-y-4 mt-4">
+              <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                <p className="text-red-300 text-sm font-medium mb-2">⚠️ Warning: This action is irreversible</p>
+                <p className="text-slate-300 text-xs">
+                  This will permanently delete:
+                </p>
+                <ul className="text-slate-400 text-xs list-disc list-inside mt-2 space-y-1">
+                  <li>Your account and profile</li>
+                  <li>All expenses and income records</li>
+                  <li>All goals and budgets</li>
+                  <li>All transaction sync settings</li>
+                </ul>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowConfirm(false)}
+                  disabled={deleting}
+                  className="flex-1 w-full sm:w-auto"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                  className="flex-1 w-full sm:w-auto"
+                >
+                  {deleting ? 'Deleting...' : 'Confirm Deletion'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Settings = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -665,141 +800,6 @@ const Settings = () => {
           <Link to="/data-deletion" className="hover:text-cyan-400 transition-colors">
             Data Deletion Policy
           </Link>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/**
- * Delete Account Component
- * Only shown for authenticated Google users (not guests)
- */
-const DeleteAccountSection = () => {
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [user, setUser] = useState(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Get user from localStorage
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const userData = JSON.parse(userStr);
-        setUser(userData);
-      } catch (e) {
-        console.error('Failed to parse user data:', e);
-      }
-    }
-  }, []);
-
-  // Don't show for guests
-  const isGuest = localStorage.getItem('isGuest') === 'true';
-  // Show delete account for authenticated users (has token)
-  const hasToken = localStorage.getItem('token');
-  if (isGuest || !user || !hasToken) {
-    return null;
-  }
-
-  const handleDeleteAccount = async () => {
-    if (!showConfirm) {
-      setShowConfirm(true);
-      return;
-    }
-
-    // Confirm deletion with user
-    const finalConfirm = window.confirm(
-      'Are you absolutely sure? This will permanently delete your account and ALL data. This action cannot be undone.'
-    );
-
-    if (!finalConfirm) {
-      setShowConfirm(false);
-      return;
-    }
-
-    setDeleting(true);
-    try {
-      // Call delete account API directly
-      const { userAPI } = await import('../services/api');
-      await userAPI.deleteAccount();
-
-      // Clear all local data
-      localStorage.clear();
-      
-      toast.success('Account deleted successfully');
-      
-      // Redirect to login after a brief delay
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 1000);
-    } catch (error) {
-      console.error('Delete account error:', error);
-      toast.error(error.response?.data?.message || 'Failed to delete account. Please try again.');
-      setDeleting(false);
-      setShowConfirm(false);
-    }
-  };
-
-  return (
-    <div className="glass-card p-4 md:p-8 rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-500/5 to-orange-500/5">
-      <div className="flex items-start gap-4">
-        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-          <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </div>
-        <div className="flex-1">
-          <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Delete Account</h2>
-          <p className="text-slate-300 text-sm leading-relaxed mb-4">
-            Permanently delete your account and all associated data. This action cannot be undone.{' '}
-            <Link to="/data-deletion" className="text-cyan-400 hover:text-cyan-300 underline">
-              Learn more about our data deletion policy
-            </Link>.
-          </p>
-
-          {!showConfirm ? (
-            <Button
-              variant="danger"
-              onClick={handleDeleteAccount}
-              className="mt-4 w-full md:w-auto"
-            >
-              Delete Account
-            </Button>
-          ) : (
-            <div className="space-y-4 mt-4">
-              <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                <p className="text-red-300 text-sm font-medium mb-2">⚠️ Warning: This action is irreversible</p>
-                <p className="text-slate-300 text-xs">
-                  This will permanently delete:
-                </p>
-                <ul className="text-slate-400 text-xs list-disc list-inside mt-2 space-y-1">
-                  <li>Your account and profile</li>
-                  <li>All expenses and income records</li>
-                  <li>All goals and budgets</li>
-                  <li>All transaction sync settings</li>
-                </ul>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  variant="ghost"
-                  onClick={() => setShowConfirm(false)}
-                  disabled={deleting}
-                  className="flex-1 w-full sm:w-auto"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={handleDeleteAccount}
-                  disabled={deleting}
-                  className="flex-1 w-full sm:w-auto"
-                >
-                  {deleting ? 'Deleting...' : 'Confirm Deletion'}
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
