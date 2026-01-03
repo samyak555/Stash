@@ -170,7 +170,11 @@ function App() {
         />
         <Route
           path="/auth/callback"
-          element={<AuthCallback setUser={setUser} />}
+          element={
+            <ErrorBoundary>
+              <AuthCallback setUser={setUser} />
+            </ErrorBoundary>
+          }
         />
         {/* Legal Pages */}
         <Route path="/privacy" element={<PrivacyPolicy />} />

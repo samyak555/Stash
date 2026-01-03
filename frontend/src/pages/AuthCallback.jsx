@@ -129,29 +129,51 @@ const AuthCallback = ({ setUser }) => {
         const profession = searchParams.get('profession');
         const isNewUser = searchParams.get('isNewUser') === 'true';
 
-        // Construct user data from URL params - ensure all fields have defaults
+        // Construct user data from URL params - ensure all fields have safe defaults
+        // CRITICAL: Normalize user object to prevent blank screen
         const userData = {
-          _id: userId,
-          name: name ? decodeURIComponent(name) : '',
+          _id: userId || '',
+          name: name ? decodeURIComponent(name) : (email ? email.split('@')[0] : 'User'),
           email: email ? decodeURIComponent(email) : '',
           emailVerified: emailVerified === 'true',
-          role: role,
-          onboardingCompleted: onboardingCompleted || false, // Always default to false
-          age: age ? parseInt(age) : undefined,
-          profession: profession ? decodeURIComponent(profession) : undefined,
+          role: role || 'user',
+          onboardingCompleted: onboardingCompleted === true, // Always boolean
+          // Safe defaults for optional fields
+          age: age ? parseInt(age, 10) : null,
+          profession: profession ? decodeURIComponent(profession) : null,
         };
 
+        // Validate user data before storing
+        if (!userData.email) {
+          console.error('❌ No email in user data, redirecting to login');
+          toast.error('Invalid authentication data');
+          navigate('/login');
+          return;
+        }
+
         // Store user data in localStorage
-        localStorage.setItem('user', JSON.stringify(userData));
-        
-        // Sync onboardingCompleted to localStorage
-        if (onboardingCompleted) {
-          localStorage.setItem('onboardingCompleted', 'true');
-        } else {
-          localStorage.removeItem('onboardingCompleted');
+        try {
+          localStorage.setItem('user', JSON.stringify(userData));
+          
+          // Sync onboardingCompleted to localStorage
+          if (userData.onboardingCompleted) {
+            localStorage.setItem('onboardingCompleted', 'true');
+          } else {
+            localStorage.removeItem('onboardingCompleted');
+          }
+        } catch (storageError) {
+          console.error('❌ Failed to store user data:', storageError);
+          toast.error('Failed to save authentication data');
+          navigate('/login');
+          return;
         }
         
+        // CRITICAL: Set user state BEFORE navigation to prevent blank screen
+        console.log('✅ Setting user state:', { email: userData.email, onboardingCompleted: userData.onboardingCompleted });
         setUser(userData);
+        
+        // Small delay to ensure state is set before navigation
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         // Show success message
         toast.success(message || 'Signed in successfully!');

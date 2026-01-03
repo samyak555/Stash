@@ -6,7 +6,13 @@ export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
   
   return {
-    plugins: [react()],
+    // ONLY use @vitejs/plugin-react - no dev-only plugins
+    plugins: [
+      react({
+        // Disable Fast Refresh in production to prevent eval
+        fastRefresh: !isProduction,
+      })
+    ],
     server: {
       port: 3000,
       proxy: {
@@ -17,7 +23,8 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
-      target: 'es2020',
+      // CRITICAL: Use es2018 for better CSP compatibility
+      target: 'es2018',
       minify: isProduction ? 'terser' : false,
       terserOptions: isProduction ? {
         compress: {
@@ -37,7 +44,7 @@ export default defineConfig(({ mode }) => {
           comments: false,
         },
         // Prevent Function constructor usage
-        ecma: 2020,
+        ecma: 2018,
       } : {},
       rollupOptions: {
         output: {
@@ -55,8 +62,8 @@ export default defineConfig(({ mode }) => {
     },
     esbuild: {
       legalComments: 'none',
-      // Use ES2020 to avoid Function constructor
-      target: 'es2020',
+      // Use ES2018 to avoid Function constructor
+      target: 'es2018',
       // Prevent eval usage
       format: 'esm',
     },
@@ -69,7 +76,7 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: {
       include: ['chart.js', 'react-chartjs-2'],
       esbuildOptions: {
-        target: 'es2020',
+        target: 'es2018',
       },
     },
   };
