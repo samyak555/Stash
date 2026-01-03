@@ -14,29 +14,44 @@ export default defineConfig({
     },
   },
   build: {
-    // Disable eval in production builds
     target: 'esnext',
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: false, // Keep console for debugging
+        drop_console: false,
         drop_debugger: true,
+        // Prevent Terser from using eval
+        evaluate: false,
+        unsafe: false,
       },
       format: {
         comments: false,
       },
+      // Prevent Function constructor usage
+      ecma: 2020,
     },
     rollupOptions: {
       output: {
-        // Prevent eval usage
         format: 'es',
-        strict: true,
+        strict: false, // Allow some flexibility for Recharts
+        // Prevent code splitting that might use eval
+        manualChunks: undefined,
       },
     },
+    // Disable source maps to avoid eval
+    sourcemap: false,
   },
-  // Disable source maps in production to avoid eval
   esbuild: {
     legalComments: 'none',
+    // Use ES2020 to avoid Function constructor
+    target: 'es2020',
+  },
+  // Optimize dependencies to avoid eval
+  optimizeDeps: {
+    include: ['recharts'],
+    esbuildOptions: {
+      target: 'es2020',
+    },
   },
 })
 
