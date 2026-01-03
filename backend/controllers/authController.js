@@ -801,20 +801,30 @@ export const googleAuthCallback = async (req, res) => {
     console.error('   Error name:', error.name);
     console.error('   Error message:', error.message);
     console.error('   Error stack:', error.stack);
+    console.error('   Request query:', req.query);
+    console.error('   Request params:', req.params);
     
     const FRONTEND_URL = process.env.FRONTEND_URL || 'https://stash-beige.vercel.app';
     
     // Provide more specific error messages
     let errorCode = 'oauth_failed';
+    let errorMessage = 'Authentication failed. Please try again.';
+    
     if (error.message.includes('network') || error.message.includes('ECONNREFUSED')) {
       errorCode = 'network_error';
+      errorMessage = 'Network error. Please check your connection.';
     } else if (error.message.includes('timeout')) {
       errorCode = 'timeout_error';
+      errorMessage = 'Request timed out. Please try again.';
     } else if (error.message.includes('ENOTFOUND') || error.message.includes('DNS')) {
       errorCode = 'dns_error';
+      errorMessage = 'Connection error. Please check your internet.';
+    } else if (error.message.includes('invalid_grant') || error.message.includes('code')) {
+      errorCode = 'token_exchange_failed';
+      errorMessage = 'Authorization code expired. Please try signing in again.';
     }
     
-    const redirectUrl = `${FRONTEND_URL}/login?error=${errorCode}`;
+    const redirectUrl = `${FRONTEND_URL}/login?error=${errorCode}&message=${encodeURIComponent(errorMessage)}`;
     console.error('   Redirecting to:', redirectUrl);
     res.redirect(redirectUrl);
   }

@@ -24,9 +24,15 @@ const AuthCallback = ({ setUser }) => {
 
         // Handle errors
         if (error) {
-          let errorMessage = 'Authentication failed';
+          let errorMessage = 'Authentication failed. Please try again.';
           
-          switch (error) {
+          // Get custom message from URL if available
+          const customMessage = searchParams.get('message');
+          if (customMessage) {
+            errorMessage = decodeURIComponent(customMessage);
+          } else {
+            // Fallback to error code mapping
+            switch (error) {
             case 'no_code':
               errorMessage = 'No authorization code received from Google. Please try again.';
               break;
@@ -80,9 +86,8 @@ const AuthCallback = ({ setUser }) => {
               break;
             case 'oauth_failed':
             default:
-              // Check if there's a custom message in URL
-              const message = searchParams.get('message');
-              errorMessage = message ? decodeURIComponent(message) : `Authentication failed: ${error}. Please try again.`;
+              errorMessage = `Authentication failed: ${error}. Please try again.`;
+          }
           }
 
           // Clear guest mode on error
