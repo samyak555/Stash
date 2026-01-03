@@ -33,8 +33,14 @@ if (!rootElement) {
 } else {
   try {
     const root = ReactDOM.createRoot(rootElement);
-    // Remove StrictMode to prevent double renders and CSP issues
-    root.render(<App />);
+    // CRITICAL: Do not use StrictMode in production - it can cause CSP issues
+    // StrictMode uses eval() for development warnings
+    const isProduction = import.meta.env.PROD;
+    if (isProduction) {
+      root.render(<App />);
+    } else {
+      root.render(<React.StrictMode><App /></React.StrictMode>);
+    }
   } catch (error) {
     console.error('Failed to render app:', error);
     rootElement.innerHTML = `

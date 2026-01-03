@@ -9,8 +9,13 @@ export default defineConfig(({ mode }) => {
     // ONLY use @vitejs/plugin-react - no dev-only plugins
     plugins: [
       react({
-        // Disable Fast Refresh in production to prevent eval
+        // CRITICAL: Disable Fast Refresh completely in production to prevent eval
+        // Fast Refresh uses eval() internally
         fastRefresh: !isProduction,
+        // Disable babel plugin that might use eval
+        babel: isProduction ? {
+          plugins: []
+        } : undefined,
       })
     ],
     server: {

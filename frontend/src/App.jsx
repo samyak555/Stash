@@ -161,6 +161,7 @@ function App() {
     );
   }
 
+  // CRITICAL: Do not render routes while loading - prevents blank screen
   // Always render something - even if user is null, show login
   // Wrap everything in ErrorBoundary for global safety
   return (
@@ -169,7 +170,9 @@ function App() {
         <CardsProvider>
           <Router>
             <Toaster position="top-right" />
-            <Routes>
+            {/* Only render routes when not loading - prevents blank screen */}
+            {!loading && (
+              <Routes>
         <Route
           path="/login"
           element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />}
