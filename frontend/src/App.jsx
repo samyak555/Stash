@@ -27,12 +27,15 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Default to false - app renders immediately
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const initializeApp = async () => {
-      // Set a maximum timeout to ensure initialization always completes
+      // Set loading = true ONLY while checking auth
+      setLoading(true);
+      
+      // Hard failsafe timeout - ensures loading NEVER hangs
       const timeoutId = setTimeout(() => {
         console.warn('App initialization timeout - forcing completion');
         setLoading(false);
@@ -180,20 +183,17 @@ function App() {
             setUser(null);
           }
           } else {
-            // No auth data - ensure clean state
+            // No auth data - default to guest mode (non-blocking)
             setUser(null);
+            // Don't set isGuest here - let user choose guest mode on login page
           }
         }
       } catch (err) {
+        // Ignore errors - don't block rendering
         console.error('App initialization error:', err);
-        setError(err.message || 'Failed to initialize app');
-        // Force logout on critical error
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        localStorage.removeItem('isGuest');
         setUser(null);
       } finally {
-        // Always clear timeout and set loading to false
+        // ALWAYS set loading to false - app must render
         clearTimeout(timeoutId);
         setLoading(false);
       }
@@ -202,48 +202,20 @@ function App() {
     initializeApp();
   }, []);
 
-  // Hard failsafe - ensure loading never stays true forever
+  // Hard failsafe - ensure loading NEVER hangs (independent of initialization)
   useEffect(() => {
     const failsafeTimeout = setTimeout(() => {
       if (loading) {
-        console.warn('Failsafe: Forcing loading to false after 5 seconds');
+        console.warn('Failsafe: Forcing loading to false after 3 seconds');
         setLoading(false);
       }
-    }, 5000);
+    }, 3000);
     return () => clearTimeout(failsafeTimeout);
   }, [loading]);
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="text-center text-white p-8">
-          <h1 className="text-2xl font-bold mb-4">Error</h1>
-          <p className="text-gray-400 mb-6">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg text-white font-medium"
-          >
-            Refresh Page
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-slate-400 text-lg">Loading Stash...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // CRITICAL: Do not render routes while loading - prevents blank screen
-  // Always render something - even if user is null, show login
-  // Wrap everything in ErrorBoundary for global safety
+  // REMOVED: Auth gating - app ALWAYS renders UI
+  // Loading state is NON-BLOCKING - show spinner but render routes
+  
   return (
     <ErrorBoundary>
       <ExpenseProvider>
