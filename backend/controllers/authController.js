@@ -650,16 +650,50 @@ export const googleAuthCallback = async (req, res) => {
       }
     } else {
       // New user - create account with emailVerified = true (Google emails are verified)
-      user = await User.create({
-        name: name || email.split('@')[0],
-        email: email.toLowerCase(),
-        passwordHash: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12), // Random password (won't be used)
-        emailVerified: true, // Google emails are pre-verified
-        authProvider: 'google',
-        googleId,
-        role,
-        onboardingCompleted: false,
-      });
+      console.log(`🆕 Creating new user: ${email}`);
+      try {
+        user = await User.create({
+          name: name || email.split('@')[0],
+          email: email.toLowerCase(),
+          passwordHash: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12), // Random password (won't be used)
+          emailVerified: true, // Google emails are pre-verified
+          authProvider: 'google',
+          googleId,
+          role,
+          onboardingCompleted: false,
+        });
+        console.log(`✅ Successfully created new user: ${user.email} (ID: ${user._id})`);
+      } catch (createError) {
+        console.error('❌ Error creating new user:', createError);
+        console.error('   Error name:', createError.name);
+        console.error('   Error message:', createError.message);
+        
+        // If it's a duplicate key error (email or googleId already exists)
+        if (createError.code === 11000) {
+          console.error('   Duplicate key error - user might already exist');
+          // Try to find the user again (race condition)
+          const existingUser = await User.findOne({ 
+            $or: [
+              { email: email.toLowerCase() },
+              { googleId: googleId }
+            ]
+          });
+          
+          if (existingUser) {
+            console.log(`   Found existing user after duplicate error, using existing user`);
+            user = existingUser;
+            // Update if needed
+            if (!user.googleId) user.googleId = googleId;
+            if (!user.authProvider || user.authProvider !== 'google') user.authProvider = 'google';
+            if (!user.emailVerified) user.emailVerified = true;
+            await user.save();
+          } else {
+            return res.redirect(`${FRONTEND_URL}/login?error=user_creation_failed&message=${encodeURIComponent('Failed to create account. Please try again.')}`);
+          }
+        } else {
+          return res.redirect(`${FRONTEND_URL}/login?error=user_creation_failed&message=${encodeURIComponent('Failed to create account. Please try again.')}`);
+        }
+      }
     }
 
     // Generate JWT token
