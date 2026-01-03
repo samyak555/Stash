@@ -234,14 +234,14 @@ const Goals = () => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {goals.length === 0 ? (
+        {(!goals || !Array.isArray(goals) || goals.length === 0) ? (
           <div className="col-span-full glass-card rounded-2xl p-12 text-center border border-white/10">
             <GoalsIcon className="w-16 h-16 text-slate-500 mx-auto mb-4" />
             <p className="text-slate-400 text-lg font-normal">No goals created yet</p>
             <p className="text-slate-500 text-sm mt-2">Create your first savings goal!</p>
           </div>
         ) : (
-          goals.map((goal) => {
+          (Array.isArray(goals) ? goals : []).map((goal) => {
             const status = getGoalStatus(goal);
             const progress = ((goal.currentAmount || 0) / parseFloat(goal.targetAmount)) * 100;
             const [progressAmount, setProgressAmount] = useState('');
