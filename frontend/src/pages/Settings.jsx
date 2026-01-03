@@ -246,7 +246,7 @@ const Settings = () => {
   // Show loading state while initializing
   if (initialLoading) {
     return (
-      <AuthGuard requireAuth={true}>
+      <AuthGuard requireAuth={false}>
         <div className="min-h-screen flex items-center justify-center bg-black">
           <div className="text-center space-y-4">
             <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -260,7 +260,7 @@ const Settings = () => {
   // Show error state if loading failed
   if (error) {
     return (
-      <AuthGuard requireAuth={true}>
+      <AuthGuard requireAuth={false}>
         <div className="max-w-4xl mx-auto px-4 py-4 md:py-8">
           <div className="glass-card p-8 rounded-2xl border border-red-500/20">
             <div className="text-center">
