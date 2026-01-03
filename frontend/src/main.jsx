@@ -51,4 +51,23 @@ if (!rootElement) {
   }
 }
 
+// Add a fallback to show something if React fails completely
+setTimeout(() => {
+  const root = document.getElementById('root');
+  if (root && root.children.length === 0) {
+    console.error('React app did not render - showing fallback');
+    root.innerHTML = `
+      <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; color: #fff; font-family: sans-serif; padding: 20px;">
+        <div style="text-align: center; max-width: 600px;">
+          <h1 style="font-size: 24px; margin-bottom: 16px; color: #ef4444;">App Not Loading</h1>
+          <p style="color: #888; margin-bottom: 24px;">The app failed to load. Please refresh the page.</p>
+          <button onclick="window.location.reload()" style="padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    `;
+  }
+}, 3000); // 3 second timeout
+
 
