@@ -803,7 +803,8 @@ const Settings = () => {
         </div>
       </div>
     </div>
-  );
+      </AuthGuard>
+    );
 };
 
 export default Settings;
