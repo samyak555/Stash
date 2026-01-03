@@ -613,6 +613,7 @@ export const googleAuthCallback = async (req, res) => {
     let isNewUser = false;
     
     // If not found by googleId, check by email (for existing users who signed up before Google auth)
+    // BUT: If account was deleted, user won't be found, so we'll create a new one
     if (!user) {
       user = await User.findOne({ email: email.toLowerCase() });
       // If found by email but no googleId, link the googleId (idempotent - safe to do multiple times)
@@ -658,6 +659,9 @@ export const googleAuthCallback = async (req, res) => {
         }
       }
     }
+    
+    // If user was deleted and signing in again, user will be null here
+    // This is correct - we'll create a new user below
 
     if (user) {
       // CASE A: Existing user - IDEMPOTENT login (safe to call multiple times)
@@ -748,40 +752,59 @@ export const googleAuthCallback = async (req, res) => {
         console.error('❌ Error creating new user:', createError);
         console.error('   Error name:', createError.name);
         console.error('   Error message:', createError.message);
+        console.error('   Error code:', createError.code);
+        console.error('   Error keyValue:', createError.keyValue);
         
         // IDEMPOTENT: If it's a duplicate key error (race condition - user created between checks)
         if (createError.code === 11000) {
-          console.error('   Duplicate key error - user might have been created by another request');
+          console.error('   Duplicate key error - user might have been created by another request or account exists');
           // Try to find the user again (idempotent - safe to retry)
           const existingUser = await User.findOne({ $or: [{ googleId: googleId }, { email: email.toLowerCase() }] });
           
           if (existingUser) {
             console.log(`   Found existing user after duplicate error, treating as existing user`);
             isNewUser = false;
-            // Treat as existing user and redirect accordingly
+            
+            // Generate JWT token for existing user
             const token = jwt.sign(
               { userId: existingUser._id.toString() },
               JWT_SECRET,
               { expiresIn: '7d' }
             );
-            const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
-            const redirectUrl = new URL(`${frontendUrl}/`);
-            redirectUrl.searchParams.set('status', 'existing_user');
-            redirectUrl.searchParams.set('token', token);
-            redirectUrl.searchParams.set('emailVerified', 'true');
-            redirectUrl.searchParams.set('name', encodeURIComponent(existingUser.name || name || email.split('@')[0] || 'User'));
-            redirectUrl.searchParams.set('email', encodeURIComponent(existingUser.email || email || ''));
-            redirectUrl.searchParams.set('role', existingUser.role || 'user');
-            redirectUrl.searchParams.set('onboardingCompleted', existingUser.onboardingCompleted === true ? 'true' : 'false');
-            redirectUrl.searchParams.set('needsOnboarding', existingUser.onboardingCompleted !== true ? 'true' : 'false');
-            redirectUrl.searchParams.set('isNewUser', 'false');
-            redirectUrl.searchParams.set('_id', existingUser._id.toString());
-            res.redirect(redirectUrl.toString());
-            return;
+            
+            // Redirect to frontend with user data
+            try {
+              const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
+              const redirectUrl = new URL(`${frontendUrl}/`);
+              redirectUrl.searchParams.set('status', 'existing_user');
+              redirectUrl.searchParams.set('token', token);
+              redirectUrl.searchParams.set('emailVerified', 'true');
+              redirectUrl.searchParams.set('name', encodeURIComponent(existingUser.name || name || email.split('@')[0] || 'User'));
+              redirectUrl.searchParams.set('email', encodeURIComponent(existingUser.email || email || ''));
+              redirectUrl.searchParams.set('role', existingUser.role || 'user');
+              redirectUrl.searchParams.set('onboardingCompleted', existingUser.onboardingCompleted === true ? 'true' : 'false');
+              redirectUrl.searchParams.set('needsOnboarding', existingUser.onboardingCompleted !== true ? 'true' : 'false');
+              redirectUrl.searchParams.set('isNewUser', 'false');
+              redirectUrl.searchParams.set('_id', existingUser._id.toString());
+              
+              console.log(`✅ Existing user login successful after duplicate error: ${existingUser.email}`);
+              res.redirect(redirectUrl.toString());
+              return;
+            } catch (urlError) {
+              console.error('❌ Error constructing redirect URL after duplicate error:', urlError);
+              return res.redirect(`${FRONTEND_URL}/login?error=url_construction_failed&message=${encodeURIComponent('Failed to redirect after login. Please try again.')}`);
+            }
+          } else {
+            // Duplicate key error but user not found - this shouldn't happen, but handle gracefully
+            console.error('   Duplicate key error but user not found in database - possible database inconsistency');
+            return res.redirect(`${FRONTEND_URL}/login?error=user_creation_failed&message=${encodeURIComponent('Account creation conflict. Please try again in a moment.')}`);
           }
         }
         
-        return res.redirect(`${FRONTEND_URL}/login?error=user_creation_failed&message=${encodeURIComponent('Failed to create account. Please try again.')}`);
+        // For other errors, redirect to login with error message
+        const errorMessage = createError.message || 'Failed to create account. Please try again.';
+        console.error(`   Redirecting to login with error: ${errorMessage}`);
+        return res.redirect(`${FRONTEND_URL}/login?error=user_creation_failed&message=${encodeURIComponent(errorMessage)}`);
       }
 
       // Generate JWT token for new user
