@@ -476,33 +476,46 @@ export const googleAuthInitiate = async (req, res) => {
     const BACKEND_URL = process.env.BACKEND_URL || 'https://stash-backend-4wty.onrender.com';
     const FRONTEND_URL = process.env.FRONTEND_URL || 'https://stash-beige.vercel.app';
 
+    console.log('🔐 Google OAuth initiation started');
+    console.log(`   GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID ? 'set' : '❌ NOT SET'}`);
+    console.log(`   GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET ? 'set' : '❌ NOT SET'}`);
+    console.log(`   FRONTEND_URL: ${FRONTEND_URL}`);
+    console.log(`   BACKEND_URL: ${BACKEND_URL}`);
+
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
       console.error('❌ Google OAuth credentials not configured');
       console.error('   GOOGLE_CLIENT_ID:', GOOGLE_CLIENT_ID ? 'set' : 'NOT SET');
       console.error('   GOOGLE_CLIENT_SECRET:', GOOGLE_CLIENT_SECRET ? 'set' : 'NOT SET');
-      return res.redirect(`${FRONTEND_URL}/login?error=oauth_not_configured`);
+      return res.redirect(`${FRONTEND_URL}/login?error=oauth_not_configured&message=${encodeURIComponent('Google OAuth not configured. Please contact support.')}`);
     }
+
+    const redirectUri = `${BACKEND_URL}/api/auth/google/callback`;
+    console.log(`   Redirect URI: ${redirectUri}`);
 
     const oauth2Client = new OAuth2Client(
       GOOGLE_CLIENT_ID,
       GOOGLE_CLIENT_SECRET,
-      `${BACKEND_URL}/api/auth/google/callback`
+      redirectUri
     );
 
     // Generate authorization URL with proper parameters
     const authUrl = oauth2Client.generateAuthUrl({
       access_type: 'offline',
       scope: ['openid', 'email', 'profile'],
-      response_type: 'code',
       prompt: 'consent',
+      include_granted_scopes: true,
     });
 
-    console.log('Redirecting to Google OAuth:', authUrl);
+    console.log('✅ Generated Google OAuth URL, redirecting...');
+    console.log(`   Auth URL: ${authUrl.substring(0, 100)}...`);
     res.redirect(authUrl);
   } catch (error) {
-    console.error('Google OAuth initiate error:', error.message);
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
-    res.redirect(`${FRONTEND_URL}/login?error=oauth_init_failed`);
+    console.error('❌ Google OAuth initiate error:', error);
+    console.error('   Error name:', error.name);
+    console.error('   Error message:', error.message);
+    console.error('   Error stack:', error.stack);
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://stash-beige.vercel.app';
+    res.redirect(`${FRONTEND_URL}/login?error=oauth_init_failed&message=${encodeURIComponent('Failed to initiate Google sign-in. Please try again.')}`);
   }
 };
 
