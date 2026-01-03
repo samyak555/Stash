@@ -86,6 +86,8 @@ const Layout = ({ children, user, setUser }) => {
         <main className="flex-1 md:ml-60 min-h-screen relative z-10">
           <div className="p-4 sm:p-6 md:p-8 lg:p-10">
             <div className="max-w-7xl mx-auto">
+              {/* Guest Mode Banner */}
+              {isGuest && <GuestCTABanner />}
               {children}
             </div>
           </div>
