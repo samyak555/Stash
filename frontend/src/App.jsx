@@ -179,9 +179,10 @@ function App() {
             localStorage.removeItem('guestTimestamp');
             setUser(null);
           }
-        } else {
-          // No auth data - ensure clean state
-          setUser(null);
+          } else {
+            // No auth data - ensure clean state
+            setUser(null);
+          }
         }
       } catch (err) {
         console.error('App initialization error:', err);
