@@ -1,7 +1,34 @@
 import { useState, useEffect } from 'react';
 import { dashboardAPI, expenseAPI, incomeAPI, transactionAPI, goalAPI } from '../services/api';
 import { Link } from 'react-router-dom';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+import { Bar, Line, Pie, Doughnut } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 import toast from 'react-hot-toast';
 import { useExpenses } from '../contexts/ExpenseContext';
 import { useCards } from '../contexts/CardsContext';
@@ -786,28 +813,49 @@ const Dashboard = () => {
             <h3 className="text-xl font-bold text-white tracking-tight">Category Breakdown</h3>
           </div>
           {categoryData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ category, percent }) => `${category} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="amount"
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
-                  formatter={(value) => `₹${value.toFixed(2)}`}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <div style={{ height: '300px' }}>
+              <Pie
+                data={{
+                  labels: categoryData.map(d => d.category),
+                  datasets: [{
+                    data: categoryData.map(d => d.amount),
+                    backgroundColor: COLORS.slice(0, categoryData.length),
+                    borderColor: '#1f2937',
+                    borderWidth: 2
+                  }]
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: 'right',
+                      labels: {
+                        color: '#9ca3af',
+                        padding: 15,
+                        font: { size: 12 }
+                      }
+                    },
+                    tooltip: {
+                      backgroundColor: '#1f2937',
+                      borderColor: '#374151',
+                      borderWidth: 1,
+                      titleColor: '#fff',
+                      bodyColor: '#fff',
+                      callbacks: {
+                        label: (context) => {
+                          const label = context.label || '';
+                          const value = context.parsed;
+                          const total = categoryData.reduce((sum, d) => sum + d.amount, 0);
+                          const percent = ((value / total) * 100).toFixed(0);
+                          return `${label}: ₹${value.toFixed(2)} (${percent}%)`;
+                        }
+                      }
+                    }
+                  }
+                }}
+              />
+            </div>
           ) : null}
           {categoryData.length > 0 && chartExplanations.categoryBreakdown && (
             <p className="text-sm text-text-secondary font-normal mt-4 text-center">
@@ -845,18 +893,48 @@ const Dashboard = () => {
             </div>
             <h3 className="text-xl font-bold text-text-primary tracking-tight">Monthly Spending</h3>
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={monthlyChartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="month" stroke="#9ca3af" />
-              <YAxis stroke="#9ca3af" />
-              <Tooltip
-                contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
-                itemStyle={{ color: '#fff' }}
-              />
-              <Bar dataKey="amount" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div style={{ height: '300px' }}>
+            <Bar
+              data={{
+                labels: monthlyChartData.map(d => d.month),
+                datasets: [{
+                  label: 'Spending',
+                  data: monthlyChartData.map(d => d.amount),
+                  backgroundColor: '#3b82f6',
+                  borderRadius: 8
+                }]
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: false
+                  },
+                  tooltip: {
+                    backgroundColor: '#1f2937',
+                    borderColor: '#374151',
+                    borderWidth: 1,
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    callbacks: {
+                      label: (context) => `₹${context.parsed.y.toFixed(2)}`
+                    }
+                  }
+                },
+                scales: {
+                  x: {
+                    ticks: { color: '#9ca3af' },
+                    grid: { color: '#374151' }
+                  },
+                  y: {
+                    ticks: { color: '#9ca3af' },
+                    grid: { color: '#374151' }
+                  }
+                }
+              }}
+            />
+          </div>
           {chartExplanations.monthlySpending && (
             <p className="text-sm text-text-secondary font-normal mt-4 text-center">
               {chartExplanations.monthlySpending}
@@ -871,18 +949,56 @@ const Dashboard = () => {
             <h3 className="text-xl font-bold text-text-primary">Daily Spending Trend (Last 30 Days)</h3>
           </div>
           {dailyChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={dailyChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="date" stroke="#9ca3af" angle={-45} textAnchor="end" height={80} />
-                <YAxis stroke="#9ca3af" />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
-                  itemStyle={{ color: '#fff' }}
-                />
-                <Line type="monotone" dataKey="amount" stroke="#f59e0b" strokeWidth={2} dot={{ fill: '#f59e0b', r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
+            <div style={{ height: '300px' }}>
+              <Line
+                data={{
+                  labels: dailyChartData.map(d => d.date),
+                  datasets: [{
+                    label: 'Daily Spending',
+                    data: dailyChartData.map(d => d.amount),
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#f59e0b'
+                  }]
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      display: false
+                    },
+                    tooltip: {
+                      backgroundColor: '#1f2937',
+                      borderColor: '#374151',
+                      borderWidth: 1,
+                      titleColor: '#fff',
+                      bodyColor: '#fff',
+                      callbacks: {
+                        label: (context) => `₹${context.parsed.y.toFixed(2)}`
+                      }
+                    }
+                  },
+                  scales: {
+                    x: {
+                      ticks: { 
+                        color: '#9ca3af',
+                        maxRotation: 45,
+                        minRotation: 45
+                      },
+                      grid: { color: '#374151' }
+                    },
+                    y: {
+                      ticks: { color: '#9ca3af' },
+                      grid: { color: '#374151' }
+                    }
+                  }
+                }}
+              />
+            </div>
           ) : null}
           {dailyChartData.length > 0 && chartExplanations.dailyTrend && (
             <p className="text-sm text-text-secondary font-normal mt-4 text-center">
