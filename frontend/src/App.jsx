@@ -129,6 +129,17 @@ function App() {
     initializeApp();
   }, []);
 
+  // Hard failsafe - ensure loading never stays true forever
+  useEffect(() => {
+    const failsafeTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn('Failsafe: Forcing loading to false after 5 seconds');
+        setLoading(false);
+      }
+    }, 5000);
+    return () => clearTimeout(failsafeTimeout);
+  }, [loading]);
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
@@ -202,7 +213,7 @@ function App() {
                 <Route
                   path="/"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute user={user}>
                       <Layout user={user} setUser={setUser}>
                         <Dashboard />
                       </Layout>
@@ -212,7 +223,7 @@ function App() {
                 <Route
                   path="/cards"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute user={user}>
                       <Layout user={user} setUser={setUser}>
                         <Cards />
                       </Layout>
@@ -222,7 +233,7 @@ function App() {
                 <Route
                   path="/transactions"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute user={user}>
                       <Layout user={user} setUser={setUser}>
                         <Transactions />
                       </Layout>
@@ -232,7 +243,7 @@ function App() {
                 <Route
                   path="/expenses"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute user={user}>
                       <Layout user={user} setUser={setUser}>
                         <Expenses />
                       </Layout>
@@ -242,7 +253,7 @@ function App() {
                 <Route
                   path="/income"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute user={user}>
                       <Layout user={user} setUser={setUser}>
                         <Income />
                       </Layout>
@@ -252,7 +263,7 @@ function App() {
                 <Route
                   path="/budgets"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute user={user}>
                       <Layout user={user} setUser={setUser}>
                         <Budgets />
                       </Layout>
@@ -262,7 +273,7 @@ function App() {
                 <Route
                   path="/goals"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute user={user}>
                       <Layout user={user} setUser={setUser}>
                         <Goals />
                       </Layout>
@@ -272,7 +283,7 @@ function App() {
                 <Route
                   path="/insights"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute user={user}>
                       <Layout user={user} setUser={setUser}>
                         <Insights />
                       </Layout>
@@ -282,7 +293,7 @@ function App() {
                 <Route
                   path="/family"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute user={user}>
                       <Layout user={user} setUser={setUser}>
                         <Family />
                       </Layout>
@@ -292,7 +303,7 @@ function App() {
                 <Route
                   path="/settings"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute user={user}>
                       <Layout user={user} setUser={setUser}>
                         <Settings />
                       </Layout>

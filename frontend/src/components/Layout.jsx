@@ -54,9 +54,17 @@ const Layout = ({ children, user, setUser }) => {
     );
   }
 
-  // Safety check: if no user and not guest, redirect to login
+  // Safety check: if no user and not guest, show loading (ProtectedRoute will redirect)
+  // NEVER return null - always render something
   if (!user && !isGuest) {
-    return null; // ProtectedRoute will handle redirect
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-slate-400">Redirecting...</p>
+        </div>
+      </div>
+    );
   }
 
   // Allow Settings page to render even during onboarding (user might need to access settings)
