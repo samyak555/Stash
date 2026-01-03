@@ -222,6 +222,15 @@ function App() {
         <CardsProvider>
           <Router>
             <Toaster position="top-right" />
+            {/* Show loading spinner overlay but DON'T block routes */}
+            {loading && (
+              <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  <p className="text-slate-400 text-lg">Loading...</p>
+                </div>
+              </div>
+            )}
             <Routes>
                 <Route
                   path="/login"
