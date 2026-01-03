@@ -101,8 +101,8 @@ function App() {
                 toast.success('Signed in successfully!');
               }
               
-              // Exit early - token handling is complete
-              return;
+              // Token handling complete - skip localStorage check below
+              // Continue to finally block to set loading = false
             }
           } catch (tokenError) {
             console.error('Error handling OAuth token:', tokenError);
@@ -112,12 +112,13 @@ function App() {
           }
         }
         
-        // Check localStorage for existing auth data (normal app load, not OAuth redirect)
-        const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('user');
-        const isGuest = localStorage.getItem('isGuest') === 'true';
-        
-        if (isGuest && userData) {
+        // Only check localStorage if token was not in URL (normal app load)
+        if (!tokenFromUrl) {
+          const token = localStorage.getItem('token');
+          const userData = localStorage.getItem('user');
+          const isGuest = localStorage.getItem('isGuest') === 'true';
+          
+          if (isGuest && userData) {
           // Guest mode - no token needed
           try {
             const parsedUser = JSON.parse(userData);
