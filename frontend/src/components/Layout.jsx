@@ -55,6 +55,11 @@ const Layout = ({ children, user, setUser }) => {
     );
   }
 
+  // Safety check: if no user and not guest, redirect to login
+  if (!user && !isGuest) {
+    return null; // ProtectedRoute will handle redirect
+  }
+
   // First-time onboarding (Name, Age, Profession) - mandatory for new Google users
   if (showFirstTimeOnboarding) {
     return (

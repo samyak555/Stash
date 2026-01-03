@@ -47,6 +47,7 @@ function App() {
             console.error('Error parsing user data:', parseError);
             localStorage.removeItem('isGuest');
             localStorage.removeItem('user');
+            localStorage.removeItem('guestTimestamp');
           }
         } else if (token && userData) {
           // Authenticated user
@@ -54,14 +55,17 @@ function App() {
             const parsedUser = JSON.parse(userData);
             // Clear guest mode if user is authenticated
             localStorage.removeItem('isGuest');
+            localStorage.removeItem('guestTimestamp');
             setUser(parsedUser);
           } catch (parseError) {
             console.error('Error parsing user data:', parseError);
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             localStorage.removeItem('isGuest');
+            localStorage.removeItem('guestTimestamp');
           }
         }
+        // Always set loading to false, even if no user
         setLoading(false);
       } catch (err) {
         console.error('App initialization error:', err);
@@ -70,7 +74,17 @@ function App() {
       }
     };
     
+    // Add a timeout to ensure loading state doesn't persist forever
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.warn('App initialization timeout - forcing loading to false');
+        setLoading(false);
+      }
+    }, 5000); // 5 second timeout
+    
     initializeApp();
+    
+    return () => clearTimeout(timeout);
   }, []);
 
   if (error) {
@@ -101,11 +115,12 @@ function App() {
     );
   }
 
+  // Always render something - even if user is null, show login
   return (
-    <ExpenseProvider>
-      <CardsProvider>
-        <Router>
-          <ErrorBoundary>
+    <ErrorBoundary>
+      <ExpenseProvider>
+        <CardsProvider>
+          <Router>
             <Toaster position="top-right" />
             <Routes>
         <Route
@@ -237,11 +252,11 @@ function App() {
           }
         />
         <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
-          </ErrorBoundary>
-        </Router>
-      </CardsProvider>
-    </ExpenseProvider>
+            </Routes>
+          </Router>
+        </CardsProvider>
+      </ExpenseProvider>
+    </ErrorBoundary>
   );
 }
 
