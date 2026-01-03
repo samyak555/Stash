@@ -45,7 +45,18 @@ function App() {
           // Guest mode - no token needed
           try {
             const parsedUser = JSON.parse(userData);
-            setUser(parsedUser);
+            // Normalize guest user object with safe defaults
+            const normalizedUser = {
+              _id: parsedUser._id || '',
+              name: parsedUser.name || 'Guest',
+              email: parsedUser.email || '',
+              emailVerified: false,
+              role: 'guest',
+              onboardingCompleted: false,
+              age: parsedUser.age || null,
+              profession: parsedUser.profession || null,
+            };
+            setUser(normalizedUser);
           } catch (parseError) {
             console.error('Error parsing user data:', parseError);
             localStorage.removeItem('isGuest');
