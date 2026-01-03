@@ -279,7 +279,7 @@ const Settings = () => {
   }
 
   return (
-    <AuthGuard requireAuth={true}>
+    <AuthGuard requireAuth={false}>
       <div className="max-w-4xl mx-auto px-4 py-4 md:py-8 space-y-6 md:space-y-10 animate-fade-in">
         {/* Company Identity */}
       <div className="text-center pb-4 border-b border-white/10">
