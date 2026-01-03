@@ -26,30 +26,50 @@ const AuthCallback = ({ setUser }) => {
           
           switch (error) {
             case 'no_code':
-              errorMessage = 'No authorization code received from Google';
+              errorMessage = 'No authorization code received from Google. Please try again.';
               break;
             case 'token_exchange_failed':
-              errorMessage = 'Failed to exchange authorization code for tokens';
+              errorMessage = 'Failed to exchange authorization code. Please try signing in again.';
               break;
             case 'no_id_token':
-              errorMessage = 'No ID token received from Google';
+              errorMessage = 'No ID token received from Google. Please try again.';
               break;
             case 'token_verification_failed':
-              errorMessage = 'Failed to verify Google token';
+              errorMessage = 'Failed to verify Google token. Please try again.';
               break;
             case 'no_email':
-              errorMessage = 'Email not provided by Google';
+              errorMessage = 'Email not provided by Google. Please ensure your Google account has an email.';
               break;
             case 'email_not_verified':
-              errorMessage = 'Google email is not verified. Please verify your email with Google first.';
+              errorMessage = 'Your Google email is not verified. Please verify your email with Google first.';
               break;
             case 'oauth_init_failed':
-              errorMessage = 'Failed to initiate Google OAuth';
+              errorMessage = 'Failed to initiate Google OAuth. Please try again.';
               break;
+            case 'server_config_error':
+              errorMessage = 'Server configuration error. Please contact support.';
+              break;
+            case 'network_error':
+              errorMessage = 'Network error. Please check your connection and try again.';
+              break;
+            case 'timeout_error':
+              errorMessage = 'Request timed out. Please try again.';
+              break;
+            case 'dns_error':
+              errorMessage = 'Connection error. Please check your internet connection.';
+              break;
+            case 'url_construction_failed':
+              errorMessage = 'Redirect error. Please try signing in again.';
+              break;
+            case 'oauth_failed':
             default:
-              errorMessage = `Authentication error: ${error}`;
+              errorMessage = `Authentication failed: ${error}. Please try again.`;
           }
 
+          // Clear guest mode on error
+          localStorage.removeItem('isGuest');
+          localStorage.removeItem('guestTimestamp');
+          
           toast.error(errorMessage, { duration: 7000 });
           navigate('/login');
           return;
@@ -62,6 +82,10 @@ const AuthCallback = ({ setUser }) => {
           return;
         }
 
+        // Clear guest mode data when signing in
+        localStorage.removeItem('isGuest');
+        localStorage.removeItem('guestTimestamp');
+        
         // Store token in localStorage
         localStorage.setItem('token', token);
 
@@ -72,6 +96,8 @@ const AuthCallback = ({ setUser }) => {
         const onboardingCompleted = searchParams.get('onboardingCompleted') === 'true';
         const userId = searchParams.get('_id');
         const message = searchParams.get('message');
+        const age = searchParams.get('age');
+        const profession = searchParams.get('profession');
 
         // Construct user data from URL params
         const userData = {
@@ -81,6 +107,8 @@ const AuthCallback = ({ setUser }) => {
           emailVerified: emailVerified === 'true',
           role: role,
           onboardingCompleted: onboardingCompleted,
+          age: age ? parseInt(age) : undefined,
+          profession: profession ? decodeURIComponent(profession) : undefined,
         };
 
         // Store user data in localStorage
@@ -89,6 +117,8 @@ const AuthCallback = ({ setUser }) => {
         // Sync onboardingCompleted to localStorage
         if (onboardingCompleted) {
           localStorage.setItem('onboardingCompleted', 'true');
+        } else {
+          localStorage.removeItem('onboardingCompleted');
         }
         
         setUser(userData);

@@ -473,11 +473,14 @@ export const googleAuthInitiate = async (req, res) => {
   try {
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-    const BACKEND_URL = process.env.BACKEND_URL || `https://stash-backend-4wty.onrender.com`;
+    const BACKEND_URL = process.env.BACKEND_URL || 'https://stash-backend-4wty.onrender.com';
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://stash-beige.vercel.app';
 
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
-      console.error('Google OAuth credentials not configured');
-      return res.status(500).json({ message: 'Google OAuth not configured' });
+      console.error('❌ Google OAuth credentials not configured');
+      console.error('   GOOGLE_CLIENT_ID:', GOOGLE_CLIENT_ID ? 'set' : 'NOT SET');
+      console.error('   GOOGLE_CLIENT_SECRET:', GOOGLE_CLIENT_SECRET ? 'set' : 'NOT SET');
+      return res.redirect(`${FRONTEND_URL}/login?error=oauth_not_configured`);
     }
 
     const oauth2Client = new OAuth2Client(
@@ -517,12 +520,26 @@ export const googleAuthCallback = async (req, res) => {
     const JWT_SECRET = process.env.JWT_SECRET;
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://stash-beige.vercel.app';
+    const BACKEND_URL = process.env.BACKEND_URL || 'https://stash-backend-4wty.onrender.com';
 
-    if (!JWT_SECRET || !GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
-      return res.status(500).json({ message: 'Server configuration error' });
+    // Validate environment variables
+    if (!JWT_SECRET) {
+      console.error('❌ JWT_SECRET is not set');
+      return res.redirect(`${FRONTEND_URL}/login?error=server_config_error&message=JWT_SECRET missing`);
     }
+    if (!GOOGLE_CLIENT_ID) {
+      console.error('❌ GOOGLE_CLIENT_ID is not set');
+      return res.redirect(`${FRONTEND_URL}/login?error=server_config_error&message=GOOGLE_CLIENT_ID missing`);
+    }
+    if (!GOOGLE_CLIENT_SECRET) {
+      console.error('❌ GOOGLE_CLIENT_SECRET is not set');
+      return res.redirect(`${FRONTEND_URL}/login?error=server_config_error&message=GOOGLE_CLIENT_SECRET missing`);
+    }
+    
+    console.log('✅ OAuth callback - Environment check passed');
+    console.log(`   FRONTEND_URL: ${FRONTEND_URL}`);
+    console.log(`   BACKEND_URL: ${BACKEND_URL}`);
 
     const { code } = req.query;
 
@@ -627,28 +644,55 @@ export const googleAuthCallback = async (req, res) => {
 
     // Redirect to frontend with token and user data (include all data to avoid extra API call)
     try {
-      const frontendUrl = (FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, ''); // Remove trailing slash
+      const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, ''); // Remove trailing slash
       const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
       redirectUrl.searchParams.set('token', token);
       redirectUrl.searchParams.set('emailVerified', 'true');
-      redirectUrl.searchParams.set('name', encodeURIComponent(user.name));
-      redirectUrl.searchParams.set('email', encodeURIComponent(user.email));
+      redirectUrl.searchParams.set('name', encodeURIComponent(user.name || ''));
+      redirectUrl.searchParams.set('email', encodeURIComponent(user.email || ''));
       redirectUrl.searchParams.set('role', user.role || 'user');
       redirectUrl.searchParams.set('onboardingCompleted', user.onboardingCompleted ? 'true' : 'false');
       redirectUrl.searchParams.set('_id', user._id.toString());
       
-      console.log(`✅ Google OAuth successful for ${user.email}, redirecting to frontend`);
+      // Add age and profession if available (for first-time onboarding)
+      if (user.age) {
+        redirectUrl.searchParams.set('age', user.age.toString());
+      }
+      if (user.profession) {
+        redirectUrl.searchParams.set('profession', encodeURIComponent(user.profession));
+      }
+      
+      console.log(`✅ Google OAuth successful for ${user.email}`);
+      console.log(`   Redirecting to: ${redirectUrl.toString().substring(0, 100)}...`);
       res.redirect(redirectUrl.toString());
     } catch (urlError) {
-      console.error('Error constructing redirect URL:', urlError);
+      console.error('❌ Error constructing redirect URL:', urlError);
+      console.error('   URL Error details:', urlError.message);
       // Fallback: redirect to login with token in query
-      const frontendUrl = FRONTEND_URL || 'http://localhost:5173';
-      res.redirect(`${frontendUrl}/login?token=${token}&emailVerified=true`);
+      const frontendUrl = FRONTEND_URL || 'https://stash-beige.vercel.app';
+      res.redirect(`${frontendUrl}/login?token=${token}&emailVerified=true&error=url_construction_failed`);
     }
   } catch (error) {
-    console.error('Google OAuth callback error:', error.message);
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
-    res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
+    console.error('❌ Google OAuth callback error:', error);
+    console.error('   Error name:', error.name);
+    console.error('   Error message:', error.message);
+    console.error('   Error stack:', error.stack);
+    
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://stash-beige.vercel.app';
+    
+    // Provide more specific error messages
+    let errorCode = 'oauth_failed';
+    if (error.message.includes('network') || error.message.includes('ECONNREFUSED')) {
+      errorCode = 'network_error';
+    } else if (error.message.includes('timeout')) {
+      errorCode = 'timeout_error';
+    } else if (error.message.includes('ENOTFOUND') || error.message.includes('DNS')) {
+      errorCode = 'dns_error';
+    }
+    
+    const redirectUrl = `${FRONTEND_URL}/login?error=${errorCode}`;
+    console.error('   Redirecting to:', redirectUrl);
+    res.redirect(redirectUrl);
   }
 };
 
