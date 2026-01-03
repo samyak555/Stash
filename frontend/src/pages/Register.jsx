@@ -311,15 +311,22 @@ const Register = ({ setUser }) => {
                 <input
                   id="age"
                   name="age"
-                  type="number"
-                  min="13"
-                  max="100"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength="3"
                   className={`w-full px-4 py-3 border rounded-xl bg-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 focus:ring-2 focus:ring-cyan-400/20 transition-all text-sm font-normal ${
                     errors.age ? 'border-red-400/50' : 'border-white/10'
                   }`}
                   placeholder="Enter your age"
                   value={formData.age}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Only allow numeric input
+                    if (value === '' || /^\d+$/.test(value)) {
+                      handleChange(e);
+                    }
+                  }}
                 />
                 {errors.age && (
                   <p className="mt-1.5 text-xs text-red-400">{errors.age}</p>

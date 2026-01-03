@@ -164,13 +164,15 @@ const FirstTimeOnboarding = ({ user, onComplete }) => {
                 Age <span className="text-red-400">*</span>
               </label>
               <input
-                type="number"
-                min="13"
-                max="100"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength="3"
                 value={formData.age}
                 onChange={(e) => {
                   const value = e.target.value;
-                  if (value === '' || (!isNaN(value) && parseInt(value) >= 13 && parseInt(value) <= 100)) {
+                  // Only allow numeric input
+                  if (value === '' || /^\d+$/.test(value)) {
                     setFormData({ ...formData, age: value });
                     if (errors.age) setErrors({ ...errors, age: '' });
                   }
