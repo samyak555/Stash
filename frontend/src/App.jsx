@@ -42,6 +42,79 @@ function App() {
       try {
         setError(null);
         
+        // Handle OAuth token from URL query params (redirect from backend)
+        const urlParams = new URLSearchParams(window.location.search);
+        const tokenFromUrl = urlParams.get('token');
+        const statusFromUrl = urlParams.get('status');
+        
+        if (tokenFromUrl) {
+          // OAuth redirect - save token and user data from URL params
+          try {
+            localStorage.setItem('token', tokenFromUrl);
+            
+            // Get user data from URL params
+            const name = urlParams.get('name');
+            const email = urlParams.get('email');
+            const role = urlParams.get('role') || 'user';
+            const onboardingCompleted = urlParams.get('onboardingCompleted') === 'true';
+            const userId = urlParams.get('_id');
+            const emailVerified = urlParams.get('emailVerified') === 'true';
+            const age = urlParams.get('age');
+            const profession = urlParams.get('profession');
+            const needsOnboarding = urlParams.get('needsOnboarding') === 'true';
+            const isNewUser = urlParams.get('isNewUser') === 'true';
+            
+            // Clear guest mode when signing in
+            localStorage.removeItem('isGuest');
+            localStorage.removeItem('guestTimestamp');
+            
+            // Construct user data
+            const userData = {
+              _id: userId || '',
+              name: name ? decodeURIComponent(name) : (email ? email.split('@')[0] : 'User'),
+              email: email ? decodeURIComponent(email) : '',
+              emailVerified: emailVerified,
+              role: role,
+              onboardingCompleted: onboardingCompleted,
+              age: age ? parseInt(age, 10) : null,
+              profession: profession ? decodeURIComponent(profession) : null,
+            };
+            
+            // Validate user data
+            if (userData.email) {
+              localStorage.setItem('user', JSON.stringify(userData));
+              
+              // Sync onboardingCompleted
+              if (userData.onboardingCompleted) {
+                localStorage.setItem('onboardingCompleted', 'true');
+              } else {
+                localStorage.removeItem('onboardingCompleted');
+              }
+              
+              // Set user state
+              setUser(userData);
+              
+              // Clean URL - remove query params
+              window.history.replaceState({}, '', '/');
+              
+              // Show success message if available
+              const message = urlParams.get('message');
+              if (message) {
+                toast.success(decodeURIComponent(message));
+              } else {
+                toast.success('Signed in successfully!');
+              }
+              
+              // Navigation will be handled by React Router based on user state
+              // No need to navigate here - let the app render normally
+            }
+          } catch (tokenError) {
+            console.error('Error handling OAuth token:', tokenError);
+            // Clean URL even on error
+            window.history.replaceState({}, '', '/');
+          }
+        }
+        
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
         const isGuest = localStorage.getItem('isGuest') === 'true';
@@ -197,14 +270,6 @@ function App() {
                 <Route
                   path="/reset-password"
                   element={user ? <Navigate to="/" replace /> : <ResetPassword />}
-                />
-                <Route
-                  path="/auth/callback"
-                  element={
-                    <ErrorBoundary>
-                      <AuthCallback setUser={setUser} />
-                    </ErrorBoundary>
-                  }
                 />
                 {/* Legal Pages */}
                 <Route path="/privacy" element={<PrivacyPolicy />} />

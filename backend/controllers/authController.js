@@ -219,11 +219,12 @@ export const verifyEmail = async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    // Redirect to frontend auth callback with token and user data (auto-login after verification)
+    // Redirect to frontend root with token and user data (auto-login after verification)
     try {
       const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, ''); // Remove trailing slash
-      const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
+      const redirectUrl = new URL(`${frontendUrl}/`);
       redirectUrl.searchParams.set('token', token_jwt);
+      redirectUrl.searchParams.set('status', 'existing_user');
       redirectUrl.searchParams.set('emailVerified', 'true');
       redirectUrl.searchParams.set('name', encodeURIComponent(user.name));
       redirectUrl.searchParams.set('email', encodeURIComponent(user.email));
@@ -692,7 +693,7 @@ export const googleAuthCallback = async (req, res) => {
       // ALWAYS return complete auth response - never block login
       try {
         const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
-        const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
+        const redirectUrl = new URL(`${frontendUrl}/`);
         redirectUrl.searchParams.set('status', 'existing_user');
         redirectUrl.searchParams.set('token', token);
         redirectUrl.searchParams.set('emailVerified', 'true');
@@ -764,7 +765,7 @@ export const googleAuthCallback = async (req, res) => {
               { expiresIn: '7d' }
             );
             const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
-            const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
+            const redirectUrl = new URL(`${frontendUrl}/`);
             redirectUrl.searchParams.set('status', 'existing_user');
             redirectUrl.searchParams.set('token', token);
             redirectUrl.searchParams.set('emailVerified', 'true');
@@ -790,10 +791,10 @@ export const googleAuthCallback = async (req, res) => {
         { expiresIn: '7d' }
       );
 
-      // Redirect to frontend with status=new_user
+      // Redirect to frontend root with status=new_user
       try {
         const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
-        const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
+        const redirectUrl = new URL(`${frontendUrl}/`);
         redirectUrl.searchParams.set('status', 'new_user');
         redirectUrl.searchParams.set('token', token);
         redirectUrl.searchParams.set('emailVerified', 'true');
