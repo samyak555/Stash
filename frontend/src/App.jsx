@@ -147,8 +147,7 @@ function App() {
         <CardsProvider>
           <Router>
             <Toaster position="top-right" />
-            <ErrorBoundary>
-              <Routes>
+            <Routes>
         <Route
           path="/login"
           element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />}
@@ -278,8 +277,7 @@ function App() {
           }
         />
         <Route path="*" element={<Navigate to="/login" replace />} />
-              </Routes>
-            </ErrorBoundary>
+            </Routes>
           </Router>
         </CardsProvider>
       </ExpenseProvider>
