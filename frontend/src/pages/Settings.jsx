@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { transactionAPI, userAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import Button from '../components/ui/Button';
@@ -21,8 +21,13 @@ const Settings = () => {
     profession: '',
   });
   const [profileLoading, setProfileLoading] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
+    // Check if user is guest
+    const guestStatus = localStorage.getItem('isGuest') === 'true';
+    setIsGuest(guestStatus);
+    
     // AuthGuard handles guest mode, so just load data
     loadSyncStatus();
     loadProfile();
