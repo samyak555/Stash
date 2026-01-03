@@ -2,6 +2,10 @@ import fileDB from '../utils/fileDB.js';
 
 export const getAll = async (req, res) => {
   try {
+    // Guest mode - return empty array
+    if (req.isGuest || !req.userId) {
+      return res.json([]);
+    }
     const expenses = fileDB.findExpenses({ user: req.userId });
     res.json(expenses);
   } catch (error) {

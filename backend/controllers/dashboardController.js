@@ -2,6 +2,21 @@ import fileDB from '../utils/fileDB.js';
 
 export const getDashboard = async (req, res) => {
   try {
+    // Guest mode - return empty dashboard data
+    if (req.isGuest || !req.userId) {
+      return res.json({
+        summary: {
+          totalIncome: 0,
+          totalExpenses: 0,
+          balance: 0,
+        },
+        budgets: 0,
+        activeGoals: 0,
+        monthlyTrend: [],
+        categoryBreakdown: [],
+      });
+    }
+    
     const expenses = fileDB.findExpenses({ user: req.userId });
     const incomes = fileDB.findIncomes({ user: req.userId });
     const budgets = fileDB.findBudgets({ user: req.userId });
