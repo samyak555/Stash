@@ -95,6 +95,13 @@ const Login = ({ setUser }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-black relative overflow-hidden">
+      {/* Auth Header with Large Logo */}
+      <header className="absolute top-0 left-0 right-0 z-20 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+        <div className="max-w-7xl mx-auto">
+          <Logo authPage={true} showText={true} />
+        </div>
+      </header>
+      
       {/* Full Page Logo Background */}
       <Logo fullPage={true} />
       

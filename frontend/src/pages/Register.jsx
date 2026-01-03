@@ -127,12 +127,15 @@ const Register = ({ setUser }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-app-bg relative overflow-hidden">
+      {/* Auth Header with Large Logo */}
+      <header className="absolute top-0 left-0 right-0 z-20 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+        <div className="max-w-7xl mx-auto">
+          <Logo authPage={true} showText={true} />
+        </div>
+      </header>
+      
       <div className="flex-1 flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="w-full max-w-[500px] space-y-6 animate-fade-in">
-          {/* STASH Logo */}
-          <div className="text-center animate-slide-up mb-6">
-            <Logo size="xl" showText={true} iconOnly={false} className="justify-center" />
-          </div>
           
           {/* Header */}
           <div className="text-center animate-slide-up space-y-2">

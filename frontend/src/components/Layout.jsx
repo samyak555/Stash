@@ -3,7 +3,7 @@ import Sidebar from './Sidebar';
 import MobileSidebar from './MobileSidebar';
 import Onboarding from './Onboarding';
 import FirstTimeOnboarding from './FirstTimeOnboarding';
-import GuestUpgradeBanner from './GuestUpgradeBanner';
+import TopNav from './TopNav';
 import { useGuestMode } from '../hooks/useGuestMode';
 
 const Layout = ({ children, user, setUser }) => {
@@ -74,12 +74,10 @@ const Layout = ({ children, user, setUser }) => {
 
   return (
     <div className="min-h-screen bg-app-bg relative flex flex-col">
-      {/* Guest Upgrade Banner - Fixed at top */}
-      <div className="fixed top-0 left-0 right-0 z-50">
-        <GuestUpgradeBanner />
-      </div>
+      {/* Top Navigation Bar */}
+      <TopNav user={user} setUser={setUser} />
       
-      <div className="flex flex-1 pt-0">
+      <div className="flex flex-1 pt-12 md:pt-14">
         {/* Left Sidebar - Hidden on mobile, visible on desktop */}
         <div className="hidden md:block">
           <Sidebar user={user} setUser={setUser} />
@@ -89,7 +87,7 @@ const Layout = ({ children, user, setUser }) => {
         <MobileSidebar user={user} setUser={setUser} />
 
         {/* Main Content Area */}
-        <main className={`flex-1 md:ml-60 min-h-screen relative z-10 ${isGuest ? 'pt-8 md:pt-12' : 'pt-0'}`}>
+        <main className="flex-1 md:ml-60 min-h-screen relative z-10">
           <div className="p-4 sm:p-6 md:p-8 lg:p-10">
             <div className="max-w-7xl mx-auto">
               {children}
