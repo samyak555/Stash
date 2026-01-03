@@ -68,12 +68,12 @@ const Sidebar = ({ user, setUser }) => {
   return (
     <aside className="fixed left-0 top-0 h-screen w-60 bg-sidebar-bg border-r border-border flex flex-col z-50">
       {/* STASH Logo Section - Clean Professional Brand Area */}
-      <div className="border-b border-border bg-gradient-to-br from-sidebar-bg to-card-bg flex items-center justify-center" style={{ minHeight: '80px', padding: '8px' }}>
-        <Link to="/" className="flex items-center justify-center w-full h-full">
+      <div className="border-b border-border bg-gradient-to-br from-sidebar-bg to-card-bg flex items-center justify-center" style={{ minHeight: '80px', padding: '12px' }}>
+        <Link to="/" className="flex items-center justify-center gap-3 w-full h-full">
           <img
             src={iconSrc}
             alt="Stash"
-            className="w-full h-full object-contain"
+            className="w-10 h-10 sm:w-12 sm:h-12 object-contain flex-shrink-0"
             style={{
               background: 'transparent',
               border: 'none',
@@ -83,14 +83,15 @@ const Sidebar = ({ user, setUser }) => {
               padding: '0',
               margin: '0',
               display: 'block',
-              width: '100%',
-              height: '100%',
               objectFit: 'contain'
             }}
             onError={(e) => {
               e.target.style.display = 'none';
             }}
           />
+          <span className="text-lg sm:text-xl font-bold text-gradient-brand tracking-tight hidden sm:block">
+            STASH
+          </span>
         </Link>
       </div>
 

@@ -119,6 +119,7 @@ const AuthCallback = ({ setUser }) => {
         const message = searchParams.get('message');
         const age = searchParams.get('age');
         const profession = searchParams.get('profession');
+        const isNewUser = searchParams.get('isNewUser') === 'true';
 
         // Construct user data from URL params - ensure all fields have defaults
         const userData = {
@@ -147,8 +148,8 @@ const AuthCallback = ({ setUser }) => {
         // Show success message
         toast.success(message || 'Signed in successfully!');
         
-        // Redirect based on status and needsOnboarding flag
-        if (status === 'new_user' || needsOnboarding) {
+        // Redirect based on status, isNewUser flag, and needsOnboarding flag
+        if (status === 'new_user' || isNewUser || needsOnboarding) {
           // New user or user needing onboarding - redirect to onboarding
           console.log('🆕 User needs onboarding, redirecting to onboarding');
           navigate('/onboarding');

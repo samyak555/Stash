@@ -594,20 +594,21 @@ export const googleAuthCallback = async (req, res) => {
     // Determine role (admin if email matches)
     const role = email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'user';
 
-    // Check if user exists by googleId first, then by email (for migration)
+    // IDEMPOTENT: Check if user exists by googleId first, then by email
     let user = await User.findOne({ googleId: googleId });
+    let isNewUser = false;
     
     // If not found by googleId, check by email (for existing users who signed up before Google auth)
     if (!user) {
       user = await User.findOne({ email: email.toLowerCase() });
-      // If found by email but no googleId, link the googleId
+      // If found by email but no googleId, link the googleId (idempotent - safe to do multiple times)
       if (user && !user.googleId) {
         user.googleId = googleId;
         user.authProvider = 'google';
         user.emailVerified = true;
         
         // Defensive: Ensure required fields exist to prevent validation errors
-        // If onboarding not completed but age/profession missing, set defaults temporarily
+        // Only set defaults if onboarding not completed AND fields are missing
         if (!user.onboardingCompleted) {
           if (!user.age) {
             user.age = 25; // Temporary default, will be set during onboarding
@@ -619,7 +620,7 @@ export const googleAuthCallback = async (req, res) => {
         
         try {
           await user.save();
-          console.log(`   Linked Google ID to existing email user`);
+          console.log(`   ✅ Linked Google ID to existing email user: ${user.email}`);
         } catch (saveError) {
           console.error('❌ Error saving user after linking Google ID:', saveError);
           // If save fails due to validation, try to repair the user
@@ -645,10 +646,10 @@ export const googleAuthCallback = async (req, res) => {
     }
 
     if (user) {
-      // CASE A: Existing user - DO NOT update profile during login
+      // CASE A: Existing user - IDEMPOTENT login (safe to call multiple times)
       console.log(`✅ Found existing user: ${user.email} (ID: ${user._id})`);
       
-      // Defensive: Ensure user has valid onboardingCompleted field
+      // Defensive: Ensure user has valid onboardingCompleted field (always boolean)
       if (typeof user.onboardingCompleted !== 'boolean') {
         user.onboardingCompleted = false;
         try {
@@ -659,6 +660,15 @@ export const googleAuthCallback = async (req, res) => {
         }
       }
       
+      // Update lastLogin timestamp (idempotent - safe to do on every login)
+      user.lastLogin = new Date();
+      try {
+        await user.save();
+      } catch (saveError) {
+        console.warn('   Warning: Could not update lastLogin:', saveError);
+        // Don't fail login if lastLogin update fails
+      }
+      
       // Generate JWT token
       const token = jwt.sign(
         { userId: user._id.toString() },
@@ -666,22 +676,23 @@ export const googleAuthCallback = async (req, res) => {
         { expiresIn: '7d' }
       );
 
-      // Redirect to frontend with status and user data
+      // ALWAYS return complete auth response - never block login
       try {
         const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
         const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
         redirectUrl.searchParams.set('status', 'existing_user');
         redirectUrl.searchParams.set('token', token);
         redirectUrl.searchParams.set('emailVerified', 'true');
-        redirectUrl.searchParams.set('name', encodeURIComponent(user.name || name || ''));
-        redirectUrl.searchParams.set('email', encodeURIComponent(user.email || ''));
+        redirectUrl.searchParams.set('name', encodeURIComponent(user.name || name || email.split('@')[0] || 'User'));
+        redirectUrl.searchParams.set('email', encodeURIComponent(user.email || email || ''));
         redirectUrl.searchParams.set('role', user.role || 'user');
         const needsOnboarding = user.onboardingCompleted !== true;
         redirectUrl.searchParams.set('onboardingCompleted', user.onboardingCompleted === true ? 'true' : 'false');
         redirectUrl.searchParams.set('needsOnboarding', needsOnboarding ? 'true' : 'false');
+        redirectUrl.searchParams.set('isNewUser', 'false');
         redirectUrl.searchParams.set('_id', user._id.toString());
         
-        // Add age and profession if available
+        // Add optional fields if available (never required)
         if (user.age) {
           redirectUrl.searchParams.set('age', user.age.toString());
         }
@@ -700,8 +711,9 @@ export const googleAuthCallback = async (req, res) => {
         return res.redirect(`${FRONTEND_URL}/login?error=url_construction_failed&message=${encodeURIComponent('Failed to redirect after login. Please try again.')}`);
       }
     } else {
-      // CASE B: New user - create account with minimal data
+      // CASE B: New user - create account with minimal data (idempotent check prevents duplicates)
       console.log(`🆕 Creating new user: ${email}`);
+      isNewUser = true;
       try {
         user = await User.create({
           name: name || email.split('@')[0],
@@ -719,14 +731,15 @@ export const googleAuthCallback = async (req, res) => {
         console.error('   Error name:', createError.name);
         console.error('   Error message:', createError.message);
         
-        // If it's a duplicate key error (race condition - user created between checks)
+        // IDEMPOTENT: If it's a duplicate key error (race condition - user created between checks)
         if (createError.code === 11000) {
           console.error('   Duplicate key error - user might have been created by another request');
-          // Try to find the user again
-          const existingUser = await User.findOne({ googleId: googleId });
+          // Try to find the user again (idempotent - safe to retry)
+          const existingUser = await User.findOne({ $or: [{ googleId: googleId }, { email: email.toLowerCase() }] });
           
           if (existingUser) {
             console.log(`   Found existing user after duplicate error, treating as existing user`);
+            isNewUser = false;
             // Treat as existing user and redirect accordingly
             const token = jwt.sign(
               { userId: existingUser._id.toString() },
@@ -738,10 +751,12 @@ export const googleAuthCallback = async (req, res) => {
             redirectUrl.searchParams.set('status', 'existing_user');
             redirectUrl.searchParams.set('token', token);
             redirectUrl.searchParams.set('emailVerified', 'true');
-            redirectUrl.searchParams.set('name', encodeURIComponent(existingUser.name || name || ''));
-            redirectUrl.searchParams.set('email', encodeURIComponent(existingUser.email || ''));
+            redirectUrl.searchParams.set('name', encodeURIComponent(existingUser.name || name || email.split('@')[0] || 'User'));
+            redirectUrl.searchParams.set('email', encodeURIComponent(existingUser.email || email || ''));
             redirectUrl.searchParams.set('role', existingUser.role || 'user');
             redirectUrl.searchParams.set('onboardingCompleted', existingUser.onboardingCompleted === true ? 'true' : 'false');
+            redirectUrl.searchParams.set('needsOnboarding', existingUser.onboardingCompleted !== true ? 'true' : 'false');
+            redirectUrl.searchParams.set('isNewUser', 'false');
             redirectUrl.searchParams.set('_id', existingUser._id.toString());
             res.redirect(redirectUrl.toString());
             return;
@@ -765,11 +780,12 @@ export const googleAuthCallback = async (req, res) => {
         redirectUrl.searchParams.set('status', 'new_user');
         redirectUrl.searchParams.set('token', token);
         redirectUrl.searchParams.set('emailVerified', 'true');
-        redirectUrl.searchParams.set('name', encodeURIComponent(name || email.split('@')[0]));
+        redirectUrl.searchParams.set('name', encodeURIComponent(name || email.split('@')[0] || 'User'));
         redirectUrl.searchParams.set('email', encodeURIComponent(email));
         redirectUrl.searchParams.set('role', role);
         redirectUrl.searchParams.set('onboardingCompleted', 'false');
         redirectUrl.searchParams.set('needsOnboarding', 'true'); // New users always need onboarding
+        redirectUrl.searchParams.set('isNewUser', 'true');
         redirectUrl.searchParams.set('_id', user._id.toString());
         
         console.log(`✅ New user created: ${user.email}, redirecting to onboarding`);

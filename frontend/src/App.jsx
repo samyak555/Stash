@@ -32,8 +32,11 @@ function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const initializeApp = () => {
+    const initializeApp = async () => {
       try {
+        setLoading(true);
+        setError(null);
+        
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
         const isGuest = localStorage.getItem('isGuest') === 'true';
@@ -48,28 +51,49 @@ function App() {
             localStorage.removeItem('isGuest');
             localStorage.removeItem('user');
             localStorage.removeItem('guestTimestamp');
+            // Don't set error - just clear invalid data
           }
         } else if (token && userData) {
-          // Authenticated user
+          // Authenticated user - verify token is still valid
           try {
             const parsedUser = JSON.parse(userData);
             // Clear guest mode if user is authenticated
             localStorage.removeItem('isGuest');
             localStorage.removeItem('guestTimestamp');
-            setUser(parsedUser);
+            
+            // Verify user object has required fields
+            if (parsedUser && parsedUser.email) {
+              setUser(parsedUser);
+            } else {
+              // Invalid user data - force logout
+              console.warn('Invalid user data, forcing logout');
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+              setUser(null);
+            }
           } catch (parseError) {
             console.error('Error parsing user data:', parseError);
+            // Force logout on parse error
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             localStorage.removeItem('isGuest');
             localStorage.removeItem('guestTimestamp');
+            setUser(null);
           }
+        } else {
+          // No auth data - ensure clean state
+          setUser(null);
         }
-        // Always set loading to false, even if no user
-        setLoading(false);
       } catch (err) {
         console.error('App initialization error:', err);
         setError(err.message || 'Failed to initialize app');
+        // Force logout on critical error
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('isGuest');
+        setUser(null);
+      } finally {
+        // Always set loading to false
         setLoading(false);
       }
     };
@@ -116,13 +140,15 @@ function App() {
   }
 
   // Always render something - even if user is null, show login
+  // Wrap everything in ErrorBoundary for global safety
   return (
     <ErrorBoundary>
       <ExpenseProvider>
         <CardsProvider>
           <Router>
             <Toaster position="top-right" />
-            <Routes>
+            <ErrorBoundary>
+              <Routes>
         <Route
           path="/login"
           element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />}
@@ -252,7 +278,8 @@ function App() {
           }
         />
         <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
+              </Routes>
+            </ErrorBoundary>
           </Router>
         </CardsProvider>
       </ExpenseProvider>

@@ -22,23 +22,32 @@ const Settings = () => {
   });
   const [profileLoading, setProfileLoading] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // Check if user is guest
     const guestStatus = localStorage.getItem('isGuest') === 'true';
     setIsGuest(guestStatus);
     
-    // AuthGuard handles guest mode, so just load data
-    // Wrap in try-catch to prevent crashes
-    try {
-      loadSyncStatus();
-      if (!guestStatus) {
-        loadProfile();
+    // Load data with proper error handling
+    const loadData = async () => {
+      try {
+        setInitialLoading(true);
+        setError(null);
+        await Promise.all([
+          loadSyncStatus(),
+          !guestStatus ? loadProfile() : Promise.resolve()
+        ]);
+      } catch (error) {
+        console.error('Error loading settings data:', error);
+        setError('Failed to load settings. Please refresh the page.');
+      } finally {
+        setInitialLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading settings data:', error);
-      // Don't crash - just log the error
-    }
+    };
+    
+    loadData();
   }, []);
 
   const loadProfile = async () => {
@@ -223,6 +232,41 @@ const Settings = () => {
     }
   };
 
+  // Show loading state while initializing
+  if (initialLoading) {
+    return (
+      <AuthGuard requireAuth={true}>
+        <div className="min-h-screen flex items-center justify-center bg-black">
+          <div className="text-center space-y-4">
+            <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-slate-400">Loading settings...</p>
+          </div>
+        </div>
+      </AuthGuard>
+    );
+  }
+
+  // Show error state if loading failed
+  if (error) {
+    return (
+      <AuthGuard requireAuth={true}>
+        <div className="max-w-4xl mx-auto px-4 py-4 md:py-8">
+          <div className="glass-card p-8 rounded-2xl border border-red-500/20">
+            <div className="text-center">
+              <p className="text-red-400 mb-4">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
+              >
+                Refresh Page
+              </button>
+            </div>
+          </div>
+        </div>
+      </AuthGuard>
+    );
+  }
+
   return (
     <AuthGuard requireAuth={true}>
       <div className="max-w-4xl mx-auto px-4 py-4 md:py-8 space-y-6 md:space-y-10 animate-fade-in">
@@ -258,7 +302,7 @@ const Settings = () => {
               </label>
               <input
                 type="text"
-                value={profile.name}
+                value={profile.name || ''}
                 onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                 placeholder="Enter your full name"
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:bg-white/8 transition-all focus:border-cyan-400/50"
@@ -268,13 +312,13 @@ const Settings = () => {
 
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Age
+                Age (Optional)
               </label>
               <input
                 type="number"
                 min="13"
                 max="100"
-                value={profile.age}
+                value={profile.age || ''}
                 onChange={(e) => setProfile({ ...profile, age: e.target.value })}
                 placeholder="Enter your age"
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:bg-white/8 transition-all focus:border-cyan-400/50"
@@ -283,10 +327,10 @@ const Settings = () => {
 
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Profession
+                Profession (Optional)
               </label>
               <select
-                value={profile.profession}
+                value={profile.profession || ''}
                 onChange={(e) => setProfile({ ...profile, profession: e.target.value })}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:bg-white/8 transition-all focus:border-cyan-400/50"
               >
