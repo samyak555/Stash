@@ -775,28 +775,69 @@ const Dashboard = () => {
             </div>
             <h3 className="text-xl font-bold text-text-primary tracking-tight">Income vs Expenses</h3>
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="month" stroke="#9ca3af" />
-              <YAxis 
-                stroke="#9ca3af" 
-                tickFormatter={(value) => `₹${(value / 100000).toFixed(1)}L`}
-              />
-              <Tooltip
-                contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
-                itemStyle={{ color: '#fff' }}
-                formatter={(value, name) => {
-                  if (name === 'expenses') {
-                    return [`₹${(value / 100000).toFixed(2)}L (Expenditure)`, 'Expenditure'];
+          <div style={{ height: '300px' }}>
+            <Line
+              data={{
+                labels: trendData.map(d => d.month),
+                datasets: [
+                  {
+                    label: 'Income',
+                    data: trendData.map(d => d.income),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                  },
+                  {
+                    label: 'Expenses',
+                    data: trendData.map(d => d.expenses),
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    fill: true,
+                    tension: 0.4,
                   }
-                  return [`₹${value.toFixed(2)}`, name];
-                }}
-              />
-              <Area type="monotone" dataKey="income" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
-              <Area type="monotone" dataKey="expenses" stackId="2" stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} />
-            </AreaChart>
-          </ResponsiveContainer>
+                ]
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    labels: { color: '#9ca3af' }
+                  },
+                  tooltip: {
+                    backgroundColor: '#1f2937',
+                    borderColor: '#374151',
+                    borderWidth: 1,
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    callbacks: {
+                      label: (context) => {
+                        const value = context.parsed.y;
+                        if (context.datasetIndex === 1) {
+                          return `Expenditure: ₹${(value / 100000).toFixed(2)}L`;
+                        }
+                        return `${context.dataset.label}: ₹${value.toFixed(2)}`;
+                      }
+                    }
+                  }
+                },
+                scales: {
+                  x: {
+                    ticks: { color: '#9ca3af' },
+                    grid: { color: '#374151' }
+                  },
+                  y: {
+                    ticks: { 
+                      color: '#9ca3af',
+                      callback: (value) => `₹${(value / 100000).toFixed(1)}L`
+                    },
+                    grid: { color: '#374151' }
+                  }
+                }
+              }}
+            />
+          </div>
           {chartExplanations.incomeVsExpenses && (
             <p className="text-sm text-text-secondary font-normal mt-4 text-center">
               {chartExplanations.incomeVsExpenses}
