@@ -8,7 +8,6 @@ import Register from './pages/Register';
 import VerifyEmail from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import AuthCallback from './pages/AuthCallback';
 import Dashboard from './pages/Dashboard';
 import Cards from './pages/Cards';
 import Transactions from './pages/Transactions';
