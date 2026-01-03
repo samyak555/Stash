@@ -33,8 +33,13 @@ function App() {
 
   useEffect(() => {
     const initializeApp = async () => {
+      // Set a maximum timeout to ensure initialization always completes
+      const timeoutId = setTimeout(() => {
+        console.warn('App initialization timeout - forcing completion');
+        setLoading(false);
+      }, 3000); // 3 second maximum timeout
+
       try {
-        setLoading(true);
         setError(null);
         
         const token = localStorage.getItem('token');
@@ -62,7 +67,7 @@ function App() {
             localStorage.removeItem('isGuest');
             localStorage.removeItem('user');
             localStorage.removeItem('guestTimestamp');
-            // Don't set error - just clear invalid data
+            setUser(null);
           }
         } else if (token && userData) {
           // Authenticated user - verify token is still valid
@@ -115,22 +120,13 @@ function App() {
         localStorage.removeItem('isGuest');
         setUser(null);
       } finally {
-        // Always set loading to false
+        // Always clear timeout and set loading to false
+        clearTimeout(timeoutId);
         setLoading(false);
       }
     };
     
-    // Add a timeout to ensure loading state doesn't persist forever
-    const timeout = setTimeout(() => {
-      if (loading) {
-        console.warn('App initialization timeout - forcing loading to false');
-        setLoading(false);
-      }
-    }, 5000); // 5 second timeout
-    
     initializeApp();
-    
-    return () => clearTimeout(timeout);
   }, []);
 
   if (error) {
@@ -170,9 +166,7 @@ function App() {
         <CardsProvider>
           <Router>
             <Toaster position="top-right" />
-            {/* Only render routes when not loading - prevents blank screen */}
-            {!loading && (
-              <Routes>
+            <Routes>
                 <Route
                   path="/login"
                   element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />}
@@ -306,8 +300,7 @@ function App() {
                   }
                 />
                 <Route path="*" element={<Navigate to="/login" replace />} />
-              </Routes>
-            )}
+            </Routes>
           </Router>
         </CardsProvider>
       </ExpenseProvider>
