@@ -5,6 +5,13 @@
  */
 
 export const allowGuest = (req, res, next) => {
+  // Check X-Guest-Mode header first (set by frontend)
+  if (req.headers['x-guest-mode'] === 'true') {
+    req.isGuest = true;
+    req.userId = null;
+    return next();
+  }
+  
   // Check if user is authenticated
   const authHeader = req.headers.authorization;
   

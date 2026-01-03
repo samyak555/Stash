@@ -63,9 +63,18 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Body parsing middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Body parsing middleware with limits
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Guest mode middleware - check X-Guest-Mode header
+app.use((req, res, next) => {
+  if (req.headers['x-guest-mode'] === 'true') {
+    req.isGuest = true;
+    req.userId = null;
+  }
+  next();
+});
 
 // Routes - Auth routes FIRST (important for OAuth)
 app.use('/api/auth', authRoutes);

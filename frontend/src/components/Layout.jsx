@@ -89,7 +89,7 @@ const Layout = ({ children, user, setUser }) => {
         <MobileSidebar user={user} setUser={setUser} />
 
         {/* Main Content Area */}
-        <main className={`flex-1 md:ml-60 min-h-screen relative z-10 ${isGuest ? 'pt-12' : 'pt-0'}`}>
+        <main className={`flex-1 md:ml-60 min-h-screen relative z-10 ${isGuest ? 'pt-8 md:pt-12' : 'pt-0'}`}>
           <div className="p-4 sm:p-6 md:p-8 lg:p-10">
             <div className="max-w-7xl mx-auto">
               {children}

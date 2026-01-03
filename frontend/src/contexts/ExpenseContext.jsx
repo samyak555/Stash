@@ -13,6 +13,11 @@ export const ExpenseProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await expenseAPI.getAll();
+      // Handle guest mode or network errors gracefully
+      if (response?.isGuest || response?.networkError) {
+        setExpenses([]);
+        return [];
+      }
       setExpenses(response.data || []);
       return response.data || [];
     } catch (error) {
@@ -58,6 +63,7 @@ export const useExpenses = () => {
   }
   return context;
 };
+
 
 
 

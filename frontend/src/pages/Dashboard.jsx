@@ -96,6 +96,11 @@ const Dashboard = () => {
   const fetchIncomes = async () => {
     try {
       const response = await incomeAPI.getAll();
+      // Handle guest mode or network errors gracefully
+      if (response?.isGuest || response?.networkError) {
+        setIncomes([]);
+        return;
+      }
       setIncomes(response.data || []);
     } catch (error) {
       console.error('Failed to fetch incomes:', error);

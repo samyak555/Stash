@@ -7,15 +7,26 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 second timeout
+  timeoutErrorMessage: 'Request timed out. Please check your connection.',
 });
 
 // Add token to requests
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    if (token) {
+    const isGuest = localStorage.getItem('isGuest') === 'true';
+    
+    // For guest mode, don't send auth token but allow read-only requests
+    if (token && !isGuest) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Add guest mode header for backend to handle gracefully
+    if (isGuest) {
+      config.headers['X-Guest-Mode'] = 'true';
+    }
+    
     return config;
   },
   (error) => {
@@ -23,12 +34,21 @@ api.interceptors.request.use(
   }
 );
 
-// Handle auth errors
+// Handle auth errors and network issues
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Only redirect on 401 if we're not already on login page
-    if (error.response?.status === 401 && !window.location.pathname.includes('/login')) {
+    const isGuest = localStorage.getItem('isGuest') === 'true';
+    
+    // For guest mode, allow 401/403 errors gracefully (read-only mode)
+    if (isGuest && (error.response?.status === 401 || error.response?.status === 403)) {
+      console.warn('Guest mode: API request requires authentication');
+      // Return empty data instead of rejecting for guest mode
+      return Promise.resolve({ data: null, isGuest: true });
+    }
+    
+    // Only redirect on 401 if authenticated user and not on login page
+    if (error.response?.status === 401 && !isGuest && !window.location.pathname.includes('/login')) {
       try {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -37,10 +57,16 @@ api.interceptors.response.use(
         console.error('Error handling 401:', e);
       }
     }
-    // Don't reject network errors in production - let components handle them
-    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.warn('Network error - backend may be unavailable');
+    
+    // Handle network errors gracefully
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error' || error.code === 'ECONNABORTED') {
+      console.warn('Network error - backend may be unavailable:', error.message);
+      // For guest mode, return empty data instead of error
+      if (isGuest) {
+        return Promise.resolve({ data: null, isGuest: true, networkError: true });
+      }
     }
+    
     return Promise.reject(error);
   }
 );
