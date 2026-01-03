@@ -107,20 +107,22 @@ const AuthCallback = ({ setUser }) => {
         const name = searchParams.get('name');
         const email = searchParams.get('email');
         const role = searchParams.get('role') || 'user';
-        const onboardingCompleted = searchParams.get('onboardingCompleted') === 'true';
+        // Safely parse onboardingCompleted - default to false if not present
+        const onboardingCompletedParam = searchParams.get('onboardingCompleted');
+        const onboardingCompleted = onboardingCompletedParam === 'true';
         const userId = searchParams.get('_id');
         const message = searchParams.get('message');
         const age = searchParams.get('age');
         const profession = searchParams.get('profession');
 
-        // Construct user data from URL params
+        // Construct user data from URL params - ensure all fields have defaults
         const userData = {
           _id: userId,
           name: name ? decodeURIComponent(name) : '',
           email: email ? decodeURIComponent(email) : '',
           emailVerified: emailVerified === 'true',
           role: role,
-          onboardingCompleted: onboardingCompleted,
+          onboardingCompleted: onboardingCompleted || false, // Always default to false
           age: age ? parseInt(age) : undefined,
           profession: profession ? decodeURIComponent(profession) : undefined,
         };

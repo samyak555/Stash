@@ -603,30 +603,53 @@ export const googleAuthCallback = async (req, res) => {
     }
 
     if (user) {
-      // Existing user - update if needed
+      // Existing user - update if needed and repair missing fields
       console.log(`✅ Found existing user: ${user.email} (ID: ${user._id})`);
       
       try {
-        if (!user.emailVerified) {
+        // Repair missing fields - defensive handling for corrupted/outdated records
+        if (user.emailVerified === undefined || user.emailVerified === null) {
+          user.emailVerified = true; // Google emails are pre-verified
+        } else if (!user.emailVerified) {
           user.emailVerified = true; // Google emails are pre-verified
         }
+        
         if (user.role !== role) {
           user.role = role;
         }
+        
         if (!user.googleId) {
           user.googleId = googleId; // Link Google ID if missing
           console.log(`   Linking Google ID to existing user`);
         }
+        
         if (!user.authProvider || user.authProvider !== 'google') {
           user.authProvider = 'google';
         }
+        
+        // Ensure onboardingCompleted exists (default false)
+        if (user.onboardingCompleted === undefined || user.onboardingCompleted === null) {
+          user.onboardingCompleted = false;
+          console.log(`   Repairing: Set onboardingCompleted to false`);
+        }
+        
+        // Ensure expensesCompleted exists (default false)
+        if (user.expensesCompleted === undefined || user.expensesCompleted === null) {
+          user.expensesCompleted = false;
+        }
+        
+        // Ensure goalsCompleted exists (default false)
+        if (user.goalsCompleted === undefined || user.goalsCompleted === null) {
+          user.goalsCompleted = false;
+        }
+        
         // Update name if Google provides a better one
         if (name && (!user.name || user.name === email.split('@')[0])) {
           user.name = name;
         }
         
-        // Save user updates
-        await user.save();
+        // Save user updates (use save with validation disabled if needed for repair)
+        await user.save({ validateBeforeSave: true });
         console.log(`✅ Successfully updated existing user: ${user.email}`);
       } catch (saveError) {
         console.error('❌ Error saving existing user:', saveError);

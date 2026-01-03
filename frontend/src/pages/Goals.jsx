@@ -10,6 +10,7 @@ const Goals = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
+  const [isGuest, setIsGuest] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     targetAmount: '',
@@ -18,7 +19,16 @@ const Goals = () => {
   });
 
   useEffect(() => {
-    fetchGoals();
+    // Check guest mode
+    const guestStatus = localStorage.getItem('isGuest') === 'true';
+    setIsGuest(guestStatus);
+    
+    // Only fetch goals if not guest
+    if (!guestStatus) {
+      fetchGoals();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const fetchGoals = async () => {
@@ -111,6 +121,24 @@ const Goals = () => {
     if (deadline < now) return { status: 'expired', color: 'red', text: 'Expired' };
     return { status: 'active', color: 'blue', text: 'Active' };
   };
+
+  // Show sign-in prompt for guest users
+  if (isGuest) {
+    return (
+      <div className="px-4 py-8 flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-4 max-w-md">
+          <h2 className="text-2xl font-bold text-white">Sign In Required</h2>
+          <p className="text-slate-400">Please sign in with Google to access your Goals.</p>
+          <button
+            onClick={() => window.location.href = '/login'}
+            className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return <div className="text-center py-8 text-white">Loading goals...</div>;
