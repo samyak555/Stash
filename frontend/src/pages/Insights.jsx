@@ -133,7 +133,7 @@ const Insights = () => {
           <div className="text-center py-12">
             <InsightsIcon className="w-16 h-16 text-slate-500 mx-auto mb-4" />
             <p className="text-slate-400 text-lg font-normal">No insights available yet</p>
-            <p className="text-slate-500 text-sm mt-2 font-normal">Add expenses and income to get AI-powered insights</p>
+            <p className="text-slate-500 text-sm mt-2 font-normal">Add expenses and income to get Stash-powered insights</p>
           </div>
         )}
       </div>

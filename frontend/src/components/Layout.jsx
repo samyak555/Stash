@@ -77,7 +77,7 @@ const Layout = ({ children, user, setUser }) => {
       {/* Top Navigation Bar */}
       <TopNav user={user} setUser={setUser} />
       
-      <div className="flex flex-1 pt-12 md:pt-14">
+      <div className="flex flex-1 pt-14 md:pt-16">
         {/* Left Sidebar - Hidden on mobile, visible on desktop */}
         <div className="hidden md:block">
           <Sidebar user={user} setUser={setUser} />

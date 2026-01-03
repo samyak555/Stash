@@ -12,6 +12,7 @@ import Button from '../components/ui/Button';
 import AddCardModal from '../components/AddCardModal';
 import { formatIncome, formatExpense } from '../utils/formatDisplayValue';
 import LoadingDots from '../components/LoadingDots';
+import GuestCTABanner from '../components/GuestCTABanner';
 
 const Dashboard = () => {
   const { expenses, refreshTrigger, fetchExpenses } = useExpenses();

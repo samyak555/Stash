@@ -72,7 +72,7 @@ const Login = ({ setUser }) => {
    * Sets guest mode in localStorage and navigates to app
    */
   const handleGuestMode = () => {
-    // Set guest mode
+    // Set guest mode with timestamp for auto-expiry
     const guestUser = {
       isGuest: true,
       name: 'Guest',
@@ -83,6 +83,7 @@ const Login = ({ setUser }) => {
     
     localStorage.setItem('isGuest', 'true');
     localStorage.setItem('user', JSON.stringify(guestUser));
+    localStorage.setItem('guestTimestamp', Date.now().toString()); // Store timestamp for auto-expiry
     setUser(guestUser);
     
     toast.success('Welcome! You\'re browsing in guest mode. Sign in to save your data.', {
