@@ -26,23 +26,19 @@ window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled promise rejection:', event.reason);
 });
 
-// Render app with error handling
+// CRITICAL: Render app with maximum safety - guarantee render even if auth data is partial
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   document.body.innerHTML = '<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; color: #fff; font-family: sans-serif;"><div style="text-align: center;"><h1 style="font-size: 24px; margin-bottom: 16px;">Root element not found</h1></div></div>';
 } else {
   try {
     const root = ReactDOM.createRoot(rootElement);
-    // CRITICAL: Do not use StrictMode in production - it can cause CSP issues
-    // StrictMode uses eval() for development warnings
-    const isProduction = import.meta.env.PROD;
-    if (isProduction) {
-      root.render(<App />);
-    } else {
-      root.render(<React.StrictMode><App /></React.StrictMode>);
-    }
+    // CRITICAL: Never use StrictMode - it can cause CSP issues
+    // Always render App directly - no StrictMode wrapper
+    root.render(<App />);
   } catch (error) {
     console.error('Failed to render app:', error);
+    // Fallback UI if React fails to mount
     rootElement.innerHTML = `
       <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; color: #fff; font-family: sans-serif; padding: 20px;">
         <div style="text-align: center; max-width: 600px;">

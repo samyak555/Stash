@@ -31,7 +31,18 @@ const PORT = process.env.PORT || 5000;
 
 // Security middleware (Helmet)
 app.use(helmet({
-  contentSecurityPolicy: false, // Disable CSP for API
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://accounts.google.com", "https://apis.google.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https://*.onrender.com", "https://*.vercel.app", "http://localhost:*", "ws://localhost:*", "wss://localhost:*"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+    },
+  },
   crossOriginEmbedderPolicy: false,
 }));
 

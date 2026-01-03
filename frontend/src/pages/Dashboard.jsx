@@ -549,12 +549,12 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Header */}
-      <div className="mb-12">
+      {/* Header - Proper spacing from TopNav to prevent collision */}
+      <div className="mb-12 pt-4">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
           <div className="space-y-3">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gradient-brand tracking-tight">Dashboard</h1>
-            <p className="text-text-secondary text-lg font-normal">Your financial overview at a glance</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gradient-brand tracking-tight">Dashboard</h1>
+            <p className="text-text-secondary text-base sm:text-lg font-normal">Your financial overview at a glance</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <select

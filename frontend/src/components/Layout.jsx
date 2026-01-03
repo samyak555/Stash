@@ -99,9 +99,9 @@ const Layout = ({ children, user, setUser }) => {
         {/* Mobile Sidebar - Sliding menu */}
         <MobileSidebar user={user} setUser={setUser} />
 
-        {/* Main Content Area */}
+        {/* Main Content Area - Proper spacing to prevent collision with TopNav */}
         <main className="flex-1 md:ml-60 min-h-screen relative z-10">
-          <div className="p-4 sm:p-6 md:p-8 lg:p-10">
+          <div className="p-4 sm:p-6 md:p-8 lg:p-10 pt-6 sm:pt-8 md:pt-10">
             <div className="max-w-7xl mx-auto">
               {/* Guest Mode Banner */}
               {isGuest && <GuestCTABanner />}
