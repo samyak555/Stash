@@ -61,9 +61,20 @@ function App() {
             localStorage.removeItem('isGuest');
             localStorage.removeItem('guestTimestamp');
             
-            // Verify user object has required fields
+            // Verify user object has required fields and normalize
             if (parsedUser && parsedUser.email) {
-              setUser(parsedUser);
+              // Normalize user object with safe defaults to prevent blank screen
+              const normalizedUser = {
+                _id: parsedUser._id || '',
+                name: parsedUser.name || parsedUser.email.split('@')[0] || 'User',
+                email: parsedUser.email,
+                emailVerified: parsedUser.emailVerified === true,
+                role: parsedUser.role || 'user',
+                onboardingCompleted: parsedUser.onboardingCompleted === true, // Always boolean
+                age: parsedUser.age || null,
+                profession: parsedUser.profession || null,
+              };
+              setUser(normalizedUser);
             } else {
               // Invalid user data - force logout
               console.warn('Invalid user data, forcing logout');
