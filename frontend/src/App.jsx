@@ -41,11 +41,6 @@ function App() {
       try {
         setError(null);
         
-        // Handle OAuth token from URL query params (redirect from backend)
-        const urlParams = new URLSearchParams(window.location.search);
-        const tokenFromUrl = urlParams.get('token');
-        const statusFromUrl = urlParams.get('status');
-        
         // Handle OAuth token from URL query params FIRST (before localStorage check)
         const urlParams = new URLSearchParams(window.location.search);
         const tokenFromUrl = urlParams.get('token');
