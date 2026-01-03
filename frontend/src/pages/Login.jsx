@@ -21,15 +21,28 @@ const Login = ({ setUser }) => {
     const error = params.get('error');
     
     if (message) {
-      toast.success(message);
+      toast.success(decodeURIComponent(message));
       // Clean URL
       window.history.replaceState({}, '', '/login');
     }
     if (error) {
+      // Get detailed error message from URL if available
+      const errorMessage = params.get('message') || '';
+      const decodedMessage = errorMessage ? decodeURIComponent(errorMessage) : '';
+      
+      // Show specific error messages
       if (error === 'account_deletion_failed') {
         toast.error('Failed to delete account. Please try again.');
+      } else if (error === 'user_creation_failed') {
+        toast.error(decodedMessage || 'Failed to create account. Please try again.');
+      } else if (error === 'oauth_failed') {
+        toast.error(decodedMessage || 'Google authentication failed. Please try again.');
+      } else if (error === 'token_exchange_failed') {
+        toast.error('Authentication code expired. Please try signing in again.');
+      } else if (error === 'email_not_verified') {
+        toast.error('Please verify your Google account email and try again.');
       } else {
-        toast.error('Authentication failed');
+        toast.error(decodedMessage || 'Authentication failed. Please try again.');
       }
       // Clean URL
       window.history.replaceState({}, '', '/login');
