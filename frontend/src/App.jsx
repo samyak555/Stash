@@ -102,10 +102,10 @@ function App() {
   }
 
   return (
-    <ErrorBoundary>
-      <ExpenseProvider>
-        <CardsProvider>
-          <Router>
+    <ExpenseProvider>
+      <CardsProvider>
+        <Router>
+          <ErrorBoundary>
             <Toaster position="top-right" />
             <Routes>
         <Route
@@ -238,10 +238,10 @@ function App() {
         />
         <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
+          </ErrorBoundary>
         </Router>
       </CardsProvider>
     </ExpenseProvider>
-    </ErrorBoundary>
   );
 }
 

@@ -1,10 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 /**
  * Error Boundary Component
  * Catches JavaScript errors anywhere in the child component tree
  * and displays a fallback UI instead of crashing the entire app
+ * Note: Uses window.location for navigation to avoid Router context dependency
  */
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -77,12 +77,12 @@ class ErrorBoundary extends React.Component {
               </div>
 
               <div className="mt-6 pt-6 border-t border-white/10">
-                <Link
-                  to="/login"
-                  className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+                <button
+                  onClick={() => window.location.href = '/login'}
+                  className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors underline"
                 >
                   Back to Login
-                </Link>
+                </button>
               </div>
             </div>
           </div>
