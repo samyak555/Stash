@@ -1,6 +1,73 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://stash-backend-4wty.onrender.com/api';
+
+// Circuit Breaker Pattern
+class CircuitBreaker {
+  constructor(threshold = 5, timeout = 60000) {
+    this.failureCount = 0;
+    this.threshold = threshold;
+    this.timeout = timeout;
+    this.state = 'CLOSED'; // CLOSED, OPEN, HALF_OPEN
+    this.nextAttempt = Date.now();
+  }
+
+  async execute(fn) {
+    if (this.state === 'OPEN') {
+      if (Date.now() < this.nextAttempt) {
+        throw new Error('Circuit breaker is OPEN. Service unavailable.');
+      }
+      this.state = 'HALF_OPEN';
+    }
+
+    try {
+      const result = await fn();
+      this.onSuccess();
+      return result;
+    } catch (error) {
+      this.onFailure();
+      throw error;
+    }
+  }
+
+  onSuccess() {
+    this.failureCount = 0;
+    this.state = 'CLOSED';
+  }
+
+  onFailure() {
+    this.failureCount++;
+    if (this.failureCount >= this.threshold) {
+      this.state = 'OPEN';
+      this.nextAttempt = Date.now() + this.timeout;
+      console.warn('Circuit breaker OPEN - too many failures');
+    }
+  }
+}
+
+// Retry logic with exponential backoff
+const retryRequest = async (fn, retries = 3, delay = 1000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      
+      // Don't retry on 4xx errors (client errors)
+      if (error.response?.status >= 400 && error.response?.status < 500) {
+        throw error;
+      }
+      
+      // Exponential backoff: 1s, 2s, 4s
+      const waitTime = delay * Math.pow(2, i);
+      console.warn(`Request failed, retrying in ${waitTime}ms... (${i + 1}/${retries})`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
+};
+
+// Create circuit breaker instance
+const circuitBreaker = new CircuitBreaker(5, 60000); // 5 failures, 60s timeout
 
 const api = axios.create({
   baseURL: API_URL,
@@ -34,16 +101,46 @@ api.interceptors.request.use(
   }
 );
 
-// Handle auth errors and network issues
+// Handle auth errors and network issues with retry logic
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const isGuest = localStorage.getItem('isGuest') === 'true';
+    const originalRequest = error.config;
+    
+    // Skip retry if already retried or if it's a non-retryable error
+    const shouldRetry = 
+      !originalRequest._retry &&
+      error.code !== 'ERR_CANCELED' &&
+      !(error.response?.status >= 400 && error.response?.status < 500 && error.response?.status !== 408);
+    
+    // Retry logic for network errors and timeouts
+    if (shouldRetry && (
+      error.code === 'ERR_NETWORK' || 
+      error.code === 'ECONNABORTED' || 
+      error.message === 'Network Error' ||
+      error.response?.status === 408 ||
+      error.response?.status >= 500
+    )) {
+      originalRequest._retry = true;
+      
+      try {
+        // Use circuit breaker and retry
+        return await circuitBreaker.execute(() => 
+          retryRequest(() => api(originalRequest), 3, 1000)
+        );
+      } catch (retryError) {
+        // If retry fails, handle gracefully
+        if (isGuest) {
+          return Promise.resolve({ data: null, isGuest: true, networkError: true });
+        }
+        throw retryError;
+      }
+    }
     
     // For guest mode, allow 401/403 errors gracefully (read-only mode)
     if (isGuest && (error.response?.status === 401 || error.response?.status === 403)) {
       console.warn('Guest mode: API request requires authentication');
-      // Return empty data instead of rejecting for guest mode
       return Promise.resolve({ data: null, isGuest: true });
     }
     
@@ -61,7 +158,6 @@ api.interceptors.response.use(
     // Handle network errors gracefully
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error' || error.code === 'ECONNABORTED') {
       console.warn('Network error - backend may be unavailable:', error.message);
-      // For guest mode, return empty data instead of error
       if (isGuest) {
         return Promise.resolve({ data: null, isGuest: true, networkError: true });
       }

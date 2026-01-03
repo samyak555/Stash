@@ -37,32 +37,51 @@ const Login = ({ setUser }) => {
   }, []);
 
   /**
-   * Handle Google Sign-In
+   * Handle Google Sign-In with retry logic
    * Redirects to backend OAuth endpoint (Authorization Code Flow)
    */
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     
     try {
-      // Get backend URL
+      // Get backend URL with fallback
       const API_URL = import.meta.env.VITE_API_URL;
       
       let backendBaseUrl;
       if (API_URL) {
         backendBaseUrl = API_URL.replace('/api', '');
       } else {
+        // Production default
         backendBaseUrl = 'https://stash-backend-4wty.onrender.com';
       }
+      
+      // Ensure no trailing slash
+      backendBaseUrl = backendBaseUrl.replace(/\/$/, '');
       
       const oauthUrl = `${backendBaseUrl}/api/auth/google`;
       
       console.log('🔐 Redirecting to Google OAuth:', oauthUrl);
       
+      // Test backend connectivity first (non-blocking)
+      try {
+        const healthCheck = await fetch(`${backendBaseUrl}/ping`, { 
+          method: 'GET',
+          signal: AbortSignal.timeout(3000) // 3 second timeout
+        });
+        if (!healthCheck.ok) {
+          console.warn('⚠️ Backend health check failed, but proceeding with OAuth');
+        }
+      } catch (healthError) {
+        console.warn('⚠️ Backend health check timeout, but proceeding with OAuth');
+      }
+      
       // Redirect to backend OAuth endpoint
       window.location.href = oauthUrl;
     } catch (error) {
       console.error('❌ Google sign-in error:', error);
-      toast.error('Failed to initiate Google sign-in. Please try again.');
+      toast.error('Failed to initiate Google sign-in. Please check your connection and try again.', {
+        duration: 5000,
+      });
       setGoogleLoading(false);
     }
   };

@@ -24,6 +24,7 @@ import TermsOfService from './pages/TermsOfService';
 import DataDeletionPolicy from './pages/DataDeletionPolicy';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -101,11 +102,12 @@ function App() {
   }
 
   return (
-    <ExpenseProvider>
-      <CardsProvider>
-        <Router>
-          <Toaster position="top-right" />
-          <Routes>
+    <ErrorBoundary>
+      <ExpenseProvider>
+        <CardsProvider>
+          <Router>
+            <Toaster position="top-right" />
+            <Routes>
         <Route
           path="/login"
           element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />}
@@ -239,6 +241,7 @@ function App() {
         </Router>
       </CardsProvider>
     </ExpenseProvider>
+    </ErrorBoundary>
   );
 }
 
