@@ -24,6 +24,7 @@ import userRoutes from './routes/userRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import testRoutes from './routes/testRoutes.js';
 import onboardingRoutes from './routes/onboardingRoutes.js';
+import transactionRoutes from './routes/transactionRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -123,6 +124,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/onboarding', onboardingRoutes);
+app.use('/api/transactions', transactionRoutes);
 
 // Error handling middleware - Production-ready (no stack traces)
 app.use((err, req, res, next) => {

@@ -159,19 +159,30 @@ const Settings = () => {
       const token = localStorage.getItem('token');
       if (!token) {
         // No token, set default sync status
-        setSyncStatus({ connected: false });
+        setSyncStatus({ connected: false, email: null, lastSync: null });
         return;
       }
 
-      const res = await transactionAPI.getSyncStatus();
-      setSyncStatus(res.data);
-      if (res.data?.email) {
-        setEmail(res.data.email);
+      try {
+        const res = await transactionAPI.getSyncStatus();
+        if (res && res.data) {
+          setSyncStatus(res.data);
+          if (res.data?.email) {
+            setEmail(res.data.email);
+          }
+        } else {
+          // No data returned, set default
+          setSyncStatus({ connected: false, email: null, lastSync: null });
+        }
+      } catch (apiError) {
+        // API call failed - set default status (feature might not be implemented yet)
+        console.warn('Sync status API not available:', apiError);
+        setSyncStatus({ connected: false, email: null, lastSync: null });
       }
     } catch (error) {
       console.error('Failed to load sync status:', error);
-      // Set default sync status on error
-      setSyncStatus({ connected: false });
+      // Set default sync status on error - never crash
+      setSyncStatus({ connected: false, email: null, lastSync: null });
     }
   };
 
