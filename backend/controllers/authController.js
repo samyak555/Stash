@@ -694,7 +694,10 @@ export const googleAuthCallback = async (req, res) => {
         return;
       } catch (urlError) {
         console.error('❌ Error constructing redirect URL:', urlError);
-        return res.redirect(`${FRONTEND_URL}/login?error=url_construction_failed`);
+        console.error('   User email:', user.email);
+        console.error('   User ID:', user._id);
+        console.error('   Frontend URL:', FRONTEND_URL);
+        return res.redirect(`${FRONTEND_URL}/login?error=url_construction_failed&message=${encodeURIComponent('Failed to redirect after login. Please try again.')}`);
       }
     } else {
       // CASE B: New user - create account with minimal data
