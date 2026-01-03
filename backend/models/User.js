@@ -51,6 +51,9 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true, // Allow multiple nulls but enforce uniqueness when present
     index: true,
+    required: function() {
+      return this.authProvider === 'google';
+    },
   },
   role: {
     type: String,
