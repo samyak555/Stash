@@ -54,6 +54,9 @@ const AuthCallback = ({ setUser }) => {
             case 'oauth_init_failed':
               errorMessage = 'Failed to initiate Google OAuth. Please try again.';
               break;
+            case 'oauth_not_configured':
+              errorMessage = 'Google OAuth is not configured. Please contact support.';
+              break;
             case 'server_config_error':
               errorMessage = 'Server configuration error. Please contact support.';
               break;
