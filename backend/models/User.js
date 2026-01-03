@@ -48,8 +48,9 @@ const userSchema = new mongoose.Schema({
   },
   googleId: {
     type: String,
-    default: null,
-    sparse: true, // Allow multiple nulls
+    unique: true,
+    sparse: true, // Allow multiple nulls but enforce uniqueness when present
+    index: true,
   },
   role: {
     type: String,
@@ -64,6 +65,9 @@ const userSchema = new mongoose.Schema({
     type: Number,
     min: 13,
     max: 100,
+    required: function() {
+      return this.authProvider === 'google' && !this.onboardingCompleted;
+    },
   },
   profession: {
     type: String,
@@ -76,6 +80,9 @@ const userSchema = new mongoose.Schema({
       'Retired',
       'Other',
     ],
+    required: function() {
+      return this.authProvider === 'google' && !this.onboardingCompleted;
+    },
   },
   monthlyIncome: {
     type: Number,

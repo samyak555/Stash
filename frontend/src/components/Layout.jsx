@@ -27,15 +27,18 @@ const Layout = ({ children, user, setUser }) => {
     }
     
     // Show first-time onboarding (Name, Age, Profession) if onboarding not completed
+    // BLOCK dashboard access until mandatory fields are filled
     if (!localOnboardingCompleted && !backendOnboardingCompleted && user) {
       // Check if user has name, age, and profession - if not, show first-time onboarding
       if (!user.name || !user.age || !user.profession) {
         setShowFirstTimeOnboarding(true);
         setShowOnboarding(false);
+        return; // Block dashboard access
       } else {
         // User has basic info but onboarding not marked complete - show full onboarding
         setShowFirstTimeOnboarding(false);
         setShowOnboarding(true);
+        return; // Block dashboard access
       }
     } else {
       // If onboarding is completed, ensure localStorage is synced

@@ -52,8 +52,9 @@ router.post('/reset-password', (req, res) => {
 // ============================================
 
 // Google OAuth 2.0 Authorization Code Flow
-router.get('/google', googleAuthInitiate);
-router.get('/google/callback', googleAuthCallback);
+// Google OAuth routes with rate limiting
+router.get('/google', authRateLimiter, googleAuthInitiate);
+router.get('/google/callback', authRateLimiter, googleAuthCallback);
 
 // Google OAuth - Direct ID token verification (for frontend button)
 router.post('/google', authRateLimiter, googleAuth);

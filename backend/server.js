@@ -98,11 +98,15 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Error handling middleware
+// Error handling middleware - Production-ready (no stack traces)
 app.use((err, req, res, next) => {
   console.error('Error:', err.message);
+  // Don't expose stack traces to client in production
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  
   res.status(err.status || 500).json({
-    message: err.message || 'Internal server error'
+    message: err.message || 'Internal server error',
+    ...(isDevelopment && { stack: err.stack }) // Only show stack in development
   });
 });
 

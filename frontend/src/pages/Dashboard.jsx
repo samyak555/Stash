@@ -12,7 +12,6 @@ import Button from '../components/ui/Button';
 import AddCardModal from '../components/AddCardModal';
 import { formatIncome, formatExpense } from '../utils/formatDisplayValue';
 import LoadingDots from '../components/LoadingDots';
-import GuestCTABanner from '../components/GuestCTABanner';
 
 const Dashboard = () => {
   const { expenses, refreshTrigger, fetchExpenses } = useExpenses();
@@ -488,9 +487,6 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8">
-      {/* Guest CTA Banner */}
-      <GuestCTABanner />
-      
       {!dashboardData && (
         <div className="text-center py-12 mb-8">
           <Logo size="xl" showText={true} className="justify-center mb-6" />

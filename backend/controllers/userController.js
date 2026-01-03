@@ -1,4 +1,6 @@
 import User from '../models/User.js';
+import Transaction from '../models/Transaction.js';
+import Goal from '../models/Goal.js';
 
 export const getAllUsers = async (req, res) => {
   try {
@@ -133,40 +135,45 @@ export const deleteAccount = async (req, res) => {
       return res.status(403).json({ message: 'Account deletion is only available for Google-authenticated users' });
     }
 
-    // Delete all user-related data from fileDB
-    const fileDB = (await import('../utils/fileDB.js')).default;
+    // Delete all user-related data from MongoDB
+    // Delete transactions
+    await Transaction.deleteMany({ userId: userId });
     
-    // Delete expenses
-    const expenses = fileDB.findExpenses({ user: userId });
-    expenses.forEach(expense => {
-      fileDB.deleteExpense(expense._id);
-    });
-
-    // Delete income
-    const incomes = fileDB.findIncomes({ user: userId });
-    incomes.forEach(income => {
-      fileDB.deleteIncome(income._id);
-    });
-
     // Delete goals
-    const goals = fileDB.findGoals({ user: userId });
-    goals.forEach(goal => {
-      fileDB.deleteGoal(goal._id);
-    });
+    await Goal.deleteMany({ userId: userId });
 
-    // Delete budgets (if deleteBudget method exists)
-    const budgets = fileDB.findBudgets({ user: userId });
-    if (fileDB.deleteBudget) {
-      budgets.forEach(budget => {
-        fileDB.deleteBudget(budget._id);
+    // Also delete from fileDB (for backward compatibility during migration)
+    try {
+      const fileDB = (await import('../utils/fileDB.js')).default;
+      
+      // Delete expenses
+      const expenses = fileDB.findExpenses({ user: userId });
+      expenses.forEach(expense => {
+        fileDB.deleteExpense(expense._id);
       });
-    } else {
-      // If no deleteBudget method, filter out budgets
-      const db = fileDB.readDB ? fileDB.readDB() : null;
-      if (db && db.budgets) {
-        db.budgets = db.budgets.filter(b => b.user !== userId);
-        if (fileDB.writeDB) fileDB.writeDB(db);
+
+      // Delete income
+      const incomes = fileDB.findIncomes({ user: userId });
+      incomes.forEach(income => {
+        fileDB.deleteIncome(income._id);
+      });
+
+      // Delete goals (fileDB)
+      const goals = fileDB.findGoals({ user: userId });
+      goals.forEach(goal => {
+        fileDB.deleteGoal(goal._id);
+      });
+
+      // Delete budgets
+      const budgets = fileDB.findBudgets({ user: userId });
+      if (fileDB.deleteBudget) {
+        budgets.forEach(budget => {
+          fileDB.deleteBudget(budget._id);
+        });
       }
+    } catch (fileDBError) {
+      // FileDB deletion is optional - log but don't fail
+      console.warn('FileDB cleanup warning:', fileDBError.message);
     }
 
     // Delete user from MongoDB
