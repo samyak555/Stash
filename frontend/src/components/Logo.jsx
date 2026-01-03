@@ -4,19 +4,19 @@ import React from 'react';
 import logoSrc from '../assets/logo/logo.png';
 import iconSrc from '../assets/logo/icon.png';
 
-const Logo = ({ size = 'default', className = '', showText = true, iconOnly = false, authPage = false }) => {
+const Logo = ({ size = 'default', className = '', showText = true, iconOnly = false, authPage = false, fullPage = false }) => {
   const sizeClasses = {
-    small: 'w-12 h-12',
-    default: 'w-16 h-16',
-    large: 'w-24 h-24',
-    xl: 'w-36 h-36',
-    'auth-large': 'w-32 h-32 md:w-40 md:h-40', // 1.5-2x larger for auth pages
+    small: 'w-8 h-8',
+    default: 'w-12 h-12 sm:w-16 sm:h-16',
+    large: 'w-20 h-20 sm:w-24 sm:h-24',
+    xl: 'w-32 h-32 sm:w-36 sm:h-36',
+    'auth-large': 'w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40', // Responsive for auth pages
   };
 
   const imageSrc = iconOnly ? iconSrc : logoSrc;
   const logoSize = authPage ? sizeClasses['auth-large'] : (sizeClasses[size] || sizeClasses.default);
-  const textSize = authPage ? 'text-3xl md:text-4xl font-bold' : 'text-lg font-semibold';
-  const spacing = authPage ? 'space-x-4 md:space-x-5' : 'space-x-4';
+  const textSize = authPage ? 'text-2xl sm:text-3xl md:text-4xl font-bold' : 'text-base sm:text-lg font-semibold';
+  const spacing = authPage ? 'space-x-2 sm:space-x-4 md:space-x-5' : 'space-x-2 sm:space-x-4';
 
   return (
     <div className={`flex items-center ${showText ? spacing : ''} ${className}`} style={{ background: 'transparent' }}>

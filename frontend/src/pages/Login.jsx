@@ -115,18 +115,27 @@ const Login = ({ setUser }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-black relative overflow-hidden">
-      {/* Auth Header with Large Logo */}
-      <header className="absolute top-0 left-0 right-0 z-20 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+      {/* Auth Header with Large Logo - Hidden on mobile, shown on larger screens */}
+      <header className="hidden sm:block absolute top-0 left-0 right-0 z-20 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
         <div className="max-w-7xl mx-auto">
           <Logo authPage={true} showText={true} />
         </div>
       </header>
       
-      {/* Full Page Logo Background */}
-      <Logo fullPage={true} />
+      {/* Mobile Header - Smaller, simpler logo */}
+      <header className="sm:hidden absolute top-0 left-0 right-0 z-20 px-4 pt-4">
+        <div className="flex items-center justify-center">
+          <Logo size="default" showText={true} className="scale-90" />
+        </div>
+      </header>
+      
+      {/* Full Page Logo Background - Hidden on mobile to prevent collision */}
+      <div className="hidden sm:block absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none z-0">
+        <Logo size="xl" showText={false} />
+      </div>
       
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="flex-1 flex items-center justify-center py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative z-10 mt-16 sm:mt-0">
         <div className="w-full max-w-[400px] space-y-8 animate-fade-in">
           {/* Header */}
           <div className="text-center animate-slide-up space-y-3">
