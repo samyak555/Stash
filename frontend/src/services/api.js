@@ -1,6 +1,12 @@
 import axios from 'axios';
 
+// Get API URL from environment or use default
 const API_URL = import.meta.env.VITE_API_URL || 'https://stash-backend-4wty.onrender.com/api';
+
+// Log API URL in development for debugging
+if (import.meta.env.DEV) {
+  console.log('🔗 API URL:', API_URL);
+}
 
 // Circuit Breaker Pattern
 class CircuitBreaker {
