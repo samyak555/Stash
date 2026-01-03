@@ -735,7 +735,9 @@ export const googleAuthCallback = async (req, res) => {
       redirectUrl.searchParams.set('name', encodeURIComponent(user.name || ''));
       redirectUrl.searchParams.set('email', encodeURIComponent(user.email || ''));
       redirectUrl.searchParams.set('role', user.role || 'user');
-      redirectUrl.searchParams.set('onboardingCompleted', user.onboardingCompleted ? 'true' : 'false');
+      // Ensure onboardingCompleted is always defined (default false)
+      const onboardingCompleted = user.onboardingCompleted === true;
+      redirectUrl.searchParams.set('onboardingCompleted', onboardingCompleted ? 'true' : 'false');
       redirectUrl.searchParams.set('_id', user._id.toString());
       
       // Add age and profession if available (for first-time onboarding)
