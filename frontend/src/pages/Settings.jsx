@@ -29,12 +29,40 @@ const Settings = () => {
     setIsGuest(guestStatus);
     
     // AuthGuard handles guest mode, so just load data
-    loadSyncStatus();
-    loadProfile();
+    // Wrap in try-catch to prevent crashes
+    try {
+      loadSyncStatus();
+      if (!guestStatus) {
+        loadProfile();
+      }
+    } catch (error) {
+      console.error('Error loading settings data:', error);
+      // Don't crash - just log the error
+    }
   }, []);
 
   const loadProfile = async () => {
     try {
+      // Check if user is authenticated before making API call
+      const token = localStorage.getItem('token');
+      if (!token) {
+        // No token, use localStorage fallback
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          try {
+            const userData = JSON.parse(userStr);
+            setProfile({
+              name: userData.name || '',
+              age: userData.age || '',
+              profession: userData.profession || '',
+            });
+          } catch (e) {
+            console.error('Failed to parse user data:', e);
+          }
+        }
+        return;
+      }
+
       const response = await userAPI.getProfile();
       const userData = response.data;
       setProfile({
@@ -63,6 +91,14 @@ const Settings = () => {
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
+    
+    // Check if user is authenticated
+    const token = localStorage.getItem('token');
+    if (!token) {
+      toast.error('Please sign in to update your profile');
+      return;
+    }
+
     setProfileLoading(true);
 
     try {
@@ -101,7 +137,8 @@ const Settings = () => {
       toast.success('Profile updated successfully!');
     } catch (error) {
       console.error('Failed to update profile:', error);
-      toast.error(error.response?.data?.message || 'Failed to update profile');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to update profile';
+      toast.error(errorMessage);
     } finally {
       setProfileLoading(false);
     }
@@ -109,13 +146,23 @@ const Settings = () => {
 
   const loadSyncStatus = async () => {
     try {
+      // Check if user is authenticated before making API call
+      const token = localStorage.getItem('token');
+      if (!token) {
+        // No token, set default sync status
+        setSyncStatus({ connected: false });
+        return;
+      }
+
       const res = await transactionAPI.getSyncStatus();
       setSyncStatus(res.data);
-      if (res.data.email) {
+      if (res.data?.email) {
         setEmail(res.data.email);
       }
     } catch (error) {
       console.error('Failed to load sync status:', error);
+      // Set default sync status on error
+      setSyncStatus({ connected: false });
     }
   };
 
