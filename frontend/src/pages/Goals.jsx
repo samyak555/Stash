@@ -334,6 +334,8 @@ const Goals = () => {
         )}
       </div>
     </div>
+      )}
+    </AuthGuard>
   );
 };
 
