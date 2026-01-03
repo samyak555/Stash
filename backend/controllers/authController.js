@@ -604,23 +604,50 @@ export const googleAuthCallback = async (req, res) => {
 
     if (user) {
       // Existing user - update if needed
-      if (!user.emailVerified) {
-        user.emailVerified = true; // Google emails are pre-verified
+      console.log(`✅ Found existing user: ${user.email} (ID: ${user._id})`);
+      
+      try {
+        if (!user.emailVerified) {
+          user.emailVerified = true; // Google emails are pre-verified
+        }
+        if (user.role !== role) {
+          user.role = role;
+        }
+        if (!user.googleId) {
+          user.googleId = googleId; // Link Google ID if missing
+          console.log(`   Linking Google ID to existing user`);
+        }
+        if (!user.authProvider || user.authProvider !== 'google') {
+          user.authProvider = 'google';
+        }
+        // Update name if Google provides a better one
+        if (name && (!user.name || user.name === email.split('@')[0])) {
+          user.name = name;
+        }
+        
+        // Save user updates
+        await user.save();
+        console.log(`✅ Successfully updated existing user: ${user.email}`);
+      } catch (saveError) {
+        console.error('❌ Error saving existing user:', saveError);
+        console.error('   Error name:', saveError.name);
+        console.error('   Error message:', saveError.message);
+        
+        // If it's a validation error, provide more details
+        if (saveError.name === 'ValidationError') {
+          console.error('   Validation errors:', saveError.errors);
+          return res.redirect(`${FRONTEND_URL}/login?error=user_update_failed&message=${encodeURIComponent('Failed to update user profile. Please contact support.')}`);
+        }
+        
+        // If it's a duplicate key error (googleId already exists for another user)
+        if (saveError.code === 11000) {
+          console.error('   Duplicate key error - googleId might be linked to another account');
+          return res.redirect(`${FRONTEND_URL}/login?error=duplicate_google_id&message=${encodeURIComponent('This Google account is already linked to another user.')}`);
+        }
+        
+        // Generic error
+        return res.redirect(`${FRONTEND_URL}/login?error=user_save_failed&message=${encodeURIComponent('Failed to save user data. Please try again.')}`);
       }
-      if (user.role !== role) {
-        user.role = role;
-      }
-      if (!user.googleId) {
-        user.googleId = googleId; // Link Google ID if missing
-      }
-      if (!user.authProvider || user.authProvider !== 'google') {
-        user.authProvider = 'google';
-      }
-      // Update name if Google provides a better one
-      if (name && (!user.name || user.name === email.split('@')[0])) {
-        user.name = name;
-      }
-      await user.save();
     } else {
       // New user - create account with emailVerified = true (Google emails are verified)
       user = await User.create({

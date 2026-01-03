@@ -61,9 +61,23 @@ const AuthCallback = ({ setUser }) => {
             case 'url_construction_failed':
               errorMessage = 'Redirect error. Please try signing in again.';
               break;
+            case 'user_update_failed':
+              errorMessage = 'Failed to update your profile. Please contact support if this persists.';
+              break;
+            case 'user_save_failed':
+              errorMessage = 'Failed to save your data. Please try again.';
+              break;
+            case 'user_creation_failed':
+              errorMessage = 'Failed to create your account. Please try again.';
+              break;
+            case 'duplicate_google_id':
+              errorMessage = 'This Google account is already linked to another user.';
+              break;
             case 'oauth_failed':
             default:
-              errorMessage = `Authentication failed: ${error}. Please try again.`;
+              // Check if there's a custom message in URL
+              const message = searchParams.get('message');
+              errorMessage = message ? decodeURIComponent(message) : `Authentication failed: ${error}. Please try again.`;
           }
 
           // Clear guest mode on error
