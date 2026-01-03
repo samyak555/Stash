@@ -60,8 +60,12 @@ const Layout = ({ children, user, setUser }) => {
     return null; // ProtectedRoute will handle redirect
   }
 
+  // Allow Settings page to render even during onboarding (user might need to access settings)
+  const isSettingsPage = window.location.pathname === '/settings';
+  
   // First-time onboarding (Name, Age, Profession) - mandatory for new Google users
-  if (showFirstTimeOnboarding) {
+  // BUT allow Settings page to render
+  if (showFirstTimeOnboarding && !isSettingsPage) {
     return (
       <FirstTimeOnboarding
         user={user}
@@ -76,7 +80,8 @@ const Layout = ({ children, user, setUser }) => {
   }
 
   // Full onboarding (Income, Expenses, Goals) - optional after first-time
-  if (showOnboarding) {
+  // BUT allow Settings page to render
+  if (showOnboarding && !isSettingsPage) {
     return <Onboarding onComplete={() => setShowOnboarding(false)} />;
   }
 
