@@ -488,6 +488,9 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8">
+      {/* Guest CTA Banner */}
+      <GuestCTABanner />
+      
       {!dashboardData && (
         <div className="text-center py-12 mb-8">
           <Logo size="xl" showText={true} className="justify-center mb-6" />
