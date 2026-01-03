@@ -46,6 +46,10 @@ function App() {
         const tokenFromUrl = urlParams.get('token');
         const statusFromUrl = urlParams.get('status');
         
+        // Handle OAuth token from URL query params FIRST (before localStorage check)
+        const urlParams = new URLSearchParams(window.location.search);
+        const tokenFromUrl = urlParams.get('token');
+        
         if (tokenFromUrl) {
           // OAuth redirect - save token and user data from URL params
           try {
@@ -60,8 +64,6 @@ function App() {
             const emailVerified = urlParams.get('emailVerified') === 'true';
             const age = urlParams.get('age');
             const profession = urlParams.get('profession');
-            const needsOnboarding = urlParams.get('needsOnboarding') === 'true';
-            const isNewUser = urlParams.get('isNewUser') === 'true';
             
             // Clear guest mode when signing in
             localStorage.removeItem('isGuest');
@@ -79,7 +81,7 @@ function App() {
               profession: profession ? decodeURIComponent(profession) : null,
             };
             
-            // Validate user data
+            // Validate and save user data
             if (userData.email) {
               localStorage.setItem('user', JSON.stringify(userData));
               
@@ -104,16 +106,18 @@ function App() {
                 toast.success('Signed in successfully!');
               }
               
-              // Navigation will be handled by React Router based on user state
-              // No need to navigate here - let the app render normally
+              // Exit early - token handling is complete
+              return;
             }
           } catch (tokenError) {
             console.error('Error handling OAuth token:', tokenError);
             // Clean URL even on error
             window.history.replaceState({}, '', '/');
+            // Continue to localStorage check on error
           }
         }
         
+        // Check localStorage for existing auth data (normal app load, not OAuth redirect)
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
         const isGuest = localStorage.getItem('isGuest') === 'true';
