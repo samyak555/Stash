@@ -30,19 +30,10 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Security middleware (Helmet)
+// NOTE: CSP is set in Vercel headers (vercel.json), not here
+// This is because Vercel serves the static frontend files directly
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "https://accounts.google.com", "https://apis.google.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://*.onrender.com", "https://*.vercel.app", "http://localhost:*", "ws://localhost:*", "wss://localhost:*"],
-      objectSrc: ["'none'"],
-      baseUri: ["'self'"],
-    },
-  },
+  contentSecurityPolicy: false, // Disabled - CSP is handled by Vercel headers
   crossOriginEmbedderPolicy: false,
 }));
 
