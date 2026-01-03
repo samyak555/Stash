@@ -192,8 +192,9 @@ const Settings = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-4 md:py-8 space-y-6 md:space-y-10 animate-fade-in">
-      {/* Company Identity */}
+    <AuthGuard requireAuth={true}>
+      <div className="max-w-4xl mx-auto px-4 py-4 md:py-8 space-y-6 md:space-y-10 animate-fade-in">
+        {/* Company Identity */}
       <div className="text-center pb-4 border-b border-white/10">
         <p className="text-slate-400 text-sm">
           Powered by <span className="text-slate-300 font-medium">Cestrum Technologies Private Limited</span> (India)
