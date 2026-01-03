@@ -5,6 +5,7 @@ services:
     plan: free
     buildCommand: cd backend && npm install
     startCommand: cd backend && npm start
+    healthCheckPath: /ping
     envVars:
       - key: NODE_ENV
         value: production
@@ -16,5 +17,6 @@ services:
         sync: false  # Set this manually in Render dashboard
     # Note: Persistent disks require paid plan on Render
     # Data will persist while service is running on free tier
+    # Keep-alive service pings /ping every 10 minutes to prevent cold starts
 
 

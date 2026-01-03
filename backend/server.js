@@ -7,6 +7,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
+import schedule from 'node-schedule';
+import http from 'http';
+import https from 'https';
 import connectDB from './config/db.js';
 import { verifyEmailService } from './services/emailService.js';
 import authRoutes from './routes/authRoutes.js';
@@ -76,6 +79,36 @@ app.use((req, res, next) => {
   next();
 });
 
+// ============================================
+// HEALTH CHECKS (Lightweight - for Render keep-alive)
+// ============================================
+// Root-level health check (ultra-fast, no DB check - for Render pings)
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'OK',
+    service: 'Stash Backend API',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Lightweight ping endpoint (for keep-alive service)
+app.get('/ping', (req, res) => {
+  res.json({ 
+    status: 'OK',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Full health check with DB status
+app.get('/api/health', (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  res.json({ 
+    status: 'OK',
+    database: dbStatus,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Routes - Auth routes FIRST (important for OAuth)
 app.use('/api/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
@@ -88,15 +121,6 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/test', testRoutes);
-
-// Health check
-app.get('/api/health', (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
-  res.json({ 
-    status: 'OK',
-    database: dbStatus
-  });
-});
 
 // Error handling middleware - Production-ready (no stack traces)
 app.use((err, req, res, next) => {
@@ -146,26 +170,28 @@ const startServer = async () => {
     await connectDB();
     console.log('✅ MongoDB connection established');
     
-    // Verify Gmail SMTP connection (non-blocking)
-    console.log('📧 Verifying Gmail SMTP connection...');
-    try {
-      const emailResult = await verifyEmailService();
-      if (!emailResult.success) {
-        console.warn('⚠️  Email service not configured or verification failed');
-        console.warn('   Server will start but emails will not be sent');
-        console.warn('   Details:', emailResult.error || 'Unknown error');
-        if (emailResult.details) {
-          console.warn('   Configuration:', emailResult.details);
+    // Verify Gmail SMTP connection (truly async, non-blocking)
+    // Don't await - let it run in background to speed up startup
+    console.log('📧 Verifying Gmail SMTP connection (async)...');
+    verifyEmailService()
+      .then((emailResult) => {
+        if (!emailResult.success) {
+          console.warn('⚠️  Email service not configured or verification failed');
+          console.warn('   Server will start but emails will not be sent');
+          console.warn('   Details:', emailResult.error || 'Unknown error');
+          if (emailResult.details) {
+            console.warn('   Configuration:', emailResult.details);
+          }
+        } else {
+          console.log('✅ Email service verified successfully');
         }
-      } else {
-        console.log('✅ Email service verified successfully');
-      }
-    } catch (emailError) {
-      // Log error but don't crash server
-      console.warn('⚠️  Email service verification failed:', emailError.message);
-      console.warn('   Server will start but emails may not work');
-      console.warn('   Check EMAIL_USER and EMAIL_PASS environment variables');
-    }
+      })
+      .catch((emailError) => {
+        // Log error but don't crash server
+        console.warn('⚠️  Email service verification failed:', emailError.message);
+        console.warn('   Server will start but emails may not work');
+        console.warn('   Check EMAIL_USER and EMAIL_PASS environment variables');
+      });
     
     console.log(`🚀 Starting server on port ${PORT}...`);
     app.listen(PORT, () => {
@@ -176,6 +202,9 @@ const startServer = async () => {
       console.log(`   - GET /api/auth/google/callback`);
       console.log(`   - POST /api/auth/register`);
       console.log(`   - POST /api/auth/login`);
+      
+      // Start keep-alive service to prevent cold starts
+      startKeepAliveService();
     });
   } catch (error) {
     console.error('❌ Failed to start server');
@@ -185,6 +214,68 @@ const startServer = async () => {
       console.error('   Stack trace:', error.stack);
     }
     process.exit(1);
+  }
+};
+
+// ============================================
+// KEEP-ALIVE SERVICE (Prevents Render cold starts)
+// ============================================
+/**
+ * Keep-alive service that pings the server every 10-14 minutes
+ * This prevents Render free tier from putting the service to sleep
+ */
+const startKeepAliveService = () => {
+  const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
+  const url = new URL(BACKEND_URL);
+  const hostname = url.hostname;
+  const port = url.port || (url.protocol === 'https:' ? 443 : 80);
+  const path = '/ping';
+  const protocol = url.protocol === 'https:' ? https : http;
+  
+  // Ping every 10 minutes (Render free tier sleeps after ~15 min of inactivity)
+  const keepAliveJob = schedule.scheduleJob('*/10 * * * *', () => {
+    const options = {
+      hostname: hostname === 'localhost' ? 'localhost' : hostname,
+      port: port,
+      path: path,
+      method: 'GET',
+      timeout: 5000, // 5 second timeout
+      headers: {
+        'User-Agent': 'Stash-KeepAlive/1.0'
+      }
+    };
+    
+    const req = protocol.request(options, (res) => {
+      if (res.statusCode === 200) {
+        console.log(`💓 Keep-alive ping successful at ${new Date().toLocaleTimeString()}`);
+      } else {
+        console.warn(`⚠️  Keep-alive ping returned status ${res.statusCode}`);
+      }
+      res.on('data', () => {}); // Consume response
+      res.on('end', () => {});
+    });
+    
+    req.on('error', (error) => {
+      // Don't log errors in production to avoid noise
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`⚠️  Keep-alive ping failed: ${error.message}`);
+      }
+    });
+    
+    req.on('timeout', () => {
+      req.destroy();
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('⚠️  Keep-alive ping timeout');
+      }
+    });
+    
+    req.end();
+  });
+  
+  if (keepAliveJob) {
+    console.log('💓 Keep-alive service started (pings every 10 minutes)');
+  } else {
+    console.warn('⚠️  Failed to start keep-alive service');
   }
 };
 
