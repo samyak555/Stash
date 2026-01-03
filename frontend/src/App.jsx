@@ -19,6 +19,9 @@ import Goals from './pages/Goals';
 import Insights from './pages/Insights';
 import Family from './pages/Family';
 import Settings from './pages/Settings';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import DataDeletionPolicy from './pages/DataDeletionPolicy';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
