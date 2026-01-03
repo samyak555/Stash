@@ -173,139 +173,139 @@ function App() {
             {/* Only render routes when not loading - prevents blank screen */}
             {!loading && (
               <Routes>
-        <Route
-          path="/login"
-          element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />}
-        />
-        <Route
-          path="/register"
-          element={user ? <Navigate to="/" replace /> : <Register setUser={setUser} />}
-        />
-        <Route
-          path="/verify-email"
-          element={<VerifyEmail />}
-        />
-        <Route
-          path="/forgot-password"
-          element={user ? <Navigate to="/" replace /> : <ForgotPassword />}
-        />
-        <Route
-          path="/reset-password"
-          element={user ? <Navigate to="/" replace /> : <ResetPassword />}
-        />
-        <Route
-          path="/auth/callback"
-          element={
-            <ErrorBoundary>
-              <AuthCallback setUser={setUser} />
-            </ErrorBoundary>
-          }
-        />
-        {/* Legal Pages */}
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<TermsOfService />} />
-        <Route path="/data-deletion" element={<DataDeletionPolicy />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Layout user={user} setUser={setUser}>
-                <Dashboard />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/cards"
-          element={
-            <ProtectedRoute>
-              <Layout user={user} setUser={setUser}>
-                <Cards />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/transactions"
-          element={
-            <ProtectedRoute>
-              <Layout user={user} setUser={setUser}>
-                <Transactions />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/expenses"
-          element={
-            <ProtectedRoute>
-              <Layout user={user} setUser={setUser}>
-                <Expenses />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/income"
-          element={
-            <ProtectedRoute>
-              <Layout user={user} setUser={setUser}>
-                <Income />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/budgets"
-          element={
-            <ProtectedRoute>
-              <Layout user={user} setUser={setUser}>
-                <Budgets />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/goals"
-          element={
-            <ProtectedRoute>
-              <Layout user={user} setUser={setUser}>
-                <Goals />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/insights"
-          element={
-            <ProtectedRoute>
-              <Layout user={user} setUser={setUser}>
-                <Insights />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/family"
-          element={
-            <ProtectedRoute>
-              <Layout user={user} setUser={setUser}>
-                <Family />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <Layout user={user} setUser={setUser}>
-                <Settings />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+                <Route
+                  path="/login"
+                  element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />}
+                />
+                <Route
+                  path="/register"
+                  element={user ? <Navigate to="/" replace /> : <Register setUser={setUser} />}
+                />
+                <Route
+                  path="/verify-email"
+                  element={<VerifyEmail />}
+                />
+                <Route
+                  path="/forgot-password"
+                  element={user ? <Navigate to="/" replace /> : <ForgotPassword />}
+                />
+                <Route
+                  path="/reset-password"
+                  element={user ? <Navigate to="/" replace /> : <ResetPassword />}
+                />
+                <Route
+                  path="/auth/callback"
+                  element={
+                    <ErrorBoundary>
+                      <AuthCallback setUser={setUser} />
+                    </ErrorBoundary>
+                  }
+                />
+                {/* Legal Pages */}
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/data-deletion" element={<DataDeletionPolicy />} />
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <Layout user={user} setUser={setUser}>
+                        <Dashboard />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/cards"
+                  element={
+                    <ProtectedRoute>
+                      <Layout user={user} setUser={setUser}>
+                        <Cards />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/transactions"
+                  element={
+                    <ProtectedRoute>
+                      <Layout user={user} setUser={setUser}>
+                        <Transactions />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/expenses"
+                  element={
+                    <ProtectedRoute>
+                      <Layout user={user} setUser={setUser}>
+                        <Expenses />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/income"
+                  element={
+                    <ProtectedRoute>
+                      <Layout user={user} setUser={setUser}>
+                        <Income />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/budgets"
+                  element={
+                    <ProtectedRoute>
+                      <Layout user={user} setUser={setUser}>
+                        <Budgets />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/goals"
+                  element={
+                    <ProtectedRoute>
+                      <Layout user={user} setUser={setUser}>
+                        <Goals />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/insights"
+                  element={
+                    <ProtectedRoute>
+                      <Layout user={user} setUser={setUser}>
+                        <Insights />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/family"
+                  element={
+                    <ProtectedRoute>
+                      <Layout user={user} setUser={setUser}>
+                        <Family />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <Layout user={user} setUser={setUser}>
+                        <Settings />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>
             )}
           </Router>
