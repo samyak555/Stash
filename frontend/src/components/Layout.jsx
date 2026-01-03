@@ -4,6 +4,7 @@ import MobileSidebar from './MobileSidebar';
 import Onboarding from './Onboarding';
 import FirstTimeOnboarding from './FirstTimeOnboarding';
 import TopNav from './TopNav';
+import GuestCTABanner from './GuestCTABanner';
 import { useGuestMode } from '../hooks/useGuestMode';
 
 const Layout = ({ children, user, setUser }) => {
