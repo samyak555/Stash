@@ -577,8 +577,13 @@ export const googleAuthCallback = async (req, res) => {
     // Determine role (admin if email matches)
     const role = email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'user';
 
-    // Check if user exists
-    let user = await User.findOne({ email: email.toLowerCase() });
+    // Check if user exists by googleId first (primary identifier for Google users)
+    let user = await User.findOne({ googleId: googleId });
+    
+    // If not found by googleId, check by email (for migration cases)
+    if (!user) {
+      user = await User.findOne({ email: email.toLowerCase() });
+    }
 
     if (user) {
       // Existing user - update if needed
@@ -589,9 +594,15 @@ export const googleAuthCallback = async (req, res) => {
         user.role = role;
       }
       if (!user.googleId) {
-        user.googleId = googleId;
+        user.googleId = googleId; // Link Google ID if missing
       }
-      user.authProvider = 'google';
+      if (!user.authProvider || user.authProvider !== 'google') {
+        user.authProvider = 'google';
+      }
+      // Update name if Google provides a better one
+      if (name && (!user.name || user.name === email.split('@')[0])) {
+        user.name = name;
+      }
       await user.save();
     } else {
       // New user - create account with emailVerified = true (Google emails are verified)
