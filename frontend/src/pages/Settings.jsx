@@ -178,6 +178,21 @@ const Settings = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-4 md:py-8 space-y-6 md:space-y-10 animate-fade-in">
+      {/* Company Identity */}
+      <div className="text-center pb-4 border-b border-white/10">
+        <p className="text-slate-400 text-sm">
+          Powered by <span className="text-slate-300 font-medium">Cestrum Technologies Private Limited</span> (India)
+        </p>
+        <p className="text-slate-500 text-xs mt-1">
+          <a 
+            href="mailto:administrator-stash.auth7@gmail.com" 
+            className="text-slate-400 hover:text-cyan-400 transition-colors"
+          >
+            administrator-stash.auth7@gmail.com
+          </a>
+        </p>
+      </div>
+
       {/* Header */}
       <div className="space-y-3">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight">Settings</h1>
@@ -617,7 +632,10 @@ const DeleteAccountSection = () => {
         <div className="flex-1">
           <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Delete Account</h2>
           <p className="text-slate-300 text-sm leading-relaxed mb-4">
-            Permanently delete your account and all associated data. This action cannot be undone.
+            Permanently delete your account and all associated data. This action cannot be undone.{' '}
+            <Link to="/data-deletion" className="text-cyan-400 hover:text-cyan-300 underline">
+              Learn more about our data deletion policy
+            </Link>.
           </p>
 
           {!showConfirm ? (
