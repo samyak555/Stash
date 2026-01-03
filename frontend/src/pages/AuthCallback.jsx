@@ -15,8 +15,9 @@ const AuthCallback = ({ setUser }) => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Get token from URL query params
+        // Get token and status from URL query params
         const token = searchParams.get('token');
+        const status = searchParams.get('status'); // 'new_user' or 'existing_user'
         const error = searchParams.get('error');
         const emailVerified = searchParams.get('emailVerified');
 
@@ -139,12 +140,31 @@ const AuthCallback = ({ setUser }) => {
         
         setUser(userData);
 
-        // Show success message (from backend or default)
+        // Show success message
         toast.success(message || 'Signed in successfully!');
         
-        // Redirect based on onboarding status
-        // If onboarding not completed, user will be redirected to onboarding by Layout component
-        navigate('/');
+        // Redirect based on status and onboarding completion
+        if (status === 'new_user') {
+          // New user - always redirect to onboarding
+          console.log('🆕 New user, redirecting to onboarding');
+          navigate('/onboarding');
+        } else if (status === 'existing_user') {
+          // Existing user - redirect based on onboarding status
+          if (onboardingCompleted) {
+            console.log('✅ Existing user with completed onboarding, redirecting to dashboard');
+            navigate('/');
+          } else {
+            console.log('⚠️ Existing user without onboarding, redirecting to onboarding');
+            navigate('/onboarding');
+          }
+        } else {
+          // Fallback: use onboarding status
+          if (onboardingCompleted) {
+            navigate('/');
+          } else {
+            navigate('/onboarding');
+          }
+        }
       } catch (error) {
         console.error('Auth callback error:', error);
         toast.error('Failed to complete authentication');

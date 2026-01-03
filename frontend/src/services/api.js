@@ -229,6 +229,10 @@ export const userAPI = {
   deleteAccount: () => api.delete('/users/account'),
 };
 
+export const onboardingAPI = {
+  complete: (data) => api.post('/onboarding', data),
+};
+
 export const transactionAPI = {
   getAll: () => api.get('/transactions'),
   connectEmail: (data) => api.post('/transactions/connect-email', data),

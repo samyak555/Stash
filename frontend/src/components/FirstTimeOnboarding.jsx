@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { userAPI } from '../services/api';
+import { onboardingAPI } from '../services/api';
 import Button from './ui/Button';
 import Logo from './Logo';
 import toast from 'react-hot-toast';
@@ -74,34 +74,42 @@ const FirstTimeOnboarding = ({ user, onComplete }) => {
 
     setLoading(true);
     try {
-      // Update user profile with mandatory fields
+      // Complete onboarding via dedicated API
       const professionValue = formData.profession === 'Other' 
         ? formData.professionOther.trim() 
         : formData.profession;
 
-      await userAPI.updateProfile({
+      const response = await onboardingAPI.complete({
         name: formData.name.trim(),
         age: parseInt(formData.age),
         profession: professionValue,
-        onboardingCompleted: true, // Mark onboarding as complete
       });
 
-      // Update local user data
+      // Update local user data from response
       const updatedUser = {
         ...user,
-        name: formData.name.trim(),
-        age: parseInt(formData.age),
-        profession: professionValue,
+        ...response.data.user,
         onboardingCompleted: true,
       };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       localStorage.setItem('onboardingCompleted', 'true');
 
-      toast.success('Profile updated successfully!');
+      toast.success('Onboarding completed successfully!');
       onComplete(updatedUser);
+      
+      // Navigate to dashboard
+      navigate('/');
     } catch (error) {
       console.error('Onboarding error:', error);
-      toast.error(error.response?.data?.message || 'Failed to save profile');
+      const errorMessage = error.response?.data?.message || 'Failed to complete onboarding';
+      toast.error(errorMessage);
+      
+      // If onboarding already completed, redirect to dashboard
+      if (error.response?.status === 400 && errorMessage.includes('already completed')) {
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
+      }
     } finally {
       setLoading(false);
     }

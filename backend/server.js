@@ -23,6 +23,7 @@ import groupRoutes from './routes/groupRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import testRoutes from './routes/testRoutes.js';
+import onboardingRoutes from './routes/onboardingRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -121,6 +122,7 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/test', testRoutes);
+app.use('/api/onboarding', onboardingRoutes);
 
 // Error handling middleware - Production-ready (no stack traces)
 app.use((err, req, res, next) => {
