@@ -172,6 +172,7 @@ function App() {
             <Toaster position="top-right" />
             {/* Only render routes when not loading - prevents blank screen */}
             {!loading && (
+              {!loading && (
               <Routes>
         <Route
           path="/login"
