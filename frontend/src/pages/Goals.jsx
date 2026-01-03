@@ -20,16 +20,8 @@ const Goals = () => {
   });
 
   useEffect(() => {
-    // Check guest mode
-    const guestStatus = localStorage.getItem('isGuest') === 'true';
-    setIsGuest(guestStatus);
-    
-    // Only fetch goals if not guest
-    if (!guestStatus) {
-      fetchGoals();
-    } else {
-      setLoading(false);
-    }
+    // AuthGuard handles guest mode, so just fetch goals
+    fetchGoals();
   }, []);
 
   const fetchGoals = async () => {
@@ -123,30 +115,12 @@ const Goals = () => {
     return { status: 'active', color: 'blue', text: 'Active' };
   };
 
-  // Show sign-in prompt for guest users
-  if (isGuest) {
-    return (
-      <div className="px-4 py-8 flex items-center justify-center min-h-[60vh]">
-        <div className="text-center space-y-4 max-w-md">
-          <h2 className="text-2xl font-bold text-white">Sign In Required</h2>
-          <p className="text-slate-400">Please sign in with Google to access your Goals.</p>
-          <button
-            onClick={() => window.location.href = '/login'}
-            className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
-          >
-            Go to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return <div className="text-center py-8 text-white">Loading goals...</div>;
-  }
-
   return (
-    <div className="px-4 py-8 animate-fade-in">
+    <AuthGuard requireAuth={true}>
+      {loading ? (
+        <div className="text-center py-8 text-white">Loading goals...</div>
+      ) : (
+        <div className="px-4 py-8 animate-fade-in">
       <div className="mb-12">
         <div className="flex justify-between items-start gap-6">
           <div className="space-y-3">
