@@ -47,10 +47,22 @@ function App() {
         // Handle OAuth token from URL query params FIRST (before localStorage check)
         const urlParams = new URLSearchParams(window.location.search);
         const tokenFromUrl = urlParams.get('token');
+        const errorFromUrl = urlParams.get('error');
+        
+        // Log the current URL for debugging
+        console.log('🔍 Current URL:', window.location.href);
+        console.log('🔍 URL search params:', Object.fromEntries(urlParams.entries()));
+        
+        if (errorFromUrl) {
+          // If there's an error in the URL, we'll handle it in the Login component
+          // But log it here for debugging
+          console.error('❌ Error in URL params:', errorFromUrl, urlParams.get('message'));
+        }
         
         if (tokenFromUrl) {
           // OAuth redirect - save token and user data from URL params
           console.log('🔐 OAuth callback detected - processing token from URL');
+          console.log('🔐 Token present:', !!tokenFromUrl, 'Token length:', tokenFromUrl?.length);
           try {
             // Get user data from URL params BEFORE cleaning
             const name = urlParams.get('name');
