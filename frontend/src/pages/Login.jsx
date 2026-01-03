@@ -19,6 +19,15 @@ const Login = ({ setUser }) => {
     const params = new URLSearchParams(window.location.search);
     const message = params.get('message');
     const error = params.get('error');
+    const token = params.get('token');
+    
+    // Log all URL params for debugging
+    console.log('🔍 Login page - URL params:', {
+      error,
+      message,
+      token: token ? 'present' : 'missing',
+      allParams: Object.fromEntries(params.entries())
+    });
     
     if (message) {
       toast.success(decodeURIComponent(message));
