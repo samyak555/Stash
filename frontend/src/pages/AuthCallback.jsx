@@ -75,6 +75,9 @@ const AuthCallback = ({ setUser }) => {
             case 'duplicate_google_id':
               errorMessage = 'This Google account is already linked to another user.';
               break;
+            case 'user_repair_failed':
+              errorMessage = 'Account needs repair. Please contact support.';
+              break;
             case 'oauth_failed':
             default:
               // Check if there's a custom message in URL

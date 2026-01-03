@@ -605,14 +605,59 @@ export const googleAuthCallback = async (req, res) => {
         user.googleId = googleId;
         user.authProvider = 'google';
         user.emailVerified = true;
-        await user.save();
-        console.log(`   Linked Google ID to existing email user`);
+        
+        // Defensive: Ensure required fields exist to prevent validation errors
+        // If onboarding not completed but age/profession missing, set defaults temporarily
+        if (!user.onboardingCompleted) {
+          if (!user.age) {
+            user.age = 25; // Temporary default, will be set during onboarding
+          }
+          if (!user.profession) {
+            user.profession = 'Other'; // Temporary default, will be set during onboarding
+          }
+        }
+        
+        try {
+          await user.save();
+          console.log(`   Linked Google ID to existing email user`);
+        } catch (saveError) {
+          console.error('❌ Error saving user after linking Google ID:', saveError);
+          // If save fails due to validation, try to repair the user
+          if (saveError.name === 'ValidationError') {
+            console.log(`   Attempting to repair user record for ${user.email}`);
+            // Set defaults for missing required fields
+            if (!user.onboardingCompleted) {
+              user.age = user.age || 25;
+              user.profession = user.profession || 'Other';
+            }
+            try {
+              await user.save();
+              console.log(`   ✅ User record repaired successfully`);
+            } catch (repairError) {
+              console.error('❌ Failed to repair user record:', repairError);
+              return res.redirect(`${FRONTEND_URL}/login?error=user_repair_failed&message=${encodeURIComponent('Account needs repair. Please contact support.')}`);
+            }
+          } else {
+            throw saveError;
+          }
+        }
       }
     }
 
     if (user) {
       // CASE A: Existing user - DO NOT update profile during login
       console.log(`✅ Found existing user: ${user.email} (ID: ${user._id})`);
+      
+      // Defensive: Ensure user has valid onboardingCompleted field
+      if (typeof user.onboardingCompleted !== 'boolean') {
+        user.onboardingCompleted = false;
+        try {
+          await user.save();
+          console.log(`   Repaired onboardingCompleted field for ${user.email}`);
+        } catch (saveError) {
+          console.error('   Warning: Could not save onboardingCompleted repair:', saveError);
+        }
+      }
       
       // Generate JWT token
       const token = jwt.sign(
