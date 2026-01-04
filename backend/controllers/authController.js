@@ -697,29 +697,33 @@ export const googleAuthCallback = async (req, res) => {
       // ALWAYS return complete auth response - never block login
       try {
         const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
-        const redirectUrl = new URL(`${frontendUrl}/`);
-        redirectUrl.searchParams.set('status', 'existing_user');
-        redirectUrl.searchParams.set('token', token);
-        redirectUrl.searchParams.set('emailVerified', 'true');
-        redirectUrl.searchParams.set('name', encodeURIComponent(user.name || name || email.split('@')[0] || 'User'));
-        redirectUrl.searchParams.set('email', encodeURIComponent(user.email || email || ''));
-        redirectUrl.searchParams.set('role', user.role || 'user');
-        const needsOnboarding = user.onboardingCompleted !== true;
-        redirectUrl.searchParams.set('onboardingCompleted', user.onboardingCompleted === true ? 'true' : 'false');
-        redirectUrl.searchParams.set('needsOnboarding', needsOnboarding ? 'true' : 'false');
-        redirectUrl.searchParams.set('isNewUser', 'false');
-        redirectUrl.searchParams.set('_id', user._id.toString());
         
-        // Add optional fields if available (never required)
+        // Build redirect URL with all required params
+        const params = new URLSearchParams();
+        params.set('status', 'existing_user');
+        params.set('token', token);
+        params.set('emailVerified', 'true');
+        params.set('name', user.name || name || email.split('@')[0] || 'User');
+        params.set('email', user.email || email || '');
+        params.set('role', user.role || 'user');
+        params.set('onboardingCompleted', user.onboardingCompleted === true ? 'true' : 'false');
+        params.set('needsOnboarding', user.onboardingCompleted !== true ? 'true' : 'false');
+        params.set('isNewUser', 'false');
+        params.set('_id', user._id.toString());
+        
+        // Add optional fields if available
         if (user.age) {
-          redirectUrl.searchParams.set('age', user.age.toString());
+          params.set('age', user.age.toString());
         }
         if (user.profession) {
-          redirectUrl.searchParams.set('profession', encodeURIComponent(user.profession));
+          params.set('profession', user.profession);
         }
         
-        console.log(`✅ Existing user login successful: ${user.email} (needsOnboarding: ${needsOnboarding})`);
-        res.redirect(redirectUrl.toString());
+        const redirectUrl = `${frontendUrl}/?${params.toString()}`;
+        
+        console.log(`✅ Existing user login successful: ${user.email}`);
+        console.log(`   Redirecting to: ${frontendUrl}/ (token and user data in URL params)`);
+        res.redirect(302, redirectUrl);
         return;
       } catch (urlError) {
         console.error('❌ Error constructing redirect URL:', urlError);
@@ -774,22 +778,25 @@ export const googleAuthCallback = async (req, res) => {
             
             // Redirect to frontend with user data
             try {
-            const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
-              const redirectUrl = new URL(`${frontendUrl}/`);
-            redirectUrl.searchParams.set('status', 'existing_user');
-            redirectUrl.searchParams.set('token', token);
-            redirectUrl.searchParams.set('emailVerified', 'true');
-            redirectUrl.searchParams.set('name', encodeURIComponent(existingUser.name || name || email.split('@')[0] || 'User'));
-            redirectUrl.searchParams.set('email', encodeURIComponent(existingUser.email || email || ''));
-            redirectUrl.searchParams.set('role', existingUser.role || 'user');
-            redirectUrl.searchParams.set('onboardingCompleted', existingUser.onboardingCompleted === true ? 'true' : 'false');
-            redirectUrl.searchParams.set('needsOnboarding', existingUser.onboardingCompleted !== true ? 'true' : 'false');
-            redirectUrl.searchParams.set('isNewUser', 'false');
-            redirectUrl.searchParams.set('_id', existingUser._id.toString());
+              const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
+              
+              const params = new URLSearchParams();
+              params.set('status', 'existing_user');
+              params.set('token', token);
+              params.set('emailVerified', 'true');
+              params.set('name', existingUser.name || name || email.split('@')[0] || 'User');
+              params.set('email', existingUser.email || email || '');
+              params.set('role', existingUser.role || 'user');
+              params.set('onboardingCompleted', existingUser.onboardingCompleted === true ? 'true' : 'false');
+              params.set('needsOnboarding', existingUser.onboardingCompleted !== true ? 'true' : 'false');
+              params.set('isNewUser', 'false');
+              params.set('_id', existingUser._id.toString());
+              
+              const redirectUrl = `${frontendUrl}/?${params.toString()}`;
               
               console.log(`✅ Existing user login successful after duplicate error: ${existingUser.email}`);
-            res.redirect(redirectUrl.toString());
-            return;
+              res.redirect(302, redirectUrl);
+              return;
             } catch (urlError) {
               console.error('❌ Error constructing redirect URL after duplicate error:', urlError);
               return res.redirect(`${FRONTEND_URL}/login?error=url_construction_failed&message=${encodeURIComponent('Failed to redirect after login. Please try again.')}`);
@@ -817,20 +824,25 @@ export const googleAuthCallback = async (req, res) => {
       // Redirect to frontend root with status=new_user
       try {
         const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
-        const redirectUrl = new URL(`${frontendUrl}/`);
-        redirectUrl.searchParams.set('status', 'new_user');
-        redirectUrl.searchParams.set('token', token);
-        redirectUrl.searchParams.set('emailVerified', 'true');
-        redirectUrl.searchParams.set('name', encodeURIComponent(name || email.split('@')[0] || 'User'));
-        redirectUrl.searchParams.set('email', encodeURIComponent(email));
-        redirectUrl.searchParams.set('role', role);
-        redirectUrl.searchParams.set('onboardingCompleted', 'false');
-        redirectUrl.searchParams.set('needsOnboarding', 'true'); // New users always need onboarding
-        redirectUrl.searchParams.set('isNewUser', 'true');
-        redirectUrl.searchParams.set('_id', user._id.toString());
+        
+        // Build redirect URL with all required params
+        const params = new URLSearchParams();
+        params.set('status', 'new_user');
+        params.set('token', token);
+        params.set('emailVerified', 'true');
+        params.set('name', name || email.split('@')[0] || 'User');
+        params.set('email', email);
+        params.set('role', role);
+        params.set('onboardingCompleted', 'false');
+        params.set('needsOnboarding', 'true');
+        params.set('isNewUser', 'true');
+        params.set('_id', user._id.toString());
+        
+        const redirectUrl = `${frontendUrl}/?${params.toString()}`;
         
         console.log(`✅ New user created: ${user.email}, redirecting to onboarding`);
-        res.redirect(redirectUrl.toString());
+        console.log(`   Redirecting to: ${frontendUrl}/ (token and user data in URL params)`);
+        res.redirect(302, redirectUrl);
         return;
       } catch (urlError) {
         console.error('❌ Error constructing redirect URL:', urlError);
