@@ -192,7 +192,7 @@ const MobileSidebar = ({ user, setUser }) => {
                 <p className="text-xs text-text-secondary truncate">{user?.email || ''}</p>
               </div>
             </div>
-            {user?.isGuest && (
+            {(user?.isGuest || user?.role === 'guest') && (
               <div className="mt-3 flex justify-center">
                 <GuestBadge />
               </div>

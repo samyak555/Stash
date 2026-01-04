@@ -110,8 +110,13 @@ function AppContent({ setUser: setUserProp }) {
             window.history.replaceState({}, '', '/');
 
             // Show success
-            toast.success('Signed in successfully!');
+            toast.success('Signed in successfully!', { duration: 2000 });
             console.log('✅ OAuth login complete');
+
+            // Automatic page refresh after 1 second to ensure everything loads correctly
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
           } else {
             console.error('❌ Missing required data:', { email: userData.email, _id: userData._id });
             toast.error('Failed to sign in. Missing user data.');
