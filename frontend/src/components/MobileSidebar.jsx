@@ -84,11 +84,12 @@ const MobileSidebar = ({ user, setUser }) => {
 
   return (
     <>
-      {/* Hamburger Button - Mobile Only */}
+      {/* Hamburger Button - Mobile Only - Always visible on mobile */}
       <button
         onClick={() => setIsOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-40 p-3 bg-white/10 hover:bg-white/20 rounded-lg backdrop-blur-sm border border-white/10 transition-all"
+        className="md:hidden fixed top-4 left-4 z-[60] p-3 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-lg backdrop-blur-sm border border-white/10 transition-all shadow-lg"
         aria-label="Open menu"
+        style={{ zIndex: 60 }}
       >
         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -98,16 +99,18 @@ const MobileSidebar = ({ user, setUser }) => {
       {/* Overlay */}
       {isOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity"
+          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] transition-opacity"
           onClick={() => setIsOpen(false)}
+          style={{ zIndex: 55 }}
         />
       )}
 
       {/* Sliding Sidebar - Mobile Only */}
       <aside
-        className={`md:hidden fixed left-0 top-0 h-screen w-80 bg-sidebar-bg border-r border-border flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`md:hidden fixed left-0 top-0 h-screen w-80 bg-sidebar-bg border-r border-border flex flex-col z-[60] transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        style={{ zIndex: 60 }}
       >
         {/* Logo Section */}
         <div className="border-b border-border bg-gradient-to-br from-sidebar-bg to-card-bg flex items-center justify-between px-4" style={{ minHeight: '80px' }}>
