@@ -521,6 +521,32 @@ export const googleAuthInitiate = async (req, res) => {
 };
 
 /**
+ * Helper function to build redirect URL with user data
+ */
+const buildRedirectUrl = (frontendUrl, token, userData, isNewUser = false) => {
+  const params = new URLSearchParams();
+  params.set('token', token);
+  params.set('status', isNewUser ? 'new_user' : 'existing_user');
+  params.set('emailVerified', 'true');
+  params.set('name', userData.name || userData.email?.split('@')[0] || 'User');
+  params.set('email', userData.email || '');
+  params.set('role', userData.role || 'user');
+  params.set('onboardingCompleted', userData.onboardingCompleted === true ? 'true' : 'false');
+  params.set('needsOnboarding', userData.onboardingCompleted !== true ? 'true' : 'false');
+  params.set('isNewUser', isNewUser ? 'true' : 'false');
+  params.set('_id', userData._id?.toString() || '');
+  
+  if (userData.age) {
+    params.set('age', userData.age.toString());
+  }
+  if (userData.profession) {
+    params.set('profession', userData.profession);
+  }
+  
+  return `${frontendUrl}/?${params.toString()}`;
+};
+
+/**
  * Google OAuth 2.0 - Callback handler
  * GET /api/auth/google/callback
  * - Exchanges authorization code for tokens
@@ -529,36 +555,42 @@ export const googleAuthInitiate = async (req, res) => {
  * - Issues JWT and redirects to frontend
  */
 export const googleAuthCallback = async (req, res) => {
-  const deleteAccount = req.query.deleteAccount === 'true';
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://stash-beige.vercel.app';
+  const BACKEND_URL = process.env.BACKEND_URL || 'https://stash-backend-4wty.onrender.com';
+  
   try {
+    console.log('🔐 Google OAuth callback received');
+    console.log('   Query params:', Object.keys(req.query));
+    
     const JWT_SECRET = process.env.JWT_SECRET;
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://stash-beige.vercel.app';
-    const BACKEND_URL = process.env.BACKEND_URL || 'https://stash-backend-4wty.onrender.com';
 
     // Validate environment variables
     if (!JWT_SECRET) {
       console.error('❌ JWT_SECRET is not set');
-      return res.redirect(`${FRONTEND_URL}/login?error=server_config_error&message=JWT_SECRET missing`);
+      return res.redirect(`${FRONTEND_URL}/login?error=server_config_error&message=${encodeURIComponent('JWT_SECRET missing')}`);
     }
     if (!GOOGLE_CLIENT_ID) {
       console.error('❌ GOOGLE_CLIENT_ID is not set');
-      return res.redirect(`${FRONTEND_URL}/login?error=server_config_error&message=GOOGLE_CLIENT_ID missing`);
+      return res.redirect(`${FRONTEND_URL}/login?error=server_config_error&message=${encodeURIComponent('GOOGLE_CLIENT_ID missing')}`);
     }
     if (!GOOGLE_CLIENT_SECRET) {
       console.error('❌ GOOGLE_CLIENT_SECRET is not set');
-      return res.redirect(`${FRONTEND_URL}/login?error=server_config_error&message=GOOGLE_CLIENT_SECRET missing`);
+      return res.redirect(`${FRONTEND_URL}/login?error=server_config_error&message=${encodeURIComponent('GOOGLE_CLIENT_SECRET missing')}`);
     }
     
-    console.log('✅ OAuth callback - Environment check passed');
-    console.log(`   FRONTEND_URL: ${FRONTEND_URL}`);
-    console.log(`   BACKEND_URL: ${BACKEND_URL}`);
+    const { code, error: oauthError } = req.query;
 
-    const { code } = req.query;
+    // Check for OAuth errors from Google
+    if (oauthError) {
+      console.error('❌ Google OAuth error:', oauthError);
+      return res.redirect(`${FRONTEND_URL}/login?error=oauth_denied&message=${encodeURIComponent('Google sign-in was cancelled or denied')}`);
+    }
 
     if (!code) {
-      return res.redirect(`${FRONTEND_URL}/login?error=no_code`);
+      console.error('❌ No authorization code received');
+      return res.redirect(`${FRONTEND_URL}/login?error=no_code&message=${encodeURIComponent('No authorization code received')}`);
     }
 
     const oauth2Client = new OAuth2Client(
@@ -570,316 +602,144 @@ export const googleAuthCallback = async (req, res) => {
     // Exchange authorization code for tokens
     let tokens;
     try {
+      console.log('🔄 Exchanging authorization code for tokens...');
       const { tokens: tokenData } = await oauth2Client.getToken(code);
       tokens = tokenData;
+      console.log('✅ Token exchange successful');
     } catch (error) {
-      console.error('Google token exchange error:', error);
-      return res.redirect(`${FRONTEND_URL}/login?error=token_exchange_failed`);
+      console.error('❌ Google token exchange error:', error.message);
+      return res.redirect(`${FRONTEND_URL}/login?error=token_exchange_failed&message=${encodeURIComponent('Token exchange failed. Please try again.')}`);
     }
 
     if (!tokens.id_token) {
-      return res.redirect(`${FRONTEND_URL}/login?error=no_id_token`);
+      console.error('❌ No ID token in response');
+      return res.redirect(`${FRONTEND_URL}/login?error=no_id_token&message=${encodeURIComponent('No ID token received')}`);
     }
 
     // Verify ID token
     let ticket;
     try {
+      console.log('🔄 Verifying ID token...');
       ticket = await oauth2Client.verifyIdToken({
         idToken: tokens.id_token,
         audience: GOOGLE_CLIENT_ID,
       });
+      console.log('✅ ID token verified');
     } catch (verifyError) {
-      console.error('Google token verification error:', verifyError);
-      return res.redirect(`${FRONTEND_URL}/login?error=token_verification_failed`);
+      console.error('❌ Google token verification error:', verifyError.message);
+      return res.redirect(`${FRONTEND_URL}/login?error=token_verification_failed&message=${encodeURIComponent('Token verification failed. Please try again.')}`);
     }
 
     const payload = ticket.getPayload();
     const { email, name, sub: googleId, email_verified } = payload;
 
     if (!email) {
-      return res.redirect(`${FRONTEND_URL}/login?error=no_email`);
+      console.error('❌ No email in token payload');
+      return res.redirect(`${FRONTEND_URL}/login?error=no_email&message=${encodeURIComponent('No email provided by Google')}`);
     }
 
     // MANDATORY: Only allow login if Google email is verified
     if (!email_verified) {
-      return res.redirect(`${FRONTEND_URL}/login?error=email_not_verified`);
+      console.error('❌ Email not verified by Google');
+      return res.redirect(`${FRONTEND_URL}/login?error=email_not_verified&message=${encodeURIComponent('Please verify your Google account email')}`);
     }
+
+    console.log(`✅ Google user verified: ${email} (ID: ${googleId})`);
 
     // Determine role (admin if email matches)
     const role = email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'user';
 
-    // IDEMPOTENT: Check if user exists by googleId first, then by email
+    // Find or create user
     let user = await User.findOne({ googleId: googleId });
     let isNewUser = false;
     
-    // If not found by googleId, check by email (for existing users who signed up before Google auth)
-    // BUT: If account was deleted, user won't be found, so we'll create a new one
     if (!user) {
+      // Check by email (for accounts created before Google auth)
       user = await User.findOne({ email: email.toLowerCase() });
-      // If found by email but no googleId, link the googleId (idempotent - safe to do multiple times)
-      if (user && !user.googleId) {
-        user.googleId = googleId;
-        user.authProvider = 'google';
-        user.emailVerified = true;
-        
-        // Defensive: Ensure required fields exist to prevent validation errors
-        // Only set defaults if onboarding not completed AND fields are missing
-        if (!user.onboardingCompleted) {
-          if (!user.age) {
-            user.age = 25; // Temporary default, will be set during onboarding
-          }
-          if (!user.profession) {
-            user.profession = 'Other'; // Temporary default, will be set during onboarding
-          }
-        }
-        
-        try {
-          await user.save();
-          console.log(`   ✅ Linked Google ID to existing email user: ${user.email}`);
-        } catch (saveError) {
-          console.error('❌ Error saving user after linking Google ID:', saveError);
-          // If save fails due to validation, try to repair the user
-          if (saveError.name === 'ValidationError') {
-            console.log(`   Attempting to repair user record for ${user.email}`);
-            // Set defaults for missing required fields
-            if (!user.onboardingCompleted) {
-              user.age = user.age || 25;
-              user.profession = user.profession || 'Other';
-            }
-            try {
-              await user.save();
-              console.log(`   ✅ User record repaired successfully`);
-            } catch (repairError) {
-              console.error('❌ Failed to repair user record:', repairError);
-              return res.redirect(`${FRONTEND_URL}/login?error=user_repair_failed&message=${encodeURIComponent('Account needs repair. Please contact support.')}`);
-            }
-          } else {
-            throw saveError;
-          }
-        }
-      }
-    }
-    
-    // If user was deleted and signing in again, user will be null here
-    // This is correct - we'll create a new user below
-
-    if (user) {
-      // CASE A: Existing user - IDEMPOTENT login (safe to call multiple times)
-      console.log(`✅ Found existing user: ${user.email} (ID: ${user._id})`);
       
-      // Defensive: Ensure user has valid onboardingCompleted field (always boolean)
-      if (typeof user.onboardingCompleted !== 'boolean') {
-        user.onboardingCompleted = false;
-        try {
-          await user.save();
-          console.log(`   Repaired onboardingCompleted field for ${user.email}`);
-        } catch (saveError) {
-          console.error('   Warning: Could not save onboardingCompleted repair:', saveError);
-        }
-      }
-      
-      // Update lastLogin timestamp (idempotent - safe to do on every login)
-      user.lastLogin = new Date();
-      try {
-        await user.save();
-      } catch (saveError) {
-        console.warn('   Warning: Could not update lastLogin:', saveError);
-        // Don't fail login if lastLogin update fails
-      }
-      
-      // Generate JWT token
-      const token = jwt.sign(
-        { userId: user._id.toString() },
-        JWT_SECRET,
-        { expiresIn: '7d' }
-      );
-
-      // ALWAYS return complete auth response - never block login
-      try {
-        const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
-        
-        // Build redirect URL with all required params
-        const params = new URLSearchParams();
-        params.set('status', 'existing_user');
-        params.set('token', token);
-        params.set('emailVerified', 'true');
-        params.set('name', user.name || name || email.split('@')[0] || 'User');
-        params.set('email', user.email || email || '');
-        params.set('role', user.role || 'user');
-        params.set('onboardingCompleted', user.onboardingCompleted === true ? 'true' : 'false');
-        params.set('needsOnboarding', user.onboardingCompleted !== true ? 'true' : 'false');
-        params.set('isNewUser', 'false');
-        params.set('_id', user._id.toString());
-        
-        // Add optional fields if available
-        if (user.age) {
-          params.set('age', user.age.toString());
-        }
-        if (user.profession) {
-          params.set('profession', user.profession);
-        }
-        
-        const redirectUrl = `${frontendUrl}/?${params.toString()}`;
-        
-        console.log(`✅ Existing user login successful: ${user.email}`);
-        console.log(`   Redirecting to: ${frontendUrl}/ (token and user data in URL params)`);
-        res.redirect(302, redirectUrl);
-        return;
-      } catch (urlError) {
-        console.error('❌ Error constructing redirect URL:', urlError);
-        console.error('   User email:', user.email);
-        console.error('   User ID:', user._id);
-        console.error('   Frontend URL:', FRONTEND_URL);
-        return res.redirect(`${FRONTEND_URL}/login?error=url_construction_failed&message=${encodeURIComponent('Failed to redirect after login. Please try again.')}`);
-      }
-    } else {
-      // CASE B: New user - create account with minimal data (idempotent check prevents duplicates)
-      console.log(`🆕 Creating new user: ${email}`);
-      isNewUser = true;
-      try {
-        // Create user with minimal required fields - age and profession are NOT required
-        // They will be set during onboarding
-        user = await User.create({
-          name: name || email.split('@')[0] || 'User',
-          email: email.toLowerCase(),
-          passwordHash: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12), // Random password (won't be used)
-          emailVerified: true, // Google emails are pre-verified
-          authProvider: 'google',
-          googleId,
-          role,
-          onboardingCompleted: false, // New users must complete onboarding
-          // age and profession are NOT set here - will be set during onboarding
-          // This prevents validation errors during OAuth login
-        });
-        console.log(`✅ Successfully created new user: ${user.email} (ID: ${user._id})`);
-      } catch (createError) {
-        console.error('❌ Error creating new user:', createError);
-        console.error('   Error name:', createError.name);
-        console.error('   Error message:', createError.message);
-        console.error('   Error code:', createError.code);
-        console.error('   Error keyValue:', createError.keyValue);
-        
-        // IDEMPOTENT: If it's a duplicate key error (race condition - user created between checks)
-        if (createError.code === 11000) {
-          console.error('   Duplicate key error - user might have been created by another request or account exists');
-          // Try to find the user again (idempotent - safe to retry)
-          const existingUser = await User.findOne({ $or: [{ googleId: googleId }, { email: email.toLowerCase() }] });
+      if (user) {
+        // Link Google ID to existing account
+        if (!user.googleId) {
+          user.googleId = googleId;
+          user.authProvider = 'google';
+          user.emailVerified = true;
           
-          if (existingUser) {
-            console.log(`   Found existing user after duplicate error, treating as existing user`);
-            isNewUser = false;
-            
-            // Generate JWT token for existing user
-            const token = jwt.sign(
-              { userId: existingUser._id.toString() },
-              JWT_SECRET,
-              { expiresIn: '7d' }
-            );
-            
-            // Redirect to frontend with user data
-            try {
-              const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
-              
-              const params = new URLSearchParams();
-              params.set('status', 'existing_user');
-              params.set('token', token);
-              params.set('emailVerified', 'true');
-              params.set('name', existingUser.name || name || email.split('@')[0] || 'User');
-              params.set('email', existingUser.email || email || '');
-              params.set('role', existingUser.role || 'user');
-              params.set('onboardingCompleted', existingUser.onboardingCompleted === true ? 'true' : 'false');
-              params.set('needsOnboarding', existingUser.onboardingCompleted !== true ? 'true' : 'false');
-              params.set('isNewUser', 'false');
-              params.set('_id', existingUser._id.toString());
-              
-              const redirectUrl = `${frontendUrl}/?${params.toString()}`;
-              
-              console.log(`✅ Existing user login successful after duplicate error: ${existingUser.email}`);
-              res.redirect(302, redirectUrl);
-              return;
-            } catch (urlError) {
-              console.error('❌ Error constructing redirect URL after duplicate error:', urlError);
-              return res.redirect(`${FRONTEND_URL}/login?error=url_construction_failed&message=${encodeURIComponent('Failed to redirect after login. Please try again.')}`);
-            }
-          } else {
-            // Duplicate key error but user not found - this shouldn't happen, but handle gracefully
-            console.error('   Duplicate key error but user not found in database - possible database inconsistency');
-            return res.redirect(`${FRONTEND_URL}/login?error=user_creation_failed&message=${encodeURIComponent('Account creation conflict. Please try again in a moment.')}`);
+          try {
+            await user.save();
+            console.log(`✅ Linked Google ID to existing user: ${user.email}`);
+          } catch (saveError) {
+            console.error('❌ Error linking Google ID:', saveError.message);
+            return res.redirect(`${FRONTEND_URL}/login?error=user_update_failed&message=${encodeURIComponent('Failed to link Google account. Please contact support.')}`);
           }
         }
-        
-        // For other errors, redirect to login with error message
-        const errorMessage = createError.message || 'Failed to create account. Please try again.';
-        console.error(`   Redirecting to login with error: ${errorMessage}`);
-        return res.redirect(`${FRONTEND_URL}/login?error=user_creation_failed&message=${encodeURIComponent(errorMessage)}`);
-      }
-
-      // Generate JWT token for new user
-      const token = jwt.sign(
-        { userId: user._id.toString() },
-        JWT_SECRET,
-        { expiresIn: '7d' }
-      );
-
-      // Redirect to frontend root with status=new_user
-      try {
-        const frontendUrl = (FRONTEND_URL || 'https://stash-beige.vercel.app').replace(/\/$/, '');
-        
-        // Build redirect URL with all required params
-        const params = new URLSearchParams();
-        params.set('status', 'new_user');
-        params.set('token', token);
-        params.set('emailVerified', 'true');
-        params.set('name', name || email.split('@')[0] || 'User');
-        params.set('email', email);
-        params.set('role', role);
-        params.set('onboardingCompleted', 'false');
-        params.set('needsOnboarding', 'true');
-        params.set('isNewUser', 'true');
-        params.set('_id', user._id.toString());
-        
-        const redirectUrl = `${frontendUrl}/?${params.toString()}`;
-        
-        console.log(`✅ New user created: ${user.email}, redirecting to onboarding`);
-        console.log(`   Redirecting to: ${frontendUrl}/ (token and user data in URL params)`);
-        res.redirect(302, redirectUrl);
-        return;
-      } catch (urlError) {
-        console.error('❌ Error constructing redirect URL:', urlError);
-        return res.redirect(`${FRONTEND_URL}/login?error=url_construction_failed`);
+      } else {
+        // Create new user
+        isNewUser = true;
+        try {
+          user = await User.create({
+            name: name || email.split('@')[0] || 'User',
+            email: email.toLowerCase(),
+            passwordHash: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12),
+            emailVerified: true,
+            authProvider: 'google',
+            googleId,
+            role,
+            onboardingCompleted: false,
+          });
+          console.log(`✅ Created new user: ${user.email} (ID: ${user._id})`);
+        } catch (createError) {
+          console.error('❌ Error creating user:', createError.message);
+          
+          // Handle duplicate key error (race condition)
+          if (createError.code === 11000) {
+            user = await User.findOne({ $or: [{ googleId: googleId }, { email: email.toLowerCase() }] });
+            if (user) {
+              isNewUser = false;
+              console.log(`✅ Found existing user after duplicate error: ${user.email}`);
+            } else {
+              return res.redirect(`${FRONTEND_URL}/login?error=user_creation_failed&message=${encodeURIComponent('Account creation conflict. Please try again.')}`);
+            }
+          } else {
+            return res.redirect(`${FRONTEND_URL}/login?error=user_creation_failed&message=${encodeURIComponent(createError.message || 'Failed to create account')}`);
+          }
+        }
       }
     }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id.toString() },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Build redirect URL
+    const frontendUrl = FRONTEND_URL.replace(/\/$/, '');
+    const userData = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      onboardingCompleted: user.onboardingCompleted === true,
+      age: user.age,
+      profession: user.profession,
+    };
+    
+    const redirectUrl = buildRedirectUrl(frontendUrl, token, userData, isNewUser);
+    
+    console.log(`✅ OAuth login successful: ${user.email} (${isNewUser ? 'new' : 'existing'} user)`);
+    console.log(`   Redirecting to: ${frontendUrl}/`);
+    
+    res.redirect(302, redirectUrl);
+    
   } catch (error) {
     console.error('❌ Google OAuth callback error:', error);
     console.error('   Error name:', error.name);
     console.error('   Error message:', error.message);
     console.error('   Error stack:', error.stack);
-    console.error('   Request query:', req.query);
-    console.error('   Request params:', req.params);
     
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://stash-beige.vercel.app';
-    
-    // Provide more specific error messages
-    let errorCode = 'oauth_failed';
-    let errorMessage = 'Authentication failed. Please try again.';
-    
-    if (error.message.includes('network') || error.message.includes('ECONNREFUSED')) {
-      errorCode = 'network_error';
-      errorMessage = 'Network error. Please check your connection.';
-    } else if (error.message.includes('timeout')) {
-      errorCode = 'timeout_error';
-      errorMessage = 'Request timed out. Please try again.';
-    } else if (error.message.includes('ENOTFOUND') || error.message.includes('DNS')) {
-      errorCode = 'dns_error';
-      errorMessage = 'Connection error. Please check your internet.';
-    } else if (error.message.includes('invalid_grant') || error.message.includes('code')) {
-      errorCode = 'token_exchange_failed';
-      errorMessage = 'Authorization code expired. Please try signing in again.';
-    }
-    
-    const redirectUrl = `${FRONTEND_URL}/login?error=${errorCode}&message=${encodeURIComponent(errorMessage)}`;
-    console.error('   Redirecting to:', redirectUrl);
-    res.redirect(redirectUrl);
+    const errorMessage = error.message || 'Authentication failed. Please try again.';
+    return res.redirect(`${FRONTEND_URL}/login?error=oauth_failed&message=${encodeURIComponent(errorMessage)}`);
   }
 };
 
