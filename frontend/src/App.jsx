@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { toast, Toaster } from 'react-hot-toast';
 import { ExpenseProvider } from './contexts/ExpenseContext';
 import { CardsProvider } from './contexts/CardsContext';
@@ -25,374 +25,325 @@ import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 
-function App() {
+// Inner component that can use useLocation hook
+function AppContent({ setUser: setUserProp }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false); // Default to false - app renders immediately
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
+  // Process OAuth callback from URL
   useEffect(() => {
-    const initializeApp = async () => {
-      // Set loading = true ONLY while checking auth
-      setLoading(true);
-      
-      // Hard failsafe timeout - ensures loading NEVER hangs
-      const timeoutId = setTimeout(() => {
-        console.warn('App initialization timeout - forcing completion');
-        setLoading(false);
-      }, 3000); // 3 second maximum timeout
+    const processOAuthCallback = () => {
+      const urlParams = new URLSearchParams(location.search);
+      const tokenFromUrl = urlParams.get('token');
+      const errorFromUrl = urlParams.get('error');
 
-      try {
-        setError(null);
-        
-        // Handle OAuth token from URL query params FIRST (before localStorage check)
-        const urlParams = new URLSearchParams(window.location.search);
-        const tokenFromUrl = urlParams.get('token');
-        const errorFromUrl = urlParams.get('error');
-        
-        // Log the current URL for debugging
-        console.log('🔍 Current URL:', window.location.href);
-        console.log('🔍 URL search params:', Object.fromEntries(urlParams.entries()));
-        
-        if (errorFromUrl) {
-          // If there's an error in the URL, we'll handle it in the Login component
-          // But log it here for debugging
-          console.error('❌ Error in URL params:', errorFromUrl, urlParams.get('message'));
-        }
-        
-        if (tokenFromUrl) {
-          // OAuth redirect - save token and user data from URL params
-          console.log('🔐 OAuth callback detected - processing token from URL');
-          console.log('🔐 Token present:', !!tokenFromUrl, 'Token length:', tokenFromUrl?.length);
-          try {
-            // Get user data from URL params BEFORE cleaning
-            const name = urlParams.get('name');
-            const email = urlParams.get('email');
-            const role = urlParams.get('role') || 'user';
-            const onboardingCompleted = urlParams.get('onboardingCompleted') === 'true';
-            const userId = urlParams.get('_id');
-            const emailVerified = urlParams.get('emailVerified') === 'true';
-            const age = urlParams.get('age');
-            const profession = urlParams.get('profession');
+      console.log('🔍 Processing OAuth callback:', {
+        pathname: location.pathname,
+        search: location.search,
+        hasToken: !!tokenFromUrl,
+        hasError: !!errorFromUrl
+      });
+
+      if (errorFromUrl) {
+        console.error('❌ Error in URL params:', errorFromUrl, urlParams.get('message'));
+        return;
+      }
+
+      if (tokenFromUrl) {
+        console.log('🔐 OAuth token found in URL');
+        try {
+          // Get all user data from URL params
+          const name = urlParams.get('name');
+          const email = urlParams.get('email');
+          const role = urlParams.get('role') || 'user';
+          const onboardingCompleted = urlParams.get('onboardingCompleted') === 'true';
+          const userId = urlParams.get('_id');
+          const emailVerified = urlParams.get('emailVerified') === 'true';
+          const age = urlParams.get('age');
+          const profession = urlParams.get('profession');
+
+          console.log('📋 Extracted data:', { email, userId, hasEmail: !!email, hasId: !!userId });
+
+          // Clear guest mode
+          localStorage.removeItem('isGuest');
+          localStorage.removeItem('guestTimestamp');
+
+          // Construct user data - decode if needed
+          const userData = {
+            _id: userId || '',
+            name: name ? decodeURIComponent(name) : (email ? decodeURIComponent(email).split('@')[0] : 'User'),
+            email: email ? decodeURIComponent(email) : '',
+            emailVerified: emailVerified,
+            role: role,
+            onboardingCompleted: onboardingCompleted,
+            age: age ? parseInt(age, 10) : null,
+            profession: profession ? decodeURIComponent(profession) : null,
+          };
+
+          console.log('📋 Processed user data:', { 
+            email: userData.email, 
+            _id: userData._id, 
+            hasEmail: !!userData.email, 
+            hasId: !!userData._id 
+          });
+
+          // Validate - must have email and _id
+          if (userData.email && userData._id) {
+            // Save to localStorage FIRST
+            localStorage.setItem('token', tokenFromUrl);
+            localStorage.setItem('user', JSON.stringify(userData));
             
-            console.log('📋 OAuth data extracted:', { email, userId, role, onboardingCompleted });
-            
-            // Clear guest mode when signing in
-            localStorage.removeItem('isGuest');
-            localStorage.removeItem('guestTimestamp');
-            
-            // Construct user data - ensure email and _id are properly decoded
-            const userData = {
-              _id: userId ? decodeURIComponent(userId) : '',
-              name: name ? decodeURIComponent(name) : (email ? decodeURIComponent(email).split('@')[0] : 'User'),
-              email: email ? decodeURIComponent(email) : '',
-              emailVerified: emailVerified,
-              role: role,
-              onboardingCompleted: onboardingCompleted,
-              age: age ? parseInt(age, 10) : null,
-              profession: profession ? decodeURIComponent(profession) : null,
-            };
-            
-            console.log('📋 Processed user data:', { email: userData.email, _id: userData._id, hasEmail: !!userData.email, hasId: !!userData._id });
-            
-            // Validate user data - must have email and _id
-            if (userData.email && userData._id) {
-              // Save token and user data to localStorage FIRST
-              localStorage.setItem('token', tokenFromUrl);
-              localStorage.setItem('user', JSON.stringify(userData));
-              
-              // Sync onboardingCompleted
-              if (userData.onboardingCompleted) {
-                localStorage.setItem('onboardingCompleted', 'true');
-              } else {
-                localStorage.removeItem('onboardingCompleted');
-              }
-              
-              console.log('✅ User data saved to localStorage:', userData.email);
-              
-              // Set user state - this will trigger re-render
-              setUser(userData);
-              
-              // Clean URL AFTER everything is saved and state is set
-              window.history.replaceState({}, '', '/');
-              
-              // Show success message if available
-              const message = urlParams.get('message');
-              if (message) {
-                toast.success(decodeURIComponent(message));
-              } else {
-                toast.success('Signed in successfully!');
-              }
-              
-              console.log('✅ OAuth login successful - user state set, should redirect to dashboard');
-              // Token handling complete - skip localStorage check below
-              // Continue to finally block to set loading = false
+            if (userData.onboardingCompleted) {
+              localStorage.setItem('onboardingCompleted', 'true');
             } else {
-              console.error('❌ Invalid user data from OAuth callback:', { 
-                email: userData.email, 
-                _id: userData._id,
-                hasEmail: !!userData.email,
-                hasId: !!userData._id,
-                rawEmail: email,
-                rawUserId: userId
-              });
-              // Clean URL even on error
-              window.history.replaceState({}, '', '/login');
-              toast.error('Failed to sign in. Missing user data. Please try again.');
-              // Continue to localStorage check on error
+              localStorage.removeItem('onboardingCompleted');
             }
-          } catch (tokenError) {
-            console.error('❌ Error handling OAuth token:', tokenError);
-            console.error('   Error stack:', tokenError.stack);
-            // Clean URL even on error
+
+            console.log('✅ Saved to localStorage, setting user state');
+            
+            // Set user state
+            setUser(userData);
+            setUserProp(userData);
+
+            // Clean URL
+            window.history.replaceState({}, '', '/');
+
+            // Show success
+            toast.success('Signed in successfully!');
+            console.log('✅ OAuth login complete');
+          } else {
+            console.error('❌ Missing required data:', { email: userData.email, _id: userData._id });
+            toast.error('Failed to sign in. Missing user data.');
             window.history.replaceState({}, '', '/login');
-            toast.error('Failed to process sign-in. Please try again.');
-            // Continue to localStorage check on error
           }
+        } catch (error) {
+          console.error('❌ Error processing OAuth callback:', error);
+          toast.error('Failed to process sign-in.');
+          window.history.replaceState({}, '', '/login');
         }
-        
-        // Only check localStorage if token was not in URL (normal app load)
-        if (!tokenFromUrl) {
-          const token = localStorage.getItem('token');
-          const userData = localStorage.getItem('user');
-          const isGuest = localStorage.getItem('isGuest') === 'true';
-          
-          if (isGuest && userData) {
-          // Guest mode - no token needed
-          try {
-            const parsedUser = JSON.parse(userData);
-            // Normalize guest user object with safe defaults
+      }
+    };
+
+    processOAuthCallback();
+  }, [location.search, location.pathname, setUserProp]);
+
+  // Initialize user from localStorage on mount
+  useEffect(() => {
+    const initializeUser = () => {
+      try {
+        const token = localStorage.getItem('token');
+        const userDataStr = localStorage.getItem('user');
+        const isGuest = localStorage.getItem('isGuest') === 'true';
+
+        if (isGuest && userDataStr) {
+          const parsedUser = JSON.parse(userDataStr);
+          const normalizedUser = {
+            _id: parsedUser._id || '',
+            name: parsedUser.name || 'Guest',
+            email: parsedUser.email || '',
+            emailVerified: false,
+            role: 'guest',
+            onboardingCompleted: false,
+            age: parsedUser.age || null,
+            profession: parsedUser.profession || null,
+          };
+          setUser(normalizedUser);
+          setUserProp(normalizedUser);
+        } else if (token && userDataStr) {
+          const parsedUser = JSON.parse(userDataStr);
+          if (parsedUser && parsedUser.email) {
             const normalizedUser = {
               _id: parsedUser._id || '',
-              name: parsedUser.name || 'Guest',
-              email: parsedUser.email || '',
-              emailVerified: false,
-              role: 'guest',
-              onboardingCompleted: false,
+              name: parsedUser.name || parsedUser.email.split('@')[0] || 'User',
+              email: parsedUser.email,
+              emailVerified: parsedUser.emailVerified === true,
+              role: parsedUser.role || 'user',
+              onboardingCompleted: parsedUser.onboardingCompleted === true,
               age: parsedUser.age || null,
               profession: parsedUser.profession || null,
             };
             setUser(normalizedUser);
-          } catch (parseError) {
-            console.error('Error parsing user data:', parseError);
-            localStorage.removeItem('isGuest');
-            localStorage.removeItem('user');
-            localStorage.removeItem('guestTimestamp');
-            setUser(null);
-          }
-        } else if (token && userData) {
-          // Authenticated user - verify token is still valid
-          try {
-            const parsedUser = JSON.parse(userData);
-            // Clear guest mode if user is authenticated
-            localStorage.removeItem('isGuest');
-            localStorage.removeItem('guestTimestamp');
-            
-            // Verify user object has required fields and normalize
-            if (parsedUser && parsedUser.email) {
-              // Normalize user object with safe defaults to prevent blank screen
-              const normalizedUser = {
-                _id: parsedUser._id || '',
-                name: parsedUser.name || parsedUser.email.split('@')[0] || 'User',
-                email: parsedUser.email,
-                emailVerified: parsedUser.emailVerified === true,
-                role: parsedUser.role || 'user',
-                onboardingCompleted: parsedUser.onboardingCompleted === true, // Always boolean
-                age: parsedUser.age || null,
-                profession: parsedUser.profession || null,
-              };
-              setUser(normalizedUser);
-            } else {
-              // Invalid user data - force logout
-              console.warn('Invalid user data, forcing logout');
-              localStorage.removeItem('token');
-              localStorage.removeItem('user');
-              setUser(null);
-            }
-          } catch (parseError) {
-            console.error('Error parsing user data:', parseError);
-            // Force logout on parse error
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('isGuest');
-            localStorage.removeItem('guestTimestamp');
-            setUser(null);
-          }
-          } else {
-            // No auth data - default to guest mode (non-blocking)
-            setUser(null);
-            // Don't set isGuest here - let user choose guest mode on login page
+            setUserProp(normalizedUser);
           }
         }
-      } catch (err) {
-        // Ignore errors - don't block rendering
-        console.error('App initialization error:', err);
-        setUser(null);
+      } catch (error) {
+        console.error('Error initializing user:', error);
       } finally {
-        // ALWAYS set loading to false - app must render
-        clearTimeout(timeoutId);
         setLoading(false);
       }
     };
-    
-    initializeApp();
-  }, []);
 
-  // Hard failsafe - ensure loading NEVER hangs (independent of initialization)
+    // Only initialize from localStorage if no token in URL
+    const urlParams = new URLSearchParams(location.search);
+    if (!urlParams.get('token')) {
+      initializeUser();
+    } else {
+      setLoading(false);
+    }
+  }, [location.search, setUserProp]);
+
+  // Failsafe timeout
   useEffect(() => {
-    const failsafeTimeout = setTimeout(() => {
+    const timeout = setTimeout(() => {
       if (loading) {
-        console.warn('Failsafe: Forcing loading to false after 3 seconds');
+        console.warn('Failsafe: Forcing loading to false');
         setLoading(false);
       }
     }, 3000);
-    return () => clearTimeout(failsafeTimeout);
+    return () => clearTimeout(timeout);
   }, [loading]);
 
-  // REMOVED: Auth gating - app ALWAYS renders UI
-  // Loading state is NON-BLOCKING - show spinner but render routes
-  
+  return (
+    <>
+      <Toaster position="top-right" />
+      {loading && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-slate-400 text-lg">Loading...</p>
+          </div>
+        </div>
+      )}
+      <Routes>
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/" replace /> : <Login setUser={(u) => { setUser(u); setUserProp(u); }} />}
+        />
+        <Route
+          path="/register"
+          element={user ? <Navigate to="/" replace /> : <Register setUser={(u) => { setUser(u); setUserProp(u); }} />}
+        />
+        <Route
+          path="/verify-email"
+          element={<VerifyEmail />}
+        />
+        <Route
+          path="/forgot-password"
+          element={user ? <Navigate to="/" replace /> : <ForgotPassword />}
+        />
+        <Route
+          path="/reset-password"
+          element={user ? <Navigate to="/" replace /> : <ResetPassword />}
+        />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/data-deletion" element={<DataDeletionPolicy />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <Dashboard />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cards"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <Cards />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <Transactions />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/expenses"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <Expenses />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/income"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <Income />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/budgets"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <Budgets />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/goals"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <Goals />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/insights"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <Insights />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/family"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <Family />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <Settings />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </>
+  );
+}
+
+function App() {
+  const [user, setUser] = useState(null);
+
   return (
     <ErrorBoundary>
       <ExpenseProvider>
         <CardsProvider>
           <Router>
-            <Toaster position="top-right" />
-            {/* Show loading spinner overlay but DON'T block routes */}
-            {loading && (
-              <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                  <p className="text-slate-400 text-lg">Loading...</p>
-                </div>
-              </div>
-            )}
-            <Routes>
-                <Route
-                  path="/login"
-                  element={user ? <Navigate to="/" replace /> : <Login setUser={setUser} />}
-                />
-                <Route
-                  path="/register"
-                  element={user ? <Navigate to="/" replace /> : <Register setUser={setUser} />}
-                />
-                <Route
-                  path="/verify-email"
-                  element={<VerifyEmail />}
-                />
-                <Route
-                  path="/forgot-password"
-                  element={user ? <Navigate to="/" replace /> : <ForgotPassword />}
-                />
-                <Route
-                  path="/reset-password"
-                  element={user ? <Navigate to="/" replace /> : <ResetPassword />}
-                />
-                {/* Legal Pages */}
-                <Route path="/privacy" element={<PrivacyPolicy />} />
-                <Route path="/terms" element={<TermsOfService />} />
-                <Route path="/data-deletion" element={<DataDeletionPolicy />} />
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute user={user}>
-                      <Layout user={user} setUser={setUser}>
-                        <Dashboard />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/cards"
-                  element={
-                    <ProtectedRoute user={user}>
-                      <Layout user={user} setUser={setUser}>
-                        <Cards />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/transactions"
-                  element={
-                    <ProtectedRoute user={user}>
-                      <Layout user={user} setUser={setUser}>
-                        <Transactions />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/expenses"
-                  element={
-                    <ProtectedRoute user={user}>
-                      <Layout user={user} setUser={setUser}>
-                        <Expenses />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/income"
-                  element={
-                    <ProtectedRoute user={user}>
-                      <Layout user={user} setUser={setUser}>
-                        <Income />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/budgets"
-                  element={
-                    <ProtectedRoute user={user}>
-                      <Layout user={user} setUser={setUser}>
-                        <Budgets />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/goals"
-                  element={
-                    <ProtectedRoute user={user}>
-                      <Layout user={user} setUser={setUser}>
-                        <Goals />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/insights"
-                  element={
-                    <ProtectedRoute user={user}>
-                      <Layout user={user} setUser={setUser}>
-                        <Insights />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/family"
-                  element={
-                    <ProtectedRoute user={user}>
-                      <Layout user={user} setUser={setUser}>
-                        <Family />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/settings"
-                  element={
-                    <ProtectedRoute user={user}>
-                      <Layout user={user} setUser={setUser}>
-                        <Settings />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
+            <AppContent setUser={setUser} />
           </Router>
         </CardsProvider>
       </ExpenseProvider>
@@ -401,5 +352,3 @@ function App() {
 }
 
 export default App;
-
-
