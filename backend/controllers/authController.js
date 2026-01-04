@@ -524,26 +524,51 @@ export const googleAuthInitiate = async (req, res) => {
  * Helper function to build redirect URL with user data
  */
 const buildRedirectUrl = (frontendUrl, token, userData, isNewUser = false) => {
-  const params = new URLSearchParams();
-  params.set('token', token);
-  params.set('status', isNewUser ? 'new_user' : 'existing_user');
-  params.set('emailVerified', 'true');
-  params.set('name', userData.name || userData.email?.split('@')[0] || 'User');
-  params.set('email', userData.email || '');
-  params.set('role', userData.role || 'user');
-  params.set('onboardingCompleted', userData.onboardingCompleted === true ? 'true' : 'false');
-  params.set('needsOnboarding', userData.onboardingCompleted !== true ? 'true' : 'false');
-  params.set('isNewUser', isNewUser ? 'true' : 'false');
-  params.set('_id', userData._id?.toString() || '');
-  
-  if (userData.age) {
-    params.set('age', userData.age.toString());
+  // Use URL and URLSearchParams (available in Node.js 18+)
+  try {
+    const url = new URL(frontendUrl + '/');
+    url.searchParams.set('token', token);
+    url.searchParams.set('status', isNewUser ? 'new_user' : 'existing_user');
+    url.searchParams.set('emailVerified', 'true');
+    url.searchParams.set('name', userData.name || userData.email?.split('@')[0] || 'User');
+    url.searchParams.set('email', userData.email || '');
+    url.searchParams.set('role', userData.role || 'user');
+    url.searchParams.set('onboardingCompleted', userData.onboardingCompleted === true ? 'true' : 'false');
+    url.searchParams.set('needsOnboarding', userData.onboardingCompleted !== true ? 'true' : 'false');
+    url.searchParams.set('isNewUser', isNewUser ? 'true' : 'false');
+    url.searchParams.set('_id', userData._id?.toString() || '');
+    
+    if (userData.age) {
+      url.searchParams.set('age', userData.age.toString());
+    }
+    if (userData.profession) {
+      url.searchParams.set('profession', userData.profession);
+    }
+    
+    return url.toString();
+  } catch (error) {
+    // Fallback: manual URL building
+    const params = [];
+    params.push(`token=${encodeURIComponent(token)}`);
+    params.push(`status=${isNewUser ? 'new_user' : 'existing_user'}`);
+    params.push('emailVerified=true');
+    params.push(`name=${encodeURIComponent(userData.name || userData.email?.split('@')[0] || 'User')}`);
+    params.push(`email=${encodeURIComponent(userData.email || '')}`);
+    params.push(`role=${userData.role || 'user'}`);
+    params.push(`onboardingCompleted=${userData.onboardingCompleted === true ? 'true' : 'false'}`);
+    params.push(`needsOnboarding=${userData.onboardingCompleted !== true ? 'true' : 'false'}`);
+    params.push(`isNewUser=${isNewUser ? 'true' : 'false'}`);
+    params.push(`_id=${userData._id?.toString() || ''}`);
+    
+    if (userData.age) {
+      params.push(`age=${userData.age.toString()}`);
+    }
+    if (userData.profession) {
+      params.push(`profession=${encodeURIComponent(userData.profession)}`);
+    }
+    
+    return `${frontendUrl}/?${params.join('&')}`;
   }
-  if (userData.profession) {
-    params.set('profession', userData.profession);
-  }
-  
-  return `${frontendUrl}/?${params.toString()}`;
 };
 
 /**
