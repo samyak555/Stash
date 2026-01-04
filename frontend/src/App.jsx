@@ -80,10 +80,10 @@ function App() {
             localStorage.removeItem('isGuest');
             localStorage.removeItem('guestTimestamp');
             
-            // Construct user data
+            // Construct user data - ensure email and _id are properly decoded
             const userData = {
-              _id: userId || '',
-              name: name ? decodeURIComponent(name) : (email ? email.split('@')[0] : 'User'),
+              _id: userId ? decodeURIComponent(userId) : '',
+              name: name ? decodeURIComponent(name) : (email ? decodeURIComponent(email).split('@')[0] : 'User'),
               email: email ? decodeURIComponent(email) : '',
               emailVerified: emailVerified,
               role: role,
@@ -92,9 +92,11 @@ function App() {
               profession: profession ? decodeURIComponent(profession) : null,
             };
             
+            console.log('📋 Processed user data:', { email: userData.email, _id: userData._id, hasEmail: !!userData.email, hasId: !!userData._id });
+            
             // Validate user data - must have email and _id
             if (userData.email && userData._id) {
-              // Save token and user data to localStorage
+              // Save token and user data to localStorage FIRST
               localStorage.setItem('token', tokenFromUrl);
               localStorage.setItem('user', JSON.stringify(userData));
               
@@ -107,10 +109,10 @@ function App() {
               
               console.log('✅ User data saved to localStorage:', userData.email);
               
-              // Set user state BEFORE cleaning URL (critical for React state update)
+              // Set user state - this will trigger re-render
               setUser(userData);
               
-              // Clean URL AFTER user state is set
+              // Clean URL AFTER everything is saved and state is set
               window.history.replaceState({}, '', '/');
               
               // Show success message if available
@@ -121,7 +123,7 @@ function App() {
                 toast.success('Signed in successfully!');
               }
               
-              console.log('✅ OAuth login successful - user state set, redirecting to dashboard');
+              console.log('✅ OAuth login successful - user state set, should redirect to dashboard');
               // Token handling complete - skip localStorage check below
               // Continue to finally block to set loading = false
             } else {
@@ -129,10 +131,12 @@ function App() {
                 email: userData.email, 
                 _id: userData._id,
                 hasEmail: !!userData.email,
-                hasId: !!userData._id
+                hasId: !!userData._id,
+                rawEmail: email,
+                rawUserId: userId
               });
               // Clean URL even on error
-              window.history.replaceState({}, '', '/');
+              window.history.replaceState({}, '', '/login');
               toast.error('Failed to sign in. Missing user data. Please try again.');
               // Continue to localStorage check on error
             }
@@ -140,7 +144,7 @@ function App() {
             console.error('❌ Error handling OAuth token:', tokenError);
             console.error('   Error stack:', tokenError.stack);
             // Clean URL even on error
-            window.history.replaceState({}, '', '/');
+            window.history.replaceState({}, '', '/login');
             toast.error('Failed to process sign-in. Please try again.');
             // Continue to localStorage check on error
           }
