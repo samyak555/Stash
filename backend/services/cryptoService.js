@@ -75,6 +75,76 @@ export const getTopCryptos = async (limit = 20) => {
 };
 
 /**
+ * Search cryptocurrencies by name or symbol
+ */
+export const searchCryptos = async (query) => {
+  try {
+    if (!query || query.trim().length < 2) {
+      return [];
+    }
+
+    const response = await axios.get('https://api.coingecko.com/api/v3/search', {
+      params: {
+        query: query.trim(),
+      },
+      timeout: 10000,
+    });
+
+    if (!response.data || !response.data.coins) {
+      return [];
+    }
+
+    // Get top 20 results
+    const coins = response.data.coins.slice(0, 20);
+    
+    // Fetch detailed data for searched coins
+    const coinIds = coins.map(coin => coin.id).join(',');
+    if (!coinIds) return [];
+
+    const detailsResponse = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+      params: {
+        vs_currency: 'usd',
+        ids: coinIds,
+        order: 'market_cap_desc',
+        sparkline: true,
+        price_change_percentage: '24h,7d,30d',
+      },
+      timeout: 15000,
+    });
+
+    const detailedCoins = detailsResponse.data.map(coin => ({
+      id: coin.id,
+      symbol: coin.symbol.toUpperCase(),
+      name: coin.name,
+      image: coin.image,
+      currentPrice: coin.current_price,
+      marketCap: coin.market_cap,
+      marketCapRank: coin.market_cap_rank,
+      totalVolume: coin.total_volume,
+      high24h: coin.high_24h,
+      low24h: coin.low_24h,
+      priceChange24h: coin.price_change_24h,
+      priceChangePercentage24h: coin.price_change_percentage_24h,
+      priceChangePercentage7d: coin.price_change_percentage_7d_in_currency,
+      circulatingSupply: coin.circulating_supply,
+      totalSupply: coin.total_supply,
+      maxSupply: coin.max_supply,
+      ath: coin.ath,
+      athChangePercentage: coin.ath_change_percentage,
+      atl: coin.atl,
+      atlChangePercentage: coin.atl_change_percentage,
+      sparkline: coin.sparkline_in_7d?.price || [],
+      lastUpdated: coin.last_updated,
+    }));
+
+    return detailedCoins;
+  } catch (error) {
+    console.error('Error searching cryptos:', error.message);
+    return [];
+  }
+};
+
+/**
  * Get crypto fundamentals by ID
  */
 export const getCryptoFundamentals = async (coinId) => {
@@ -129,4 +199,3 @@ export const getCryptoFundamentals = async (coinId) => {
     return null;
   }
 };
-

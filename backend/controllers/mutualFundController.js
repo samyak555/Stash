@@ -1,4 +1,4 @@
-import { getTopIndianMFs, getMFFundamentals } from '../services/mutualFundService.js';
+import { getTopIndianMFs, getMFFundamentals, searchMutualFunds } from '../services/mutualFundService.js';
 
 /**
  * Get top Indian Mutual Funds
@@ -9,6 +9,23 @@ export const getTopMFs = async (req, res) => {
     res.json(mfs);
   } catch (error) {
     console.error('Error fetching top MFs:', error);
+    res.json([]);
+  }
+};
+
+/**
+ * Search mutual funds
+ */
+export const searchMFs = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.trim().length < 2) {
+      return res.json([]);
+    }
+    const mfs = await searchMutualFunds(q);
+    res.json(mfs);
+  } catch (error) {
+    console.error('Error searching MFs:', error);
     res.json([]);
   }
 };

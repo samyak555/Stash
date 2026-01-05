@@ -1,4 +1,4 @@
-import { getTopCryptos, getCryptoFundamentals } from '../services/cryptoService.js';
+import { getTopCryptos, getCryptoFundamentals, searchCryptos } from '../services/cryptoService.js';
 
 /**
  * Get top cryptocurrencies with fundamentals
@@ -10,6 +10,23 @@ export const getTopCryptosList = async (req, res) => {
     res.json(cryptos);
   } catch (error) {
     console.error('Error fetching top cryptos:', error);
+    res.json([]);
+  }
+};
+
+/**
+ * Search cryptocurrencies
+ */
+export const searchCryptosList = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.trim().length < 2) {
+      return res.json([]);
+    }
+    const cryptos = await searchCryptos(q);
+    res.json(cryptos);
+  } catch (error) {
+    console.error('Error searching cryptos:', error);
     res.json([]);
   }
 };

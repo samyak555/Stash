@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { formatIncome } from '../utils/formatDisplayValue';
 import LoadingDots from './LoadingDots';
+import CryptoSearch from './CryptoSearch';
 import { cryptoAPI } from '../services/api';
 import { Line } from 'react-chartjs-2';
 import {
@@ -64,11 +65,17 @@ const CryptoList = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-white">Top Cryptocurrencies</h2>
+        <h2 className="text-2xl font-bold text-white">Cryptocurrencies</h2>
         <span className="px-3 py-1 bg-red-500/20 text-red-400 text-xs rounded animate-pulse">
           🔴 LIVE
         </span>
       </div>
+
+      {/* Crypto Search */}
+      <CryptoSearch onSelectCrypto={(crypto) => {
+        // Handle crypto selection - could navigate to detail page or add to watchlist
+        console.log('Selected crypto:', crypto);
+      }} />
 
       <div className="grid grid-cols-1 gap-4">
         {cryptos.map((crypto) => {

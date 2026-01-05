@@ -124,11 +124,13 @@ const FinanceNews = () => {
                 }
                 
                 return (
-                  <a
+                  <div
                     key={index}
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    onClick={() => {
+                      if (article.url) {
+                        window.open(article.url, '_blank', 'noopener,noreferrer');
+                      }
+                    }}
                     className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 hover:border-teal-500/50 transition-all hover:shadow-lg hover:shadow-teal-500/10 cursor-pointer"
                   >
                     <h3 className="text-white font-bold text-lg mb-3 line-clamp-2">
@@ -138,7 +140,7 @@ const FinanceNews = () => {
                       <span>{article.source || 'Unknown'}</span>
                       <span>{timeDisplay}</span>
                     </div>
-                  </a>
+                  </div>
                 );
               })}
           </div>

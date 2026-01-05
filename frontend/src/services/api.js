@@ -272,11 +272,13 @@ export const marketAPI = {
 
 export const cryptoAPI = {
   getTopCryptos: (limit) => api.get('/crypto/top', { params: { limit } }),
+  searchCryptos: (query) => api.get('/crypto/search', { params: { q: query } }),
   getCryptoFundamentals: (coinId) => api.get(`/crypto/fundamentals/${coinId}`),
 };
 
 export const mutualFundAPI = {
   getTopMFs: () => api.get('/mutual-funds/top'),
+  searchMFs: (query) => api.get('/mutual-funds/search', { params: { q: query } }),
   getMFFundamentals: (schemeCode) => api.get(`/mutual-funds/fundamentals/${schemeCode}`),
 };
 

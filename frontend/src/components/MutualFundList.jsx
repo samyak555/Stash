@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { formatIncome } from '../utils/formatDisplayValue';
 import LoadingDots from './LoadingDots';
+import MutualFundSearch from './MutualFundSearch';
 import { mutualFundAPI } from '../services/api';
 import { Line } from 'react-chartjs-2';
 import {
@@ -57,11 +58,17 @@ const MutualFundList = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-white">Top Indian Mutual Funds</h2>
+        <h2 className="text-2xl font-bold text-white">Indian Mutual Funds</h2>
         <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs rounded">
           Daily NAV
         </span>
       </div>
+
+      {/* Mutual Fund Search */}
+      <MutualFundSearch onSelectMF={(mf) => {
+        // Handle MF selection - could navigate to detail page or add to holdings
+        console.log('Selected MF:', mf);
+      }} />
 
       <div className="grid grid-cols-1 gap-6">
         {mfs.map((mf) => {

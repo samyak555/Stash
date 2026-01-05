@@ -79,11 +79,13 @@ const FinanceNewsWidget = () => {
             }
             
             return (
-              <a
+              <div
                 key={index}
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={() => {
+                  if (article.url) {
+                    window.open(article.url, '_blank', 'noopener,noreferrer');
+                  }
+                }}
                 className="block p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition-colors border border-slate-600/50 hover:border-teal-500/50 cursor-pointer"
               >
                 <h3 className="text-white font-medium mb-2 line-clamp-2">
@@ -93,7 +95,7 @@ const FinanceNewsWidget = () => {
                   <span>{article.source || 'Unknown'}</span>
                   <span>{timeDisplay}</span>
                 </div>
-              </a>
+              </div>
             );
           })}
       </div>
