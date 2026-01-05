@@ -7,7 +7,7 @@ React Native mobile application for the Stash fintech platform.
 - 📊 Dashboard with financial overview
 - 💰 Expense & Income tracking
 - 📈 Investment portfolio tracking
-- 📰 Finance news
+- 📰 Stash News
 - 📊 Analytics & insights
 - 🔐 Secure authentication
 
@@ -83,7 +83,7 @@ mobile-app/
 - ✅ Expense tracking
 - ✅ Income tracking
 - ✅ Investment portfolio
-- ✅ Finance news
+- ✅ Stash News
 - ✅ Analytics
 - ✅ Stock details
 - ✅ Settings

@@ -150,7 +150,7 @@ const DashboardScreen = ({ navigation }) => {
         {headlines.length > 0 && (
           <View style={styles.card}>
             <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>Finance News</Text>
+              <Text style={styles.cardTitle}>Stash News</Text>
               <TouchableOpacity onPress={() => navigation.navigate('News')}>
                 <Text style={styles.linkText}>View All →</Text>
               </TouchableOpacity>

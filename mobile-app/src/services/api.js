@@ -56,6 +56,7 @@ export const mutualFundAPI = {
 };
 
 export const newsAPI = {
+  getNews: () => api.get('/news'),
   getCategorized: () => api.get('/news/categorized'),
   getHeadlines: (limit) => api.get('/news/headlines', { params: { limit } }),
 };
