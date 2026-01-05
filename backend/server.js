@@ -28,6 +28,9 @@ import transactionRoutes from './routes/transactionRoutes.js';
 import investRoutes from './routes/investRoutes.js';
 import marketRoutes from './routes/marketRoutes.js';
 import newsRoutes from './routes/newsRoutes.js';
+import netWorthRoutes from './routes/netWorthRoutes.js';
+import portfolioInsightsRoutes from './routes/portfolioInsightsRoutes.js';
+import alertsRoutes from './routes/alertsRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -133,6 +136,9 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/invest', investRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api/news', newsRoutes);
+app.use('/api/net-worth', netWorthRoutes);
+app.use('/api/portfolio-insights', portfolioInsightsRoutes);
+app.use('/api/alerts', alertsRoutes);
 
 // Error handling middleware - Production-ready (no stack traces)
 app.use((err, req, res, next) => {

@@ -273,6 +273,29 @@ export const newsAPI = {
   getHeadlines: (limit) => api.get('/news/headlines', { params: { limit } }),
 };
 
+export const netWorthAPI = {
+  getNetWorth: () => api.get('/net-worth'),
+  addCashBalance: (data) => api.post('/net-worth/cash', data),
+  updateCashBalance: (id, data) => api.put(`/net-worth/cash/${id}`, data),
+  deleteCashBalance: (id) => api.delete(`/net-worth/cash/${id}`),
+  addLiability: (data) => api.post('/net-worth/liability', data),
+  updateLiability: (id, data) => api.put(`/net-worth/liability/${id}`, data),
+  deleteLiability: (id) => api.delete(`/net-worth/liability/${id}`),
+};
+
+export const portfolioInsightsAPI = {
+  getInsights: () => api.get('/portfolio-insights'),
+};
+
+export const alertsAPI = {
+  getAlerts: (options) => api.get('/alerts', { params: options }),
+  createAlert: (data) => api.post('/alerts', data),
+  markRead: (id) => api.post(`/alerts/${id}/read`),
+  markAllRead: () => api.post('/alerts/read-all'),
+  deleteAlert: (id) => api.delete(`/alerts/${id}`),
+  checkAlerts: () => api.post('/alerts/check'),
+};
+
 export default api;
 
 
