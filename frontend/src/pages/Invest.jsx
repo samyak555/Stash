@@ -7,6 +7,8 @@ import PortfolioOverview from '../components/PortfolioOverview';
 import HoldingsList from '../components/HoldingsList';
 import PortfolioAnalytics from '../components/PortfolioAnalytics';
 import LivePrices from '../components/LivePrices';
+import StockSearch from '../components/StockSearch';
+import DefaultStockView from '../components/DefaultStockView';
 
 const Invest = () => {
   const [activeTab, setActiveTab] = useState('overview');
