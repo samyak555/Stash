@@ -31,6 +31,8 @@ import newsRoutes from './routes/newsRoutes.js';
 import portfolioInsightsRoutes from './routes/portfolioInsightsRoutes.js';
 import alertsRoutes from './routes/alertsRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import cryptoRoutes from './routes/cryptoRoutes.js';
+import mutualFundRoutes from './routes/mutualFundRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -139,6 +141,8 @@ app.use('/api/news', newsRoutes);
 app.use('/api/portfolio-insights', portfolioInsightsRoutes);
 app.use('/api/alerts', alertsRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/crypto', cryptoRoutes);
+app.use('/api/mutual-funds', mutualFundRoutes);
 
 // Error handling middleware - Production-ready (no stack traces)
 app.use((err, req, res, next) => {

@@ -73,10 +73,14 @@ const MetalsPrices = () => {
           {metals.gold ? (
             <>
               <p className="text-3xl font-bold text-yellow-400 mb-2">
-                ${metals.gold.price?.toFixed(2) || 'N/A'}
+                ₹{metals.gold.pricePer10GramINR?.toFixed(2) || metals.gold.priceINR?.toFixed(2) || 'N/A'}
               </p>
-              <p className="text-slate-400 text-sm">
-                Per ounce • {metals.gold.source || 'metals.live'}
+              <p className="text-slate-400 text-sm mb-1">
+                Per 10 grams
+              </p>
+              <p className="text-slate-400 text-xs">
+                Per gram: ₹{metals.gold.priceINR?.toFixed(2) || 'N/A'} • 
+                Per ounce: ₹{metals.gold.pricePerOunceINR?.toFixed(2) || 'N/A'}
               </p>
               {metals.gold.unavailable && (
                 <p className="text-yellow-400 text-xs mt-2">⚠️ Using cached data</p>
@@ -99,10 +103,14 @@ const MetalsPrices = () => {
           {metals.silver ? (
             <>
               <p className="text-3xl font-bold text-gray-300 mb-2">
-                ${metals.silver.price?.toFixed(2) || 'N/A'}
+                ₹{metals.silver.pricePer10GramINR?.toFixed(2) || metals.silver.priceINR?.toFixed(2) || 'N/A'}
               </p>
-              <p className="text-slate-400 text-sm">
-                Per ounce • {metals.silver.source || 'metals.live'}
+              <p className="text-slate-400 text-sm mb-1">
+                Per 10 grams
+              </p>
+              <p className="text-slate-400 text-xs">
+                Per gram: ₹{metals.silver.priceINR?.toFixed(2) || 'N/A'} • 
+                Per ounce: ₹{metals.silver.pricePerOunceINR?.toFixed(2) || 'N/A'}
               </p>
               {metals.silver.unavailable && (
                 <p className="text-yellow-400 text-xs mt-2">⚠️ Using cached data</p>
@@ -116,8 +124,8 @@ const MetalsPrices = () => {
 
       <div className="glass-card rounded-xl p-4 border border-slate-700 bg-slate-800/30">
         <p className="text-slate-400 text-xs">
-          💡 Prices are in USD per ounce. For Indian prices, multiply by current USD/INR rate.
-          Prices update every 15 seconds.
+          💡 Prices are in Indian Rupees (INR). Gold and Silver prices update every 15 seconds.
+          USD/INR rate: {metals.gold?.usdToInrRate?.toFixed(2) || 'N/A'}
         </p>
       </div>
     </div>

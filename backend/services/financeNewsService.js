@@ -248,12 +248,41 @@ const parseRSS = async (rssUrl) => {
  * Fetch news from Google News RSS (fallback)
  */
 const fetchGoogleNewsRSS = async (query = 'finance') => {
-  const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-IN&gl=IN&ceid=IN:en`;
-  const articles = await parseRSS(rssUrl);
-  return articles.map(article => ({
-    ...article,
-    source: 'Google News',
-  }));
+  try {
+    // Use a more reliable Google News RSS URL
+    const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}+india&hl=en&gl=IN&ceid=IN:en`;
+    const articles = await parseRSS(rssUrl);
+    const validArticles = articles
+      .filter(article => article && article.title && article.url && article.title.length > 5)
+      .map(article => ({
+        ...article,
+        source: article.source || 'Google News',
+      }));
+    return validArticles;
+  } catch (error) {
+    console.error('Google News RSS error:', error.message);
+    // Try alternative RSS source
+    return await fetchAlternativeRSS(query);
+  }
+};
+
+/**
+ * Alternative RSS source (Yahoo Finance as backup)
+ */
+const fetchAlternativeRSS = async (query = 'finance') => {
+  try {
+    const rssUrl = `https://feeds.finance.yahoo.com/rss/2.0/headline?region=IN&lang=en-US`;
+    const articles = await parseRSS(rssUrl);
+    return articles
+      .filter(article => article && article.title && article.url && article.title.length > 5)
+      .map(article => ({
+        ...article,
+        source: 'Yahoo Finance',
+      }));
+  } catch (error) {
+    console.error('Alternative RSS error:', error.message);
+    return [];
+  }
 };
 
 /**

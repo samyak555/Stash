@@ -270,6 +270,16 @@ export const marketAPI = {
   getMutualFunds: (schemeCodes) => api.get('/market/mutual-funds', { params: { schemeCodes } }),
 };
 
+export const cryptoAPI = {
+  getTopCryptos: (limit) => api.get('/crypto/top', { params: { limit } }),
+  getCryptoFundamentals: (coinId) => api.get(`/crypto/fundamentals/${coinId}`),
+};
+
+export const mutualFundAPI = {
+  getTopMFs: () => api.get('/mutual-funds/top'),
+  getMFFundamentals: (schemeCode) => api.get(`/mutual-funds/fundamentals/${schemeCode}`),
+};
+
 export const newsAPI = {
   getNews: (category) => api.get('/news', { params: { category } }),
   getCategorized: () => api.get('/news/categorized'),

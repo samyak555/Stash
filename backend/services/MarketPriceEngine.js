@@ -541,7 +541,38 @@ export const getMutualFundNAVs = async (schemeCodes) => {
 // ============================================
 
 /**
- * Get metal price (gold or silver)
+ * Get USD to INR exchange rate
+ */
+const getUSDToINR = async () => {
+  const cacheKey = 'usd_inr_rate';
+  const cached = priceCache.get(cacheKey);
+  
+  // Cache exchange rate for 1 hour
+  if (cached && Date.now() - cached.timestamp < 60 * 60 * 1000) {
+    return cached.data;
+  }
+
+  try {
+    // Try multiple sources for USD/INR rate
+    const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD', {
+      timeout: 10000,
+    });
+    
+    const inrRate = response.data?.rates?.INR || 83.0; // Fallback to approximate rate
+    priceCache.set(cacheKey, { data: inrRate, timestamp: Date.now() });
+    return inrRate;
+  } catch (error) {
+    console.warn('Failed to fetch USD/INR rate, using fallback:', error.message);
+    // Use cached or fallback rate
+    if (cached) {
+      return cached.data;
+    }
+    return 83.0; // Approximate fallback rate
+  }
+};
+
+/**
+ * Get metal price (gold or silver) in INR
  */
 export const getMetalPrice = async (metal) => {
   const cacheKey = `metal:${metal.toLowerCase()}`;
@@ -556,12 +587,24 @@ export const getMetalPrice = async (metal) => {
       throw new Error(`Metal price not found: ${metal}`);
     }
 
-    const data = response.data[metal.toLowerCase()];
+    const usdPrice = parseFloat(response.data[metal.toLowerCase()]);
+    const usdToInr = await getUSDToINR();
+    
+    // Convert to INR (price per ounce to price per gram)
+    // 1 ounce = 31.1035 grams
+    const pricePerGramINR = (usdPrice * usdToInr) / 31.1035;
+    const pricePer10GramINR = pricePerGramINR * 10; // Common Indian unit
+
     return {
       symbol: metal.toUpperCase(),
-      price: parseFloat(data),
+      price: usdPrice, // Keep USD price for reference
+      priceINR: pricePerGramINR,
+      pricePer10GramINR: pricePer10GramINR,
+      pricePerOunceINR: usdPrice * usdToInr,
+      usdToInrRate: usdToInr,
       lastUpdated: new Date().toISOString(),
       source: 'metals.live',
+      currency: 'INR',
     };
   });
 };
