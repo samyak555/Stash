@@ -16,6 +16,7 @@ import Income from './pages/Income';
 import Budgets from './pages/Budgets';
 import Goals from './pages/Goals';
 import Insights from './pages/Insights';
+import Analytics from './pages/Analytics';
 import Family from './pages/Family';
 import Settings from './pages/Settings';
 import Invest from './pages/Invest';
@@ -314,6 +315,16 @@ function AppContent({ setUser: setUserProp }) {
             <ProtectedRoute user={user}>
               <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
                 <Insights />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <Analytics />
               </Layout>
             </ProtectedRoute>
           }
