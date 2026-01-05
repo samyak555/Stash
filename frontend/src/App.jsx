@@ -20,6 +20,7 @@ import Family from './pages/Family';
 import Settings from './pages/Settings';
 import Invest from './pages/Invest';
 import FinanceNews from './pages/FinanceNews';
+import StockDetail from './pages/StockDetail';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import DataDeletionPolicy from './pages/DataDeletionPolicy';
@@ -352,6 +353,16 @@ function AppContent({ setUser: setUserProp }) {
             <ProtectedRoute user={user}>
               <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
                 <FinanceNews />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/stocks/:symbol"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <StockDetail />
               </Layout>
             </ProtectedRoute>
           }

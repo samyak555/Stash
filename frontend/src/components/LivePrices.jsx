@@ -212,7 +212,8 @@ const LivePrices = ({ holdings: propsHoldings }) => {
   useEffect(() => {
     fetchLivePrices();
     // Auto-refresh every 60 seconds (matches stock cache TTL)
-    const interval = setInterval(fetchLivePrices, 60000);
+    // Refresh every 15 seconds for LIVE prices
+    const interval = setInterval(fetchLivePrices, 15000);
     return () => clearInterval(interval);
   }, [holdings]);
 

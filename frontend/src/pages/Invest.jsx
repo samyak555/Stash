@@ -40,8 +40,8 @@ const Invest = () => {
 
   useEffect(() => {
     fetchPortfolio();
-    // Refresh portfolio every 60 seconds for live prices (stocks update every 60s)
-    const interval = setInterval(fetchPortfolio, 60000);
+    // Refresh portfolio every 15 seconds for LIVE prices
+    const interval = setInterval(fetchPortfolio, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -130,7 +130,20 @@ const Invest = () => {
           <LivePrices holdings={portfolio?.holdings} />
         )}
 
-        {(activeTab === 'stocks' || activeTab === 'mf' || activeTab === 'crypto' || activeTab === 'metals') && (
+        {activeTab === 'stocks' && (
+          <div className="space-y-6">
+            <StockSearch />
+            <HoldingsList
+              holdings={getHoldingsForTab()}
+              assetType="stock"
+              onAdd={() => handleAddHolding('stock')}
+              onUpdate={handleHoldingUpdated}
+              onDelete={handleHoldingDeleted}
+            />
+          </div>
+        )}
+
+        {(activeTab === 'mf' || activeTab === 'crypto' || activeTab === 'metals') && (
           <HoldingsList
             holdings={getHoldingsForTab()}
             assetType={activeTab === 'metals' ? 'metals' : activeTab}

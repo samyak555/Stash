@@ -76,12 +76,24 @@ const FinanceNewsWidget = () => {
             rel="noopener noreferrer"
             className="block p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition-colors border border-slate-600/50 hover:border-teal-500/50"
           >
-            <h3 className="text-white font-medium mb-2 line-clamp-2">
-              {article.title}
-            </h3>
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span>{article.source}</span>
-              <span>{formatTime(article.publishedAt)}</span>
+            <div className="flex gap-3">
+              {article.imageUrl && (
+                <img
+                  src={article.imageUrl}
+                  alt={article.title}
+                  className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-white font-medium mb-2 line-clamp-2">
+                  {article.title}
+                </h3>
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span>{article.source}</span>
+                  <span>{formatTime(article.publishedAt)}</span>
+                </div>
+              </div>
             </div>
           </a>
         ))}

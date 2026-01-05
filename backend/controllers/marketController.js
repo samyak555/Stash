@@ -6,6 +6,7 @@ import {
   getMetalPrices,
   getMutualFundNAV,
   getMutualFundNAVs,
+  getStockChartData,
 } from '../services/MarketPriceEngine.js';
 
 /**
@@ -141,6 +142,25 @@ export const getMutualFunds = async (req, res) => {
   } catch (error) {
     console.error('Error fetching mutual fund NAVs:', error);
     res.json({});
+  }
+};
+
+/**
+ * Get stock chart data for a symbol
+ */
+export const getStockChart = async (req, res) => {
+  try {
+    const { symbol, range = '1d' } = req.query;
+
+    if (!symbol) {
+      return res.status(400).json({ message: 'Symbol parameter is required' });
+    }
+
+    const chartData = await getStockChartData(symbol, range);
+    res.json(chartData);
+  } catch (error) {
+    console.error('Error fetching stock chart:', error);
+    res.json({ data: [], unavailable: true });
   }
 };
 

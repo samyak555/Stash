@@ -11,14 +11,14 @@ import axios from 'axios';
  * - Yahoo Finance as PRIMARY for stocks
  */
 
-// Global cache with asset-specific TTLs
+// Global cache with asset-specific TTLs (15 seconds for live data)
 const priceCache = new Map();
 const CACHE_TTL = {
-  stock: 60 * 1000,        // 60 seconds (stocks change frequently)
-  crypto: 30 * 1000,       // 30 seconds (crypto very volatile)
-  mf: 300 * 1000,          // 5 minutes (NAV updates daily)
-  gold: 300 * 1000,        // 5 minutes (metals change slowly)
-  silver: 300 * 1000,      // 5 minutes
+  stock: 15 * 1000,        // 15 seconds (LIVE market data)
+  crypto: 15 * 1000,       // 15 seconds (LIVE crypto data)
+  mf: 24 * 60 * 60 * 1000, // 24 hours (NAV updates daily)
+  gold: 15 * 1000,         // 15 seconds (LIVE spot price)
+  silver: 15 * 1000,       // 15 seconds (LIVE spot price)
 };
 
 // Request locks to prevent duplicate concurrent requests
@@ -102,6 +102,7 @@ const checkAlphaVantageRateLimit = async () => {
 
 /**
  * Fetch stock price from Yahoo Finance (PRIMARY - NO KEY REQUIRED)
+ * Returns comprehensive market data including fundamentals
  */
 const fetchStockYahooFinance = async (symbol) => {
   try {
@@ -129,15 +130,94 @@ const fetchStockYahooFinance = async (symbol) => {
 
     return {
       symbol: meta.symbol,
+      name: meta.longName || meta.shortName || symbol,
       price: regularMarketPrice,
       change: change,
       changePercent: changePercent,
       volume: meta.regularMarketVolume || 0,
+      open: meta.regularMarketOpen || regularMarketPrice,
+      high: meta.regularMarketDayHigh || regularMarketPrice,
+      low: meta.regularMarketDayLow || regularMarketPrice,
+      previousClose: previousClose,
+      marketCap: meta.marketCap || null,
+      peRatio: meta.trailingPE || null,
+      eps: meta.trailingEPS || null,
+      currency: meta.currency || 'USD',
+      exchange: meta.exchangeName || '',
       lastUpdated: new Date().toISOString(),
       source: 'yahoo',
     };
   } catch (error) {
     console.error(`Yahoo Finance fetch failed for ${symbol}:`, error.message);
+    throw error;
+  }
+};
+
+/**
+ * Fetch stock chart data from Yahoo Finance for different time ranges
+ */
+export const getStockChartData = async (symbol, range = '1d') => {
+  const cacheKey = `chart:${symbol.toUpperCase()}:${range}`;
+  const ttl = 15 * 1000; // 15 seconds for chart data
+
+  const cached = priceCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < ttl) {
+    return cached.data;
+  }
+
+  try {
+    const intervalMap = {
+      '1d': '5m',
+      '5d': '15m',
+      '1mo': '1h',
+      '3mo': '1d',
+      '6mo': '1d',
+      '1y': '1d',
+      '5y': '1wk',
+    };
+
+    const interval = intervalMap[range] || '1d';
+
+    const response = await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol.toUpperCase()}`, {
+      params: {
+        interval: interval,
+        range: range,
+      },
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+      },
+    });
+
+    if (!response.data || !response.data.chart || !response.data.chart.result || response.data.chart.result.length === 0) {
+      throw new Error(`No chart data found for symbol: ${symbol}`);
+    }
+
+    const result = response.data.chart.result[0];
+    const timestamps = result.timestamp || [];
+    const quotes = result.indicators?.quote?.[0] || {};
+    const closes = quotes.close || [];
+
+    const chartData = timestamps.map((timestamp, index) => ({
+      time: timestamp * 1000, // Convert to milliseconds
+      price: closes[index] || null,
+    })).filter(point => point.price !== null);
+
+    const chartResult = {
+      symbol: symbol.toUpperCase(),
+      range: range,
+      data: chartData,
+      lastUpdated: new Date().toISOString(),
+    };
+
+    priceCache.set(cacheKey, { data: chartResult, timestamp: Date.now() });
+    return chartResult;
+  } catch (error) {
+    console.error(`Chart fetch failed for ${symbol}:`, error.message);
+    // Return cached if available
+    if (cached) {
+      return cached.data;
+    }
     throw error;
   }
 };

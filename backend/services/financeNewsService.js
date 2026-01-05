@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { parseString } from 'xml2js';
 
-// Global cache for news (10 minutes TTL)
+// Global cache for news (5-10 minutes TTL)
 const newsCache = new Map();
-const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes (as per requirements)
 
 // Request locks to prevent duplicate fetches
 const requestLocks = new Map();
@@ -45,13 +45,36 @@ const getCachedOrFetch = async (key, fetchFn) => {
  * Normalize news article format
  */
 const normalizeArticle = (article, source) => {
+  // Extract image URL from various possible fields
+  let imageUrl = article.urlToImage || article.image || article.enclosure?.url || null;
+  
+  // Clean up image URL (remove invalid or placeholder images)
+  if (imageUrl && (
+    imageUrl.includes('placeholder') || 
+    imageUrl.includes('default') ||
+    imageUrl.length < 10
+  )) {
+    imageUrl = null;
+  }
+
+  // Parse published date
+  let publishedAt = article.publishedAt || article.pubDate || new Date().toISOString();
+  if (typeof publishedAt === 'string') {
+    try {
+      // Ensure it's a valid ISO string
+      new Date(publishedAt);
+    } catch {
+      publishedAt = new Date().toISOString();
+    }
+  }
+
   return {
-    title: article.title || article.headline || '',
-    description: article.description || article.summary || '',
+    title: (article.title || article.headline || '').trim(),
+    description: (article.description || article.summary || '').trim(),
     source: article.source?.name || source || 'Unknown',
     url: article.url || article.link || '',
-    publishedAt: article.publishedAt || article.pubDate || new Date().toISOString(),
-    imageUrl: article.urlToImage || article.image || null,
+    publishedAt: publishedAt,
+    imageUrl: imageUrl,
     category: article.category || 'general',
   };
 };

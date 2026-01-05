@@ -259,6 +259,7 @@ export const investAPI = {
 export const marketAPI = {
   getStock: (symbol) => api.get('/market/stock', { params: { symbol } }),
   getStocks: (symbols) => api.get('/market/stocks', { params: { symbols } }),
+  getStockChart: (symbol, range = '1d') => api.get('/market/stock/chart', { params: { symbol, range } }),
   getCrypto: (symbol) => api.get('/market/crypto', { params: { symbol } }),
   getCryptos: (symbols) => api.get('/market/cryptos', { params: { symbols } }),
   getMetals: () => api.get('/market/metals'),

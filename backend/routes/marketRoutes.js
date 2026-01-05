@@ -7,6 +7,7 @@ import {
   getMetals,
   getMutualFund,
   getMutualFunds,
+  getStockChart,
 } from '../controllers/marketController.js';
 
 const router = express.Router();
@@ -14,6 +15,7 @@ const router = express.Router();
 // Market data routes (public, but rate-limited by API providers)
 router.get('/stocks', getStocks);
 router.get('/stock', getStock);
+router.get('/stock/chart', getStockChart);
 router.get('/crypto', getCrypto);
 router.get('/cryptos', getCryptos);
 router.get('/metals', getMetals);
