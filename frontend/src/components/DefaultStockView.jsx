@@ -112,9 +112,16 @@ const StockCard = ({ symbol, stock, onClick }) => {
 
   useEffect(() => {
     const loadChart = async () => {
-      const data = await fetchChartData(symbol);
-      if (data.length > 0) {
-        setChartData(data);
+      try {
+        const response = await marketAPI.getStockChart(symbol, '1d');
+        if (response.data && response.data.data) {
+          const data = response.data.data.slice(-20); // Last 20 data points
+          if (data.length > 0) {
+            setChartData(data);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching chart:', error);
       }
     };
     loadChart();
@@ -171,18 +178,6 @@ const StockCard = ({ symbol, stock, onClick }) => {
       )}
     </div>
   );
-};
-
-const fetchChartData = async (symbol) => {
-  try {
-    const response = await marketAPI.getStockChart(symbol, '1d');
-    if (response.data && response.data.data) {
-      return response.data.data.slice(-20);
-    }
-  } catch (error) {
-    console.error('Error fetching chart:', error);
-  }
-  return [];
 };
 
 export default DefaultStockView;

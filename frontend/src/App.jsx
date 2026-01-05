@@ -369,16 +369,6 @@ function AppContent({ setUser: setUserProp }) {
           }
         />
         <Route
-          path="/net-worth"
-          element={
-            <ProtectedRoute user={user}>
-              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
-                <NetWorth />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/portfolio-insights"
           element={
             <ProtectedRoute user={user}>
