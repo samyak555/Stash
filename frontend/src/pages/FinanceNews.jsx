@@ -128,9 +128,9 @@ const FinanceNews = () => {
         {/* Disclaimer */}
         <div className="mt-12 pt-8 border-t border-slate-700">
           <p className="text-slate-400 text-sm text-center">
-            Market data and news are sourced from third-party public providers.
-            Stash does not verify, endorse, or provide investment advice.
-            Content is for informational purposes only and is not regulated by SEBI.
+            This application does not facilitate investments or provide financial advice.
+            Market data is sourced from public third-party providers and may be delayed or inaccurate.
+            This feature is for tracking and informational purposes only and is not regulated by SEBI.
           </p>
         </div>
       </div>

@@ -7,7 +7,7 @@ import {
   getMetalPrice,
   getMutualFundNAV,
   getMutualFundNAVs,
-} from './marketDataService.js';
+} from './MarketPriceEngine.js';
 
 /**
  * Calculate portfolio metrics for a user with optimized price fetching

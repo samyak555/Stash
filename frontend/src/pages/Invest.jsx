@@ -40,8 +40,8 @@ const Invest = () => {
 
   useEffect(() => {
     fetchPortfolio();
-    // Refresh portfolio every 30 seconds for live prices
-    const interval = setInterval(fetchPortfolio, 30000);
+    // Refresh portfolio every 60 seconds for live prices (stocks update every 60s)
+    const interval = setInterval(fetchPortfolio, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -159,9 +159,9 @@ const Invest = () => {
         {/* Disclaimer */}
         <div className="mt-12 pt-8 border-t border-slate-700">
           <p className="text-slate-400 text-sm text-center">
-            Stash does not execute investments or provide investment advice.
-            All prices are fetched from public third-party APIs and may be delayed or inaccurate.
-            This feature is for tracking and informational purposes only and is not regulated by SEBI or any financial authority.
+            This application does not facilitate investments or provide financial advice.
+            Market data is sourced from public third-party providers and may be delayed or inaccurate.
+            This feature is for tracking and informational purposes only and is not regulated by SEBI.
           </p>
         </div>
       </div>

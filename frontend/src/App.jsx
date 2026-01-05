@@ -19,6 +19,7 @@ import Insights from './pages/Insights';
 import Family from './pages/Family';
 import Settings from './pages/Settings';
 import Invest from './pages/Invest';
+import FinanceNews from './pages/FinanceNews';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import DataDeletionPolicy from './pages/DataDeletionPolicy';

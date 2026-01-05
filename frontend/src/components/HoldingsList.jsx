@@ -38,7 +38,8 @@ const HoldingsList = ({ holdings, assetType, onAdd, onUpdate, onDelete }) => {
     };
 
     fetchLivePrices();
-    const interval = setInterval(fetchLivePrices, 30000);
+    // Refresh every 60 seconds (matches stock cache TTL)
+    const interval = setInterval(fetchLivePrices, 60000);
     return () => clearInterval(interval);
   }, [holdings]);
 

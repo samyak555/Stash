@@ -39,6 +39,7 @@ import Button from '../components/ui/Button';
 import AddCardModal from '../components/AddCardModal';
 import { formatIncome, formatExpense } from '../utils/formatDisplayValue';
 import LoadingDots from '../components/LoadingDots';
+import FinanceNewsWidget from '../components/FinanceNewsWidget';
 
 const Dashboard = () => {
   const { expenses, refreshTrigger, fetchExpenses } = useExpenses();
@@ -1268,6 +1269,9 @@ const Dashboard = () => {
           </Button>
         </div>
       </div>
+
+      {/* Finance News Widget */}
+      <FinanceNewsWidget />
 
       {/* Insights Summary Card - Moved to bottom */}
       {insights.length > 0 && (

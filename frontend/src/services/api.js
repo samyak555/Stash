@@ -266,6 +266,12 @@ export const marketAPI = {
   getMutualFunds: (schemeCodes) => api.get('/market/mutual-funds', { params: { schemeCodes } }),
 };
 
+export const newsAPI = {
+  getNews: (category) => api.get('/news', { params: { category } }),
+  getCategorized: () => api.get('/news/categorized'),
+  getHeadlines: (limit) => api.get('/news/headlines', { params: { limit } }),
+};
+
 export default api;
 
 

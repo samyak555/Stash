@@ -68,6 +68,7 @@ const Sidebar = ({ user, setUser }) => {
     { path: '/budgets', label: 'Budgets', Icon: BudgetsIcon },
     { path: '/goals', label: 'Goals', Icon: GoalsIcon },
     { path: '/invest', label: 'Stash Invest', Icon: InvestIcon },
+    { path: '/news', label: 'Finance News', Icon: InsightsIcon },
     { path: '/family', label: 'Family', Icon: FamilyIcon },
     { path: '/insights', label: 'Stash Insight', Icon: InsightsIcon },
     { path: '/settings', label: 'Settings', Icon: SettingsIcon },
