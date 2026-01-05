@@ -11,13 +11,13 @@ export const getNews = async (req, res) => {
   try {
     const { category = 'all' } = req.query;
     const news = await getFinanceNews(category);
-    res.json(news);
+    // Ensure we always return an array
+    const newsArray = Array.isArray(news) ? news : [];
+    res.json(newsArray);
   } catch (error) {
     console.error('Error fetching news:', error);
-    res.status(500).json({ 
-      message: 'Failed to fetch news',
-      news: [] // Return empty array instead of error
-    });
+    // Return empty array instead of error
+    res.json([]);
   }
 };
 
@@ -27,7 +27,14 @@ export const getNews = async (req, res) => {
 export const getCategorized = async (req, res) => {
   try {
     const categorized = await getCategorizedNews();
-    res.json(categorized);
+    // Ensure all categories are arrays
+    const result = {
+      all: Array.isArray(categorized.all) ? categorized.all : [],
+      stocks: Array.isArray(categorized.stocks) ? categorized.stocks : [],
+      crypto: Array.isArray(categorized.crypto) ? categorized.crypto : [],
+      economy: Array.isArray(categorized.economy) ? categorized.economy : [],
+    };
+    res.json(result);
   } catch (error) {
     console.error('Error fetching categorized news:', error);
     res.json({

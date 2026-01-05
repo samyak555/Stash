@@ -304,7 +304,7 @@ const fetchYahooFinanceRSS = async () => {
 export const getFinanceNews = async (category = 'all') => {
   const cacheKey = `news:${category}`;
 
-  return getCachedOrFetch(cacheKey, async () => {
+  return await getCachedOrFetch(cacheKey, async () => {
     let articles = [];
 
     // Try NewsAPI first (if key is configured)
@@ -313,7 +313,10 @@ export const getFinanceNews = async (category = 'all') => {
         const query = category === 'all' ? 'finance' : category;
         articles = await fetchNewsAPI(query, 'business');
         if (articles && articles.length > 0) {
-          return articles;
+          const valid = articles.filter(a => a && a.title && a.url);
+          if (valid.length > 0) {
+            return valid;
+          }
         }
       } catch (error) {
         console.warn('NewsAPI failed, trying RSS fallbacks:', error.message);
