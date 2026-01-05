@@ -45,36 +45,49 @@ const getCachedOrFetch = async (key, fetchFn) => {
  * Normalize news article format
  */
 const normalizeArticle = (article, source) => {
-  // Extract image URL from various possible fields
-  let imageUrl = article.urlToImage || article.image || article.enclosure?.url || null;
-  
-  // Clean up image URL (remove invalid or placeholder images)
-  if (imageUrl && (
-    imageUrl.includes('placeholder') || 
-    imageUrl.includes('default') ||
-    imageUrl.length < 10
-  )) {
-    imageUrl = null;
+  // Extract title - must exist and be valid
+  const title = (article.title || article.headline || '').trim();
+  if (!title || title.length < 5) {
+    return null; // Invalid article - no title
   }
 
-  // Parse published date
-  let publishedAt = article.publishedAt || article.pubDate || new Date().toISOString();
-  if (typeof publishedAt === 'string') {
+  // Extract URL - must exist
+  const url = article.url || article.link || '';
+  if (!url || url.length < 10) {
+    return null; // Invalid article - no URL
+  }
+
+  // Extract source name
+  let sourceName = 'Unknown';
+  if (article.source?.name) {
+    sourceName = article.source.name;
+  } else if (typeof article.source === 'string') {
+    sourceName = article.source;
+  } else if (source) {
+    sourceName = source;
+  }
+
+  // Parse published date - must be valid
+  let publishedAt = new Date().toISOString();
+  const dateStr = article.publishedAt || article.pubDate;
+  if (dateStr) {
     try {
-      // Ensure it's a valid ISO string
-      new Date(publishedAt);
+      const date = new Date(dateStr);
+      if (!isNaN(date.getTime())) {
+        publishedAt = date.toISOString();
+      }
     } catch {
-      publishedAt = new Date().toISOString();
+      // Use current date if invalid
     }
   }
 
   return {
-    title: (article.title || article.headline || '').trim(),
+    title: title,
     description: (article.description || article.summary || '').trim(),
-    source: article.source?.name || source || 'Unknown',
-    url: article.url || article.link || '',
+    source: sourceName,
+    url: url,
     publishedAt: publishedAt,
-    imageUrl: imageUrl,
+    imageUrl: null, // Don't show images per requirements
     category: article.category || 'general',
   };
 };
@@ -120,9 +133,10 @@ const fetchNewsAPI = async (query = 'finance', category = 'business') => {
     });
 
     if (everythingResponse.data && everythingResponse.data.articles) {
-      return everythingResponse.data.articles.map(article => 
-        normalizeArticle(article, 'NewsAPI')
-      );
+      const normalized = everythingResponse.data.articles
+        .map(article => normalizeArticle(article, 'NewsAPI'))
+        .filter(article => article !== null); // Filter out invalid articles
+      return normalized;
     }
 
     return [];
@@ -174,23 +188,46 @@ const parseRSS = async (rssUrl) => {
             : [result.feed.entry];
         }
 
-        const articles = items.map(item => {
-          // Handle both RSS and Atom formats
-          const title = item.title?.[0] || item.title?._ || item.title || '';
-          const description = item.description?.[0] || item.description?._ || item.description || item.summary?.[0] || item.summary || '';
-          const link = item.link?.[0] || item.link?._ || item.link || item.link?.href || '';
-          const pubDate = item.pubDate?.[0] || item.pubDate || item.published?.[0] || item.published || new Date().toISOString();
-          
-          return {
-            title: typeof title === 'string' ? title : '',
-            description: typeof description === 'string' ? description : '',
-            source: item.source?.[0] || item.source || 'RSS Feed',
-            url: typeof link === 'string' ? link : '',
-            publishedAt: typeof pubDate === 'string' ? pubDate : new Date().toISOString(),
-            imageUrl: null,
-            category: 'general',
-          };
-        }).filter(article => article.title && article.url); // Filter out invalid articles
+        const articles = items
+          .map(item => {
+            // Handle both RSS and Atom formats
+            const title = item.title?.[0] || item.title?._ || item.title || '';
+            const description = item.description?.[0] || item.description?._ || item.description || item.summary?.[0] || item.summary || '';
+            const link = item.link?.[0] || item.link?._ || item.link || item.link?.href || '';
+            const pubDate = item.pubDate?.[0] || item.pubDate || item.published?.[0] || item.published || new Date().toISOString();
+            
+            // Validate title and URL
+            const validTitle = typeof title === 'string' ? title.trim() : '';
+            const validUrl = typeof link === 'string' ? link.trim() : '';
+            
+            if (!validTitle || validTitle.length < 5 || !validUrl || validUrl.length < 10) {
+              return null; // Invalid article
+            }
+            
+            // Parse date
+            let publishedAt = new Date().toISOString();
+            if (typeof pubDate === 'string') {
+              try {
+                const date = new Date(pubDate);
+                if (!isNaN(date.getTime())) {
+                  publishedAt = date.toISOString();
+                }
+              } catch {
+                // Use current date
+              }
+            }
+            
+            return {
+              title: validTitle,
+              description: typeof description === 'string' ? description.trim() : '',
+              source: item.source?.[0] || item.source || 'RSS Feed',
+              url: validUrl,
+              publishedAt: publishedAt,
+              imageUrl: null,
+              category: 'general',
+            };
+          })
+          .filter(article => article !== null); // Filter out invalid articles
 
         resolve(articles);
       });

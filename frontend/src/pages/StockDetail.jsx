@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { marketAPI } from '../services/api';
+import { marketAPI, investAPI } from '../services/api';
 import {
   Chart as ChartJS,
   CategoryScale,

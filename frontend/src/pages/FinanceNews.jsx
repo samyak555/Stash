@@ -111,45 +111,44 @@ const FinanceNews = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {currentNews.map((article, index) => (
-              <a
-                key={index}
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 hover:border-teal-500/50 transition-all hover:shadow-lg hover:shadow-teal-500/10"
-              >
-                {article.imageUrl && (
-                  <img
-                    src={article.imageUrl}
-                    alt={article.title}
-                    className="w-full h-48 object-cover rounded-lg mb-4"
-                    onError={(e) => { e.target.style.display = 'none'; }}
-                  />
-                )}
-                <h3 className="text-white font-bold text-lg mb-2 line-clamp-2">
-                  {article.title}
-                </h3>
-                {article.description && (
-                  <p className="text-slate-400 text-sm mb-4 line-clamp-3">
-                    {article.description}
-                  </p>
-                )}
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span>{article.source}</span>
-                  <span>{formatTime(article.publishedAt)}</span>
-                </div>
-              </a>
-            ))}
+            {currentNews
+              .filter(article => article && article.title && article.title.length > 0)
+              .map((article, index) => {
+                if (!article.title || !article.url) return null;
+                
+                let timeDisplay = 'Just now';
+                try {
+                  timeDisplay = formatTime(article.publishedAt);
+                } catch {
+                  timeDisplay = 'Recently';
+                }
+                
+                return (
+                  <a
+                    key={index}
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 hover:border-teal-500/50 transition-all hover:shadow-lg hover:shadow-teal-500/10 cursor-pointer"
+                  >
+                    <h3 className="text-white font-bold text-lg mb-3 line-clamp-2">
+                      {article.title}
+                    </h3>
+                    <div className="flex items-center justify-between text-xs text-slate-500 mt-4">
+                      <span>{article.source || 'Unknown'}</span>
+                      <span>{timeDisplay}</span>
+                    </div>
+                  </a>
+                );
+              })}
           </div>
         )}
 
         {/* Disclaimer */}
         <div className="mt-12 pt-8 border-t border-slate-700">
           <p className="text-slate-400 text-sm text-center">
-            Stash does not facilitate investments or provide financial advice.
-            Market prices and news are sourced from public third-party providers and may be delayed or inaccurate.
-            This feature is for tracking and informational purposes only and is not regulated by SEBI.
+            Stash provides market data and news for informational purposes only.
+            It does not facilitate investments or provide financial advice.
           </p>
         </div>
       </div>

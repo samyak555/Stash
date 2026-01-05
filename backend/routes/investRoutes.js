@@ -8,6 +8,11 @@ import {
   updateHolding,
   deleteHolding,
 } from '../controllers/investController.js';
+import {
+  getWatchlist,
+  addToWatchlist,
+  removeFromWatchlist,
+} from '../controllers/watchlistController.js';
 
 const router = express.Router();
 
@@ -23,6 +28,11 @@ router.get('/holdings', getHoldings);
 router.post('/holding', createHolding);
 router.put('/holding/:id', updateHolding);
 router.delete('/holding/:id', deleteHolding);
+
+// Watchlist routes
+router.get('/watchlist', getWatchlist);
+router.post('/watchlist', addToWatchlist);
+router.delete('/watchlist/:id', removeFromWatchlist);
 
 export default router;
 

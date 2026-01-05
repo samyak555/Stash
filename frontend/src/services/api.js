@@ -254,6 +254,9 @@ export const investAPI = {
   createHolding: (data) => api.post('/invest/holding', data),
   updateHolding: (id, data) => api.put(`/invest/holding/${id}`, data),
   deleteHolding: (id) => api.delete(`/invest/holding/${id}`),
+  getWatchlist: () => api.get('/invest/watchlist'),
+  addToWatchlist: (data) => api.post('/invest/watchlist', data),
+  removeFromWatchlist: (id) => api.delete(`/invest/watchlist/${id}`),
 };
 
 export const marketAPI = {
@@ -273,15 +276,6 @@ export const newsAPI = {
   getHeadlines: (limit) => api.get('/news/headlines', { params: { limit } }),
 };
 
-export const netWorthAPI = {
-  getNetWorth: () => api.get('/net-worth'),
-  addCashBalance: (data) => api.post('/net-worth/cash', data),
-  updateCashBalance: (id, data) => api.put(`/net-worth/cash/${id}`, data),
-  deleteCashBalance: (id) => api.delete(`/net-worth/cash/${id}`),
-  addLiability: (data) => api.post('/net-worth/liability', data),
-  updateLiability: (id, data) => api.put(`/net-worth/liability/${id}`, data),
-  deleteLiability: (id) => api.delete(`/net-worth/liability/${id}`),
-};
 
 export const portfolioInsightsAPI = {
   getInsights: () => api.get('/portfolio-insights'),
