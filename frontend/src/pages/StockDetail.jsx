@@ -35,6 +35,8 @@ const StockDetail = () => {
   const [selectedRange, setSelectedRange] = useState('1d');
   const [loading, setLoading] = useState(true);
   const [chartLoading, setChartLoading] = useState(false);
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const [watchlistId, setWatchlistId] = useState(null);
 
   const timeRanges = [
     { value: '1d', label: '1D' },
@@ -82,8 +84,47 @@ const StockDetail = () => {
     if (symbol) {
       fetchStockData();
       fetchChartData(selectedRange);
+      checkWatchlist();
     }
   }, [symbol]);
+
+  const checkWatchlist = async () => {
+    try {
+      const response = await investAPI.getWatchlist();
+      const watchlist = response.data || [];
+      const item = watchlist.find(w => w.symbol === symbol.toUpperCase());
+      if (item) {
+        setIsInWatchlist(true);
+        setWatchlistId(item._id);
+      } else {
+        setIsInWatchlist(false);
+        setWatchlistId(null);
+      }
+    } catch (error) {
+      console.error('Error checking watchlist:', error);
+    }
+  };
+
+  const handleWatchlistToggle = async () => {
+    try {
+      if (isInWatchlist) {
+        await investAPI.removeFromWatchlist(watchlistId);
+        setIsInWatchlist(false);
+        setWatchlistId(null);
+        toast.success('Removed from watchlist');
+      } else {
+        const response = await investAPI.addToWatchlist({
+          symbol: symbol.toUpperCase(),
+          name: stockData?.name || symbol,
+        });
+        setIsInWatchlist(true);
+        setWatchlistId(response.data._id);
+        toast.success('Added to watchlist');
+      }
+    } catch (error) {
+      toast.error('Failed to update watchlist');
+    }
+  };
 
   useEffect(() => {
     if (symbol) {
@@ -196,8 +237,22 @@ const StockDetail = () => {
           >
             ← Back to Invest
           </button>
-          <h1 className="text-3xl font-bold text-white mb-2">{stockData.name || symbol}</h1>
-          <p className="text-slate-400">{stockData.symbol} • {stockData.exchange || 'NSE'}</p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">{stockData.name || symbol}</h1>
+              <p className="text-slate-400">{stockData.symbol} • {stockData.exchange || 'NSE'}</p>
+            </div>
+            <button
+              onClick={handleWatchlistToggle}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                isInWatchlist
+                  ? 'bg-teal-500 text-white'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              {isInWatchlist ? '✓ In Watchlist' : '+ Add to Watchlist'}
+            </button>
+          </div>
         </div>
 
         {/* Price Card */}
@@ -314,9 +369,8 @@ const StockDetail = () => {
         {/* Disclaimer */}
         <div className="mt-8 pt-6 border-t border-slate-700">
           <p className="text-slate-400 text-sm text-center">
-            Stash does not facilitate investments or provide financial advice.
-            Market prices and news are sourced from public third-party providers and may be delayed or inaccurate.
-            This feature is for tracking and informational purposes only and is not regulated by SEBI.
+            Stash provides market data and news for informational purposes only.
+            It does not facilitate investments or provide financial advice.
           </p>
         </div>
       </div>
