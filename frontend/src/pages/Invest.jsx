@@ -9,6 +9,7 @@ import PortfolioAnalytics from '../components/PortfolioAnalytics';
 import LivePrices from '../components/LivePrices';
 import StockSearch from '../components/StockSearch';
 import DefaultStockView from '../components/DefaultStockView';
+import MetalsPrices from '../components/MetalsPrices';
 
 const Invest = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -149,11 +150,24 @@ const Invest = () => {
           </div>
         )}
 
-        {(activeTab === 'mf' || activeTab === 'crypto' || activeTab === 'metals') && (
+        {activeTab === 'metals' && (
+          <div className="space-y-6">
+            <MetalsPrices />
+            <HoldingsList
+              holdings={getHoldingsForTab()}
+              assetType="metals"
+              onAdd={() => handleAddHolding('gold')}
+              onUpdate={handleHoldingUpdated}
+              onDelete={handleHoldingDeleted}
+            />
+          </div>
+        )}
+
+        {(activeTab === 'mf' || activeTab === 'crypto') && (
           <HoldingsList
             holdings={getHoldingsForTab()}
-            assetType={activeTab === 'metals' ? 'metals' : activeTab}
-            onAdd={() => handleAddHolding(activeTab === 'metals' ? 'gold' : activeTab)}
+            assetType={activeTab}
+            onAdd={() => handleAddHolding(activeTab)}
             onUpdate={handleHoldingUpdated}
             onDelete={handleHoldingDeleted}
           />

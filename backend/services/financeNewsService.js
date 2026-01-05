@@ -24,14 +24,20 @@ const getCachedOrFetch = async (key, fetchFn) => {
   const requestPromise = (async () => {
     try {
       const data = await fetchFn();
-      newsCache.set(key, { data, timestamp: Date.now() });
-      return data;
+      // Filter out invalid articles before caching
+      const validData = Array.isArray(data) 
+        ? data.filter(article => article && article.title && article.url && article.title.length > 5)
+        : data;
+      newsCache.set(key, { data: validData, timestamp: Date.now() });
+      return validData;
     } catch (error) {
       if (cached) {
         console.warn(`News fetch failed for ${key}, using stale cache`);
-        return { ...cached.data, stale: true };
+        return cached.data; // Return cached data directly (already filtered)
       }
-      throw error;
+      // Return empty array instead of throwing
+      console.error(`News fetch failed for ${key} and no cache available:`, error.message);
+      return [];
     } finally {
       requestLocks.delete(key);
     }
@@ -292,7 +298,11 @@ export const getFinanceNews = async (category = 'all') => {
                    category === 'stocks' ? 'stock market' : category;
       articles = await fetchGoogleNewsRSS(query);
       if (articles && articles.length > 0) {
-        return articles;
+        // Filter out invalid articles
+        const validArticles = articles.filter(a => a && a.title && a.url && a.title.length > 5);
+        if (validArticles.length > 0) {
+          return validArticles;
+        }
       }
     } catch (error) {
       console.warn('Google News RSS failed, trying Yahoo Finance:', error.message);
@@ -302,14 +312,25 @@ export const getFinanceNews = async (category = 'all') => {
     try {
       articles = await fetchYahooFinanceRSS();
       if (articles && articles.length > 0) {
-        return articles;
+        // Filter out invalid articles
+        const validArticles = articles.filter(a => a && a.title && a.url && a.title.length > 5);
+        if (validArticles.length > 0) {
+          return validArticles;
+        }
       }
     } catch (error) {
       console.warn('Yahoo Finance RSS failed:', error.message);
     }
 
-    // Return empty array if all fail (will use cached if available)
-    console.warn(`All news sources failed for category: ${category}`);
+    // If all fail but we have cached data, return it
+    const cached = newsCache.get(cacheKey);
+    if (cached) {
+      console.warn(`All news sources failed for category: ${category}, using stale cache`);
+      return cached.data;
+    }
+
+    // Return empty array if all fail and no cache
+    console.warn(`All news sources failed for category: ${category}, no cache available`);
     return [];
   });
 };
