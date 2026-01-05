@@ -27,6 +27,7 @@ import onboardingRoutes from './routes/onboardingRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import investRoutes from './routes/investRoutes.js';
 import marketRoutes from './routes/marketRoutes.js';
+import newsRoutes from './routes/newsRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -131,6 +132,7 @@ app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/invest', investRoutes);
 app.use('/api/market', marketRoutes);
+app.use('/api/news', newsRoutes);
 
 // Error handling middleware - Production-ready (no stack traces)
 app.use((err, req, res, next) => {
