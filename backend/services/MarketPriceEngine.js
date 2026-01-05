@@ -573,7 +573,7 @@ const getUSDToINR = async () => {
 
 /**
  * Get metal price (gold or silver) in INR
- * Improved with better error handling and fallback
+ * Uses new multi-source service for REAL live prices
  */
 export const getMetalPrice = async (metal) => {
   const cacheKey = `metal:${metal.toLowerCase()}`;
@@ -581,158 +581,104 @@ export const getMetalPrice = async (metal) => {
 
   return getCachedOrFetch(cacheKey, assetType, async () => {
     try {
-      console.log(`[METALS] Fetching ${metal} price from metals.live...`);
-      const response = await axios.get('https://api.metals.live/v1/spot', {
-        timeout: 15000,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        },
-      });
-
-      console.log(`[METALS] Response received:`, response.data);
-
-      if (!response.data) {
-        throw new Error('Empty response from metals.live');
-      }
-
-      // Try different possible response formats
-      let usdPrice = null;
-      const metalLower = metal.toLowerCase();
+      // Use new multi-source service
+      const { getLiveGoldPrice, getLiveSilverPrice } = await import('./metalsPriceService.js');
       
-      if (response.data[metalLower]) {
-        usdPrice = parseFloat(response.data[metalLower]);
-      } else if (response.data[metalLower.toUpperCase()]) {
-        usdPrice = parseFloat(response.data[metalLower.toUpperCase()]);
-      } else if (response.data.prices && response.data.prices[metalLower]) {
-        usdPrice = parseFloat(response.data.prices[metalLower]);
-      } else if (typeof response.data === 'object') {
-        // Try to find any numeric value
-        const values = Object.values(response.data).filter(v => typeof v === 'number' && v > 0);
-        if (values.length > 0) {
-          // Use first value as fallback (not ideal but better than N/A)
-          usdPrice = values[0];
-          console.warn(`[METALS] Using fallback price for ${metal}: ${usdPrice}`);
-        }
-      }
-
-      if (!usdPrice || isNaN(usdPrice) || usdPrice <= 0) {
-        throw new Error(`Invalid price for ${metal}: ${usdPrice}`);
-      }
-
-      console.log(`[METALS] ${metal} USD price: ${usdPrice}`);
-
-      // Get USD to INR rate
-      const usdToInr = await getUSDToINR();
-      console.log(`[METALS] USD/INR rate: ${usdToInr}`);
+      const price = metal.toLowerCase() === 'gold' 
+        ? await getLiveGoldPrice()
+        : await getLiveSilverPrice();
       
-      // Convert to INR (price per ounce to price per gram)
-      // 1 ounce = 31.1035 grams
-      const pricePerGramINR = (usdPrice * usdToInr) / 31.1035;
-      const pricePer10GramINR = pricePerGramINR * 10; // Common Indian unit
-
-      const result = {
-        symbol: metal.toUpperCase(),
-        price: usdPrice, // Keep USD price for reference
-        priceINR: pricePerGramINR,
-        pricePer10GramINR: pricePer10GramINR,
-        pricePerOunceINR: usdPrice * usdToInr,
-        usdToInrRate: usdToInr,
-        lastUpdated: new Date().toISOString(),
-        source: 'metals.live',
-        currency: 'INR',
-      };
-
-      console.log(`[METALS] ${metal} price calculated successfully:`, result);
-      return result;
+      if (!price || price.unavailable) {
+        throw new Error('Price unavailable from all sources');
+      }
+      
+      return price;
     } catch (error) {
       console.error(`[METALS] Error fetching ${metal} price:`, error.message);
       
-      // Return fallback values instead of throwing
-      const usdToInr = await getUSDToINR();
-      const fallbackUsdPrice = metal.toLowerCase() === 'gold' ? 2000 : 25; // Approximate USD prices
-      const pricePerGramINR = (fallbackUsdPrice * usdToInr) / 31.1035;
+      // Last resort: Try metals.live directly
+      try {
+        const response = await axios.get('https://api.metals.live/v1/spot', {
+          timeout: 10000,
+        });
+
+        const metalLower = metal.toLowerCase();
+        let usdPrice = response.data?.[metalLower] || response.data?.[metalLower.toUpperCase()];
+        
+        if (usdPrice && usdPrice > 0) {
+          const usdToInr = await getUSDToINR();
+          const pricePerGramINR = (usdPrice * usdToInr) / 31.1035;
+          
+          return {
+            symbol: metal.toUpperCase(),
+            price: usdPrice,
+            priceINR: pricePerGramINR,
+            pricePer10GramINR: pricePerGramINR * 10,
+            pricePerOunceINR: usdPrice * usdToInr,
+            usdToInrRate: usdToInr,
+            lastUpdated: new Date().toISOString(),
+            source: 'metals.live',
+            currency: 'INR',
+            unavailable: false,
+          };
+        }
+      } catch (fallbackError) {
+        console.error(`[METALS] Fallback also failed:`, fallbackError.message);
+      }
       
-      return {
-        symbol: metal.toUpperCase(),
-        price: fallbackUsdPrice,
-        priceINR: pricePerGramINR,
-        pricePer10GramINR: pricePerGramINR * 10,
-        pricePerOunceINR: fallbackUsdPrice * usdToInr,
-        usdToInrRate: usdToInr,
-        lastUpdated: new Date().toISOString(),
-        source: 'fallback',
-        currency: 'INR',
-        unavailable: true, // Mark as unavailable
-      };
+      throw error; // Re-throw if all sources fail
     }
   });
 };
 
 /**
- * Get gold and silver prices
+ * Get gold and silver prices - Uses new multi-source service
  */
 export const getMetalPrices = async () => {
   try {
-    console.log('[METALS] Fetching gold and silver prices...');
-    const [gold, silver] = await Promise.all([
-      getMetalPrice('gold'),
-      getMetalPrice('silver'),
-    ]);
+    console.log('[METALS] Fetching LIVE gold and silver prices...');
     
-    console.log('[METALS] Gold price:', gold);
-    console.log('[METALS] Silver price:', silver);
+    // Use new multi-source service
+    const { getLiveMetalPrices } = await import('./metalsPriceService.js');
+    const result = await getLiveMetalPrices();
     
-    // Ensure INR prices are always present
-    if (gold && !gold.priceINR && gold.price) {
-      const usdToInr = gold.usdToInrRate || await getUSDToINR();
-      gold.priceINR = (gold.price * usdToInr) / 31.1035;
-      gold.pricePer10GramINR = gold.priceINR * 10;
-      gold.pricePerOunceINR = gold.price * usdToInr;
+    // If new service fails, fall back to old method
+    if (!result.gold || !result.silver) {
+      console.log('[METALS] New service partial failure, using fallback...');
+      const [gold, silver] = await Promise.allSettled([
+        getMetalPrice('gold'),
+        getMetalPrice('silver'),
+      ]);
+      
+      return {
+        gold: gold.status === 'fulfilled' ? gold.value : result.gold,
+        silver: silver.status === 'fulfilled' ? silver.value : result.silver,
+      };
     }
     
-    if (silver && !silver.priceINR && silver.price) {
-      const usdToInr = silver.usdToInrRate || await getUSDToINR();
-      silver.priceINR = (silver.price * usdToInr) / 31.1035;
-      silver.pricePer10GramINR = silver.priceINR * 10;
-      silver.pricePerOunceINR = silver.price * usdToInr;
-    }
+    console.log('[METALS] ✅ Live prices fetched successfully');
+    console.log(`[METALS] Gold: ₹${result.gold.pricePer10GramINR?.toFixed(2)} per 10g`);
+    console.log(`[METALS] Silver: ₹${result.silver.pricePer10GramINR?.toFixed(2)} per 10g`);
     
-    return { gold, silver };
+    return result;
   } catch (error) {
     console.error('[METALS] Error fetching metal prices:', error.message);
     
-    // Return fallback with INR prices
-    const usdToInr = await getUSDToINR();
-    const goldFallbackUsd = 2000;
-    const silverFallbackUsd = 25;
-    
-    const goldPriceINR = (goldFallbackUsd * usdToInr) / 31.1035;
-    const silverPriceINR = (silverFallbackUsd * usdToInr) / 31.1035;
-    
-    return {
-      gold: {
-        symbol: 'GOLD',
-        price: goldFallbackUsd,
-        priceINR: goldPriceINR,
-        pricePer10GramINR: goldPriceINR * 10,
-        pricePerOunceINR: goldFallbackUsd * usdToInr,
-        usdToInrRate: usdToInr,
-        unavailable: true,
-        source: 'fallback',
-        currency: 'INR',
-      },
-      silver: {
-        symbol: 'SILVER',
-        price: silverFallbackUsd,
-        priceINR: silverPriceINR,
-        pricePer10GramINR: silverPriceINR * 10,
-        pricePerOunceINR: silverFallbackUsd * usdToInr,
-        usdToInrRate: usdToInr,
-        unavailable: true,
-        source: 'fallback',
-        currency: 'INR',
-      },
-    };
+    // Last resort: Try individual fetches
+    try {
+      const [gold, silver] = await Promise.allSettled([
+        getMetalPrice('gold'),
+        getMetalPrice('silver'),
+      ]);
+      
+      return {
+        gold: gold.status === 'fulfilled' ? gold.value : null,
+        silver: silver.status === 'fulfilled' ? silver.value : null,
+      };
+    } catch (fallbackError) {
+      console.error('[METALS] All methods failed:', fallbackError.message);
+      return { gold: null, silver: null };
+    }
   }
 };
 

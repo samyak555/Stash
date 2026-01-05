@@ -93,8 +93,10 @@ const MetalsPrices = () => {
                   </p>
                 )}
               </div>
-              {metals.gold.unavailable && (
-                <p className="text-yellow-400 text-xs mt-2">⚠️ Using estimated prices</p>
+              {metals.gold && metals.gold.source && (
+                <p className="text-green-400 text-xs mt-2">
+                  ✓ Live from {metals.gold.source}
+                </p>
               )}
             </>
           ) : (
@@ -134,8 +136,10 @@ const MetalsPrices = () => {
                   </p>
                 )}
               </div>
-              {metals.silver.unavailable && (
-                <p className="text-yellow-400 text-xs mt-2">⚠️ Using estimated prices</p>
+              {metals.silver && metals.silver.source && (
+                <p className="text-green-400 text-xs mt-2">
+                  ✓ Live from {metals.silver.source}
+                </p>
               )}
             </>
           ) : (
