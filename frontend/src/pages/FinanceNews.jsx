@@ -24,14 +24,33 @@ const FinanceNews = () => {
       try {
         setLoading(true);
         const response = await newsAPI.getCategorized();
-        setNews(response.data || {
+        console.log('News API response:', response);
+        
+        if (response && response.data) {
+          setNews({
+            all: response.data.all || [],
+            stocks: response.data.stocks || [],
+            crypto: response.data.crypto || [],
+            economy: response.data.economy || [],
+          });
+        } else {
+          // If no data, set empty arrays
+          setNews({
+            all: [],
+            stocks: [],
+            crypto: [],
+            economy: [],
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching news:', error);
+        // Set empty arrays on error so UI still renders
+        setNews({
           all: [],
           stocks: [],
           crypto: [],
           economy: [],
         });
-      } catch (error) {
-        console.error('Error fetching news:', error);
       } finally {
         setLoading(false);
       }

@@ -115,35 +115,65 @@ const fetchNewsAPI = async (query = 'finance', category = 'business') => {
 const parseRSS = async (rssUrl) => {
   try {
     const response = await axios.get(rssUrl, {
-      timeout: 10000,
+      timeout: 15000,
       headers: {
-        'User-Agent': 'Mozilla/5.0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/rss+xml, application/xml, text/xml',
       },
     });
 
+    if (!response.data) {
+      throw new Error('Empty RSS response');
+    }
+
     return new Promise((resolve, reject) => {
-      parseString(response.data, (err, result) => {
+      parseString(response.data, { 
+        explicitArray: false,
+        mergeAttrs: true,
+        trim: true,
+      }, (err, result) => {
         if (err) {
+          console.error('RSS parsing error:', err.message);
           reject(err);
           return;
         }
 
-        const items = result?.rss?.channel?.[0]?.item || [];
-        const articles = items.map(item => ({
-          title: item.title?.[0] || '',
-          description: item.description?.[0] || '',
-          source: item.source?.[0] || 'RSS Feed',
-          url: item.link?.[0] || '',
-          publishedAt: item.pubDate?.[0] || new Date().toISOString(),
-          imageUrl: null,
-          category: 'general',
-        }));
+        // Handle different RSS formats
+        let items = [];
+        if (result?.rss?.channel?.item) {
+          items = Array.isArray(result.rss.channel.item) 
+            ? result.rss.channel.item 
+            : [result.rss.channel.item];
+        } else if (result?.feed?.entry) {
+          // Atom feed format
+          items = Array.isArray(result.feed.entry)
+            ? result.feed.entry
+            : [result.feed.entry];
+        }
+
+        const articles = items.map(item => {
+          // Handle both RSS and Atom formats
+          const title = item.title?.[0] || item.title?._ || item.title || '';
+          const description = item.description?.[0] || item.description?._ || item.description || item.summary?.[0] || item.summary || '';
+          const link = item.link?.[0] || item.link?._ || item.link || item.link?.href || '';
+          const pubDate = item.pubDate?.[0] || item.pubDate || item.published?.[0] || item.published || new Date().toISOString();
+          
+          return {
+            title: typeof title === 'string' ? title : '',
+            description: typeof description === 'string' ? description : '',
+            source: item.source?.[0] || item.source || 'RSS Feed',
+            url: typeof link === 'string' ? link : '',
+            publishedAt: typeof pubDate === 'string' ? pubDate : new Date().toISOString(),
+            imageUrl: null,
+            category: 'general',
+          };
+        }).filter(article => article.title && article.url); // Filter out invalid articles
 
         resolve(articles);
       });
     });
   } catch (error) {
-    console.error('RSS parse failed:', error.message);
+    console.error('RSS fetch/parse failed:', error.message);
     throw error;
   }
 };
@@ -187,7 +217,7 @@ export const getFinanceNews = async (category = 'all') => {
       try {
         const query = category === 'all' ? 'finance' : category;
         articles = await fetchNewsAPI(query, 'business');
-        if (articles.length > 0) {
+        if (articles && articles.length > 0) {
           return articles;
         }
       } catch (error) {
@@ -195,30 +225,31 @@ export const getFinanceNews = async (category = 'all') => {
       }
     }
 
-    // Try Google News RSS
+    // Try Google News RSS (always available, no key)
     try {
       const query = category === 'all' ? 'finance' : 
                    category === 'crypto' ? 'cryptocurrency' : 
                    category === 'stocks' ? 'stock market' : category;
       articles = await fetchGoogleNewsRSS(query);
-      if (articles.length > 0) {
+      if (articles && articles.length > 0) {
         return articles;
       }
     } catch (error) {
       console.warn('Google News RSS failed, trying Yahoo Finance:', error.message);
     }
 
-    // Try Yahoo Finance RSS
+    // Try Yahoo Finance RSS (always available, no key)
     try {
       articles = await fetchYahooFinanceRSS();
-      if (articles.length > 0) {
+      if (articles && articles.length > 0) {
         return articles;
       }
     } catch (error) {
       console.warn('Yahoo Finance RSS failed:', error.message);
     }
 
-    // Return empty array if all fail
+    // Return empty array if all fail (will use cached if available)
+    console.warn(`All news sources failed for category: ${category}`);
     return [];
   });
 };

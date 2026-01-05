@@ -346,6 +346,16 @@ function AppContent({ setUser: setUserProp }) {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/news"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <FinanceNews />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </>
