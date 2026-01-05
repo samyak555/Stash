@@ -278,6 +278,17 @@ export const getFinanceNews = async (category = 'all') => {
 };
 
 /**
+ * Sort articles by latest first
+ */
+const sortByLatest = (articles) => {
+  return articles.sort((a, b) => {
+    const dateA = new Date(a.publishedAt);
+    const dateB = new Date(b.publishedAt);
+    return dateB - dateA; // Latest first
+  });
+};
+
+/**
  * Get categorized news
  */
 export const getCategorizedNews = async () => {
@@ -290,10 +301,10 @@ export const getCategorizedNews = async () => {
     ]);
 
     return {
-      all: all.status === 'fulfilled' ? all.value : [],
-      stocks: stocks.status === 'fulfilled' ? stocks.value : [],
-      crypto: crypto.status === 'fulfilled' ? crypto.value : [],
-      economy: economy.status === 'fulfilled' ? economy.value : [],
+      all: all.status === 'fulfilled' ? sortByLatest([...all.value]) : [],
+      stocks: stocks.status === 'fulfilled' ? sortByLatest([...stocks.value]) : [],
+      crypto: crypto.status === 'fulfilled' ? sortByLatest([...crypto.value]) : [],
+      economy: economy.status === 'fulfilled' ? sortByLatest([...economy.value]) : [],
     };
   } catch (error) {
     console.error('Error fetching categorized news:', error);
@@ -312,7 +323,8 @@ export const getCategorizedNews = async () => {
 export const getTopHeadlines = async (limit = 5) => {
   try {
     const news = await getFinanceNews('all');
-    return news.slice(0, limit);
+    const sorted = sortByLatest([...news]);
+    return sorted.slice(0, limit);
   } catch (error) {
     console.error('Error fetching top headlines:', error);
     return [];
