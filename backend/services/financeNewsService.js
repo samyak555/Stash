@@ -162,7 +162,14 @@ const fetchGoogleNewsRSS = async () => {
           })
           .filter(article => article !== null); // Filter out invalid articles
 
-        console.log(`[STASH NEWS] Successfully parsed ${articles.length} articles from Google News RSS`);
+        // Sort articles by publishedAt (most recent first)
+        articles.sort((a, b) => {
+          const dateA = new Date(a.publishedAt);
+          const dateB = new Date(b.publishedAt);
+          return dateB - dateA; // Descending order (newest first)
+        });
+        
+        console.log(`[STASH NEWS] Successfully parsed ${articles.length} articles from Google News RSS (sorted by time)`);
         
         if (articles.length === 0) {
           console.warn('[STASH NEWS] No valid articles found after parsing');
@@ -204,8 +211,15 @@ const getCachedOrFetch = async (key, fetchFn) => {
         ? data.filter(article => article && article.title && article.link && article.title.length > 5)
         : [];
       
+      // Sort by publishedAt (most recent first)
+      validData.sort((a, b) => {
+        const dateA = new Date(a.publishedAt);
+        const dateB = new Date(b.publishedAt);
+        return dateB - dateA; // Descending order (newest first)
+      });
+      
       newsCache.set(key, { data: validData, timestamp: Date.now() });
-      console.log(`[STASH NEWS] Cached ${validData.length} articles`);
+      console.log(`[STASH NEWS] Cached ${validData.length} articles (sorted by time)`);
       return validData;
     } catch (error) {
       console.error(`[STASH NEWS] Fetch failed for ${key}:`, error.message);
