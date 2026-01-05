@@ -290,6 +290,12 @@ export const alertsAPI = {
   checkAlerts: () => api.post('/alerts/check'),
 };
 
+export const analyticsAPI = {
+  getFinancialHealth: () => api.get('/analytics/health'),
+  getExpenseAnalytics: (timeRange) => api.get('/analytics/expenses', { params: { timeRange } }),
+  getBudgetAnalytics: () => api.get('/analytics/budgets'),
+};
+
 export default api;
 
 
