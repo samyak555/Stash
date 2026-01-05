@@ -1,6 +1,39 @@
 import { formatIncome } from '../utils/formatDisplayValue';
+import { useState, useEffect } from 'react';
+import { investAPI } from '../services/api';
 
 const PortfolioOverview = ({ portfolio, onAddHolding }) => {
+  const [livePrices, setLivePrices] = useState({});
+  const [lastUpdate, setLastUpdate] = useState(null);
+
+  // Auto-refresh prices every 30 seconds
+  useEffect(() => {
+    if (!portfolio || !portfolio.holdings || portfolio.holdings.length === 0) return;
+
+    const fetchLivePrices = async () => {
+      try {
+        const response = await investAPI.getPortfolio();
+        if (response.data && response.data.holdings) {
+          const prices = {};
+          response.data.holdings.forEach(holding => {
+            prices[holding._id] = {
+              currentPrice: holding.currentPrice || holding.buyPrice,
+              change: holding.priceData?.change || 0,
+              changePercent: holding.priceData?.changePercent || 0,
+            };
+          });
+          setLivePrices(prices);
+          setLastUpdate(new Date());
+        }
+      } catch (error) {
+        console.error('Error fetching live prices:', error);
+      }
+    };
+
+    fetchLivePrices();
+    const interval = setInterval(fetchLivePrices, 30000);
+    return () => clearInterval(interval);
+  }, [portfolio]);
   if (!portfolio) {
     return (
       <div className="text-center py-12">
@@ -36,8 +69,17 @@ const PortfolioOverview = ({ portfolio, onAddHolding }) => {
         </div>
 
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
-          <p className="text-slate-400 text-sm mb-2">Current Value</p>
-          <p className="text-2xl font-bold text-white">{formatIncome(totalCurrentValue)}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-slate-400 text-sm mb-2">Current Value</p>
+              <p className="text-2xl font-bold text-white">{formatIncome(totalCurrentValue)}</p>
+            </div>
+            {lastUpdate && (
+              <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded animate-pulse">
+                🔴 LIVE
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
@@ -116,28 +158,48 @@ const PortfolioOverview = ({ portfolio, onAddHolding }) => {
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
           <h3 className="text-xl font-bold text-white mb-4">Recent Holdings</h3>
           <div className="space-y-3">
-            {holdings.slice(0, 5).map((holding) => (
-              <div
-                key={holding._id}
-                className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg"
-              >
-                <div>
-                  <p className="text-white font-medium">{holding.name}</p>
-                  <p className="text-slate-400 text-sm">{holding.symbol}</p>
+            {holdings.slice(0, 5).map((holding) => {
+              const livePrice = livePrices[holding._id];
+              const priceChange = livePrice?.changePercent || 0;
+              const isPriceUp = priceChange >= 0;
+              
+              return (
+                <div
+                  key={holding._id}
+                  className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg"
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="text-white font-medium">{holding.name}</p>
+                      {livePrice && (
+                        <span className="px-1.5 py-0.5 bg-green-500/20 text-green-400 text-xs rounded">
+                          🔴
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-slate-400 text-sm">{holding.symbol}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white font-medium">{formatIncome(holding.currentValue)}</p>
+                    <div className="flex items-center gap-2 justify-end">
+                      <p
+                        className={`text-sm ${
+                          holding.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'
+                        }`}
+                      >
+                        {holding.profitLoss >= 0 ? '+' : ''}
+                        {holding.profitLossPercent.toFixed(2)}%
+                      </p>
+                      {livePrice && (
+                        <span className={`text-xs ${isPriceUp ? 'text-green-400' : 'text-red-400'}`}>
+                          {isPriceUp ? '↑' : '↓'} {Math.abs(priceChange).toFixed(2)}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-white font-medium">{formatIncome(holding.currentValue)}</p>
-                  <p
-                    className={`text-sm ${
-                      holding.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'
-                    }`}
-                  >
-                    {holding.profitLoss >= 0 ? '+' : ''}
-                    {holding.profitLossPercent.toFixed(2)}%
-                  </p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

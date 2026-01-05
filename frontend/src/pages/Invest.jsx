@@ -6,6 +6,7 @@ import AddHoldingModal from '../components/AddHoldingModal';
 import PortfolioOverview from '../components/PortfolioOverview';
 import HoldingsList from '../components/HoldingsList';
 import PortfolioAnalytics from '../components/PortfolioAnalytics';
+import LivePrices from '../components/LivePrices';
 
 const Invest = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -16,6 +17,7 @@ const Invest = () => {
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
+    { id: 'live', label: '🔴 Live Prices' },
     { id: 'stocks', label: 'Stocks' },
     { id: 'mf', label: 'Mutual Funds' },
     { id: 'crypto', label: 'Crypto' },
@@ -38,8 +40,8 @@ const Invest = () => {
 
   useEffect(() => {
     fetchPortfolio();
-    // Refresh portfolio every 5 minutes to update prices
-    const interval = setInterval(fetchPortfolio, 5 * 60 * 1000);
+    // Refresh portfolio every 30 seconds for live prices
+    const interval = setInterval(fetchPortfolio, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -122,6 +124,10 @@ const Invest = () => {
             portfolio={portfolio}
             onAddHolding={handleAddHolding}
           />
+        )}
+
+        {activeTab === 'live' && (
+          <LivePrices holdings={portfolio?.holdings || []} />
         )}
 
         {(activeTab === 'stocks' || activeTab === 'mf' || activeTab === 'crypto' || activeTab === 'metals') && (

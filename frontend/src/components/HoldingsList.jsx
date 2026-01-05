@@ -1,13 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { investAPI } from '../services/api';
 import { formatIncome } from '../utils/formatDisplayValue';
 import toast from 'react-hot-toast';
 import AddHoldingModal from './AddHoldingModal';
+import LivePriceChart from './LivePriceChart';
 
 const HoldingsList = ({ holdings, assetType, onAdd, onUpdate, onDelete }) => {
   const [editingId, setEditingId] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedHolding, setSelectedHolding] = useState(null);
+  const [livePrices, setLivePrices] = useState({});
+  const [lastUpdate, setLastUpdate] = useState(null);
+
+  // Auto-refresh prices every 30 seconds
+  useEffect(() => {
+    const fetchLivePrices = async () => {
+      if (!holdings || holdings.length === 0) return;
+      
+      try {
+        const response = await investAPI.getPortfolio();
+        if (response.data && response.data.holdings) {
+          const prices = {};
+          response.data.holdings.forEach(holding => {
+            prices[holding._id] = {
+              currentPrice: holding.currentPrice || holding.buyPrice,
+              change: holding.priceData?.change || 0,
+              changePercent: holding.priceData?.changePercent || 0,
+              lastUpdated: holding.priceData?.lastUpdated || new Date().toISOString(),
+            };
+          });
+          setLivePrices(prices);
+          setLastUpdate(new Date());
+        }
+      } catch (error) {
+        console.error('Error fetching live prices:', error);
+      }
+    };
+
+    fetchLivePrices();
+    const interval = setInterval(fetchLivePrices, 30000);
+    return () => clearInterval(interval);
+  }, [holdings]);
 
   const handleEdit = (holding) => {
     setSelectedHolding(holding);
@@ -45,9 +78,20 @@ const HoldingsList = ({ holdings, assetType, onAdd, onUpdate, onDelete }) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-white capitalize">
-          {assetType === 'metals' ? 'Gold & Silver' : assetType} Holdings
-        </h2>
+        <div>
+          <h2 className="text-2xl font-bold text-white capitalize">
+            {assetType === 'metals' ? 'Gold & Silver' : assetType} Holdings
+          </h2>
+          {lastUpdate && (
+            <p className="text-slate-400 text-sm mt-1">
+              Live prices • Last updated: {new Date(lastUpdate).toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+              })}
+            </p>
+          )}
+        </div>
         <button
           onClick={onAdd}
           className="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors"
@@ -59,6 +103,12 @@ const HoldingsList = ({ holdings, assetType, onAdd, onUpdate, onDelete }) => {
       <div className="space-y-3">
         {holdings.map((holding) => {
           const isProfit = holding.profitLoss >= 0;
+          const livePrice = livePrices[holding._id];
+          const currentPrice = livePrice?.currentPrice || holding.currentPrice || holding.buyPrice;
+          const priceChange = livePrice?.change || 0;
+          const priceChangePercent = livePrice?.changePercent || 0;
+          const isPriceUp = priceChange >= 0;
+          
           return (
             <div
               key={holding._id}
@@ -74,6 +124,11 @@ const HoldingsList = ({ holdings, assetType, onAdd, onUpdate, onDelete }) => {
                     <span className="px-2 py-1 bg-teal-500/20 text-teal-400 text-xs rounded capitalize">
                       {holding.assetType}
                     </span>
+                    {livePrice && (
+                      <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded animate-pulse">
+                        🔴 LIVE
+                      </span>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
@@ -87,14 +142,28 @@ const HoldingsList = ({ holdings, assetType, onAdd, onUpdate, onDelete }) => {
                     </div>
                     <div>
                       <p className="text-slate-400 text-sm mb-1">Current Price</p>
-                      <p className="text-white font-medium">
-                        {formatIncome(holding.currentPrice || holding.buyPrice)}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-white font-medium">{formatIncome(currentPrice)}</p>
+                        {livePrice && (
+                          <span className={`text-xs font-medium ${isPriceUp ? 'text-green-400' : 'text-red-400'}`}>
+                            {isPriceUp ? '↑' : '↓'} {Math.abs(priceChangePercent).toFixed(2)}%
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div>
                       <p className="text-slate-400 text-sm mb-1">Current Value</p>
                       <p className="text-white font-medium">{formatIncome(holding.currentValue)}</p>
                     </div>
+                  </div>
+
+                  {/* Live Price Chart */}
+                  <div className="mt-4">
+                    <LivePriceChart
+                      symbol={holding.symbol}
+                      assetType={holding.assetType}
+                      currentPrice={currentPrice}
+                    />
                   </div>
 
                   {holding.broker && (
