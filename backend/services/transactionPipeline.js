@@ -57,8 +57,8 @@ export const processTransaction = async (rawTransaction, userId, source = 'manua
     };
     
     // Step 5: Generate duplicate hash
-    const tempTransaction = new AutoTransaction(transactionData);
-    transactionData.duplicateHash = tempTransaction.generateDuplicateHash();
+    const hashString = `${userId}_${transactionData.amount}_${transactionData.type}_${transactionData.transactionDate.toISOString().split('T')[0]}_${transactionData.merchantNormalized || transactionData.merchantRawText || ''}_${transactionData.referenceId || ''}`;
+    transactionData.duplicateHash = crypto.createHash('sha256').update(hashString).digest('hex');
     
     // Step 6: Check for duplicates
     const existing = await AutoTransaction.findOne({ 
