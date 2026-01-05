@@ -94,15 +94,25 @@ export const getCryptos = async (req, res) => {
  */
 export const getMetals = async (req, res) => {
   try {
+    console.log('[METALS API] Request received for live prices');
     const prices = await getMetalPrices();
-    res.json(prices);
+    
+    // Ensure we always return valid structure
+    const result = {
+      gold: prices.gold || null,
+      silver: prices.silver || null,
+    };
+    
+    if (result.gold && result.silver) {
+      console.log('[METALS API] ✅ Returning live prices');
+    } else {
+      console.warn('[METALS API] ⚠️ Some prices unavailable');
+    }
+    
+    res.json(result);
   } catch (error) {
-    console.error('Error fetching metal prices:', error);
-    // Return fallback prices
-    res.json({ 
-      gold: { symbol: 'GOLD', price: 2000, unavailable: true, source: 'fallback' },
-      silver: { symbol: 'SILVER', price: 25, unavailable: true, source: 'fallback' }
-    });
+    console.error('[METALS API] Error:', error.message);
+    res.json({ gold: null, silver: null });
   }
 };
 
