@@ -40,6 +40,8 @@ import AddCardModal from '../components/AddCardModal';
 import { formatIncome, formatExpense } from '../utils/formatDisplayValue';
 import LoadingDots from '../components/LoadingDots';
 import FinanceNewsWidget from '../components/FinanceNewsWidget';
+import FinancialHealthScore from '../components/FinancialHealthScore';
+import { analyticsAPI } from '../services/api';
 
 const Dashboard = () => {
   const { expenses, refreshTrigger, fetchExpenses } = useExpenses();
@@ -55,6 +57,7 @@ const Dashboard = () => {
   const [showAddCardModal, setShowAddCardModal] = useState(false);
   const [goals, setGoals] = useState([]);
   const [portfolioSummary, setPortfolioSummary] = useState(null);
+  const [financialHealth, setFinancialHealth] = useState(null);
 
   // Fetch expenses from context on mount
   useEffect(() => {
@@ -68,6 +71,7 @@ const Dashboard = () => {
     fetchSyncStatus();
     fetchGoals();
     fetchPortfolioSummary();
+    fetchFinancialHealth();
   }, [selectedMonth, selectedYear, timeRange, refreshTrigger]);
 
   const fetchGoals = async () => {
@@ -87,6 +91,16 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Failed to fetch portfolio summary:', error);
       setPortfolioSummary(null);
+    }
+  };
+
+  const fetchFinancialHealth = async () => {
+    try {
+      const response = await analyticsAPI.getFinancialHealth();
+      setFinancialHealth(response.data);
+    } catch (error) {
+      console.error('Failed to fetch financial health:', error);
+      setFinancialHealth(null);
     }
   };
 
