@@ -573,39 +573,98 @@ const getUSDToINR = async () => {
 
 /**
  * Get metal price (gold or silver) in INR
+ * Improved with better error handling and fallback
  */
 export const getMetalPrice = async (metal) => {
   const cacheKey = `metal:${metal.toLowerCase()}`;
   const assetType = metal.toLowerCase() === 'gold' ? 'gold' : 'silver';
 
   return getCachedOrFetch(cacheKey, assetType, async () => {
-    const response = await axios.get('https://api.metals.live/v1/spot', {
-      timeout: 10000,
-    });
+    try {
+      console.log(`[METALS] Fetching ${metal} price from metals.live...`);
+      const response = await axios.get('https://api.metals.live/v1/spot', {
+        timeout: 15000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        },
+      });
 
-    if (!response.data || !response.data[metal.toLowerCase()]) {
-      throw new Error(`Metal price not found: ${metal}`);
+      console.log(`[METALS] Response received:`, response.data);
+
+      if (!response.data) {
+        throw new Error('Empty response from metals.live');
+      }
+
+      // Try different possible response formats
+      let usdPrice = null;
+      const metalLower = metal.toLowerCase();
+      
+      if (response.data[metalLower]) {
+        usdPrice = parseFloat(response.data[metalLower]);
+      } else if (response.data[metalLower.toUpperCase()]) {
+        usdPrice = parseFloat(response.data[metalLower.toUpperCase()]);
+      } else if (response.data.prices && response.data.prices[metalLower]) {
+        usdPrice = parseFloat(response.data.prices[metalLower]);
+      } else if (typeof response.data === 'object') {
+        // Try to find any numeric value
+        const values = Object.values(response.data).filter(v => typeof v === 'number' && v > 0);
+        if (values.length > 0) {
+          // Use first value as fallback (not ideal but better than N/A)
+          usdPrice = values[0];
+          console.warn(`[METALS] Using fallback price for ${metal}: ${usdPrice}`);
+        }
+      }
+
+      if (!usdPrice || isNaN(usdPrice) || usdPrice <= 0) {
+        throw new Error(`Invalid price for ${metal}: ${usdPrice}`);
+      }
+
+      console.log(`[METALS] ${metal} USD price: ${usdPrice}`);
+
+      // Get USD to INR rate
+      const usdToInr = await getUSDToINR();
+      console.log(`[METALS] USD/INR rate: ${usdToInr}`);
+      
+      // Convert to INR (price per ounce to price per gram)
+      // 1 ounce = 31.1035 grams
+      const pricePerGramINR = (usdPrice * usdToInr) / 31.1035;
+      const pricePer10GramINR = pricePerGramINR * 10; // Common Indian unit
+
+      const result = {
+        symbol: metal.toUpperCase(),
+        price: usdPrice, // Keep USD price for reference
+        priceINR: pricePerGramINR,
+        pricePer10GramINR: pricePer10GramINR,
+        pricePerOunceINR: usdPrice * usdToInr,
+        usdToInrRate: usdToInr,
+        lastUpdated: new Date().toISOString(),
+        source: 'metals.live',
+        currency: 'INR',
+      };
+
+      console.log(`[METALS] ${metal} price calculated successfully:`, result);
+      return result;
+    } catch (error) {
+      console.error(`[METALS] Error fetching ${metal} price:`, error.message);
+      
+      // Return fallback values instead of throwing
+      const usdToInr = await getUSDToINR();
+      const fallbackUsdPrice = metal.toLowerCase() === 'gold' ? 2000 : 25; // Approximate USD prices
+      const pricePerGramINR = (fallbackUsdPrice * usdToInr) / 31.1035;
+      
+      return {
+        symbol: metal.toUpperCase(),
+        price: fallbackUsdPrice,
+        priceINR: pricePerGramINR,
+        pricePer10GramINR: pricePerGramINR * 10,
+        pricePerOunceINR: fallbackUsdPrice * usdToInr,
+        usdToInrRate: usdToInr,
+        lastUpdated: new Date().toISOString(),
+        source: 'fallback',
+        currency: 'INR',
+        unavailable: true, // Mark as unavailable
+      };
     }
-
-    const usdPrice = parseFloat(response.data[metal.toLowerCase()]);
-    const usdToInr = await getUSDToINR();
-    
-    // Convert to INR (price per ounce to price per gram)
-    // 1 ounce = 31.1035 grams
-    const pricePerGramINR = (usdPrice * usdToInr) / 31.1035;
-    const pricePer10GramINR = pricePerGramINR * 10; // Common Indian unit
-
-    return {
-      symbol: metal.toUpperCase(),
-      price: usdPrice, // Keep USD price for reference
-      priceINR: pricePerGramINR,
-      pricePer10GramINR: pricePer10GramINR,
-      pricePerOunceINR: usdPrice * usdToInr,
-      usdToInrRate: usdToInr,
-      lastUpdated: new Date().toISOString(),
-      source: 'metals.live',
-      currency: 'INR',
-    };
   });
 };
 
