@@ -673,19 +673,65 @@ export const getMetalPrice = async (metal) => {
  */
 export const getMetalPrices = async () => {
   try {
+    console.log('[METALS] Fetching gold and silver prices...');
     const [gold, silver] = await Promise.all([
       getMetalPrice('gold'),
       getMetalPrice('silver'),
     ]);
+    
+    console.log('[METALS] Gold price:', gold);
+    console.log('[METALS] Silver price:', silver);
+    
+    // Ensure INR prices are always present
+    if (gold && !gold.priceINR && gold.price) {
+      const usdToInr = gold.usdToInrRate || await getUSDToINR();
+      gold.priceINR = (gold.price * usdToInr) / 31.1035;
+      gold.pricePer10GramINR = gold.priceINR * 10;
+      gold.pricePerOunceINR = gold.price * usdToInr;
+    }
+    
+    if (silver && !silver.priceINR && silver.price) {
+      const usdToInr = silver.usdToInrRate || await getUSDToINR();
+      silver.priceINR = (silver.price * usdToInr) / 31.1035;
+      silver.pricePer10GramINR = silver.priceINR * 10;
+      silver.pricePerOunceINR = silver.price * usdToInr;
+    }
+    
     return { gold, silver };
   } catch (error) {
-    console.error('Error fetching metal prices:', error.message);
-    // Return cached values if available
-    const goldCached = priceCache.get('metal:gold');
-    const silverCached = priceCache.get('metal:silver');
+    console.error('[METALS] Error fetching metal prices:', error.message);
+    
+    // Return fallback with INR prices
+    const usdToInr = await getUSDToINR();
+    const goldFallbackUsd = 2000;
+    const silverFallbackUsd = 25;
+    
+    const goldPriceINR = (goldFallbackUsd * usdToInr) / 31.1035;
+    const silverPriceINR = (silverFallbackUsd * usdToInr) / 31.1035;
+    
     return {
-      gold: goldCached ? { ...goldCached.data, unavailable: true } : { symbol: 'GOLD', price: 2000, unavailable: true, source: 'fallback' },
-      silver: silverCached ? { ...silverCached.data, unavailable: true } : { symbol: 'SILVER', price: 25, unavailable: true, source: 'fallback' },
+      gold: {
+        symbol: 'GOLD',
+        price: goldFallbackUsd,
+        priceINR: goldPriceINR,
+        pricePer10GramINR: goldPriceINR * 10,
+        pricePerOunceINR: goldFallbackUsd * usdToInr,
+        usdToInrRate: usdToInr,
+        unavailable: true,
+        source: 'fallback',
+        currency: 'INR',
+      },
+      silver: {
+        symbol: 'SILVER',
+        price: silverFallbackUsd,
+        priceINR: silverPriceINR,
+        pricePer10GramINR: silverPriceINR * 10,
+        pricePerOunceINR: silverFallbackUsd * usdToInr,
+        usdToInrRate: usdToInr,
+        unavailable: true,
+        source: 'fallback',
+        currency: 'INR',
+      },
     };
   }
 };

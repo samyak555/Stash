@@ -72,22 +72,33 @@ const MetalsPrices = () => {
           </div>
           {metals.gold ? (
             <>
-              <p className="text-3xl font-bold text-yellow-400 mb-2">
-                ₹{metals.gold.pricePer10GramINR?.toFixed(2) || metals.gold.priceINR?.toFixed(2) || 'N/A'}
+              <p className="text-4xl font-bold text-yellow-400 mb-3">
+                ₹{metals.gold.pricePer10GramINR ? metals.gold.pricePer10GramINR.toFixed(2) : 
+                   metals.gold.priceINR ? (metals.gold.priceINR * 10).toFixed(2) : 
+                   'Loading...'}
               </p>
-              <p className="text-slate-400 text-sm mb-1">
-                Per 10 grams
+              <p className="text-slate-300 text-sm font-semibold mb-2">
+                Per 10 grams (INR)
               </p>
-              <p className="text-slate-400 text-xs">
-                Per gram: ₹{metals.gold.priceINR?.toFixed(2) || 'N/A'} • 
-                Per ounce: ₹{metals.gold.pricePerOunceINR?.toFixed(2) || 'N/A'}
-              </p>
+              <div className="space-y-1 mt-3 pt-3 border-t border-slate-700">
+                <p className="text-slate-400 text-sm">
+                  <span className="text-slate-300">Per gram:</span> ₹{metals.gold.priceINR ? metals.gold.priceINR.toFixed(2) : 'N/A'}
+                </p>
+                <p className="text-slate-400 text-sm">
+                  <span className="text-slate-300">Per ounce:</span> ₹{metals.gold.pricePerOunceINR ? metals.gold.pricePerOunceINR.toFixed(2) : 'N/A'}
+                </p>
+                {metals.gold.usdToInrRate && (
+                  <p className="text-slate-500 text-xs mt-2">
+                    USD/INR: {metals.gold.usdToInrRate.toFixed(2)}
+                  </p>
+                )}
+              </div>
               {metals.gold.unavailable && (
-                <p className="text-yellow-400 text-xs mt-2">⚠️ Using cached data</p>
+                <p className="text-yellow-400 text-xs mt-2">⚠️ Using estimated prices</p>
               )}
             </>
           ) : (
-            <p className="text-slate-400">Price unavailable</p>
+            <p className="text-slate-400">Loading prices...</p>
           )}
         </div>
 
@@ -102,30 +113,44 @@ const MetalsPrices = () => {
           </div>
           {metals.silver ? (
             <>
-              <p className="text-3xl font-bold text-gray-300 mb-2">
-                ₹{metals.silver.pricePer10GramINR?.toFixed(2) || metals.silver.priceINR?.toFixed(2) || 'N/A'}
+              <p className="text-4xl font-bold text-gray-300 mb-3">
+                ₹{metals.silver.pricePer10GramINR ? metals.silver.pricePer10GramINR.toFixed(2) : 
+                   metals.silver.priceINR ? (metals.silver.priceINR * 10).toFixed(2) : 
+                   'Loading...'}
               </p>
-              <p className="text-slate-400 text-sm mb-1">
-                Per 10 grams
+              <p className="text-slate-300 text-sm font-semibold mb-2">
+                Per 10 grams (INR)
               </p>
-              <p className="text-slate-400 text-xs">
-                Per gram: ₹{metals.silver.priceINR?.toFixed(2) || 'N/A'} • 
-                Per ounce: ₹{metals.silver.pricePerOunceINR?.toFixed(2) || 'N/A'}
-              </p>
+              <div className="space-y-1 mt-3 pt-3 border-t border-slate-700">
+                <p className="text-slate-400 text-sm">
+                  <span className="text-slate-300">Per gram:</span> ₹{metals.silver.priceINR ? metals.silver.priceINR.toFixed(2) : 'N/A'}
+                </p>
+                <p className="text-slate-400 text-sm">
+                  <span className="text-slate-300">Per ounce:</span> ₹{metals.silver.pricePerOunceINR ? metals.silver.pricePerOunceINR.toFixed(2) : 'N/A'}
+                </p>
+                {metals.silver.usdToInrRate && (
+                  <p className="text-slate-500 text-xs mt-2">
+                    USD/INR: {metals.silver.usdToInrRate.toFixed(2)}
+                  </p>
+                )}
+              </div>
               {metals.silver.unavailable && (
-                <p className="text-yellow-400 text-xs mt-2">⚠️ Using cached data</p>
+                <p className="text-yellow-400 text-xs mt-2">⚠️ Using estimated prices</p>
               )}
             </>
           ) : (
-            <p className="text-slate-400">Price unavailable</p>
+            <p className="text-slate-400">Loading prices...</p>
           )}
         </div>
       </div>
 
       <div className="glass-card rounded-xl p-4 border border-slate-700 bg-slate-800/30">
+        <p className="text-slate-300 text-sm font-medium mb-1">
+          💰 All prices in Indian Rupees (₹)
+        </p>
         <p className="text-slate-400 text-xs">
-          💡 Prices are in Indian Rupees (INR). Gold and Silver prices update every 15 seconds.
-          USD/INR rate: {metals.gold?.usdToInrRate?.toFixed(2) || 'N/A'}
+          Prices update every 15 seconds • 
+          {metals.gold?.usdToInrRate ? ` USD/INR: ${metals.gold.usdToInrRate.toFixed(2)}` : ' Exchange rate: Loading...'}
         </p>
       </div>
     </div>
