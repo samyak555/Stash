@@ -127,7 +127,7 @@ const Invest = () => {
         )}
 
         {activeTab === 'live' && (
-          <LivePrices holdings={portfolio?.holdings || []} />
+          <LivePrices holdings={portfolio?.holdings} />
         )}
 
         {(activeTab === 'stocks' || activeTab === 'mf' || activeTab === 'crypto' || activeTab === 'metals') && (
