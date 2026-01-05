@@ -28,6 +28,12 @@ const TransactionIcon = ({ className }) => (
   </svg>
 );
 
+const InvestIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+  </svg>
+);
+
 const LogoutIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -77,6 +83,7 @@ const MobileSidebar = ({ user, setUser }) => {
     { path: '/income', label: 'Income', Icon: IncomeIcon },
     { path: '/budgets', label: 'Budgets', Icon: BudgetsIcon },
     { path: '/goals', label: 'Goals', Icon: GoalsIcon },
+    { path: '/invest', label: 'Stash Invest', Icon: InvestIcon },
     { path: '/family', label: 'Family', Icon: FamilyIcon },
     { path: '/insights', label: 'Stash Insight', Icon: InsightsIcon },
     { path: '/settings', label: 'Settings', Icon: SettingsIcon },

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { dashboardAPI, expenseAPI, incomeAPI, transactionAPI, goalAPI } from '../services/api';
+import { dashboardAPI, expenseAPI, incomeAPI, transactionAPI, goalAPI, investAPI } from '../services/api';
 import { Link } from 'react-router-dom';
 import {
   Chart as ChartJS,
@@ -53,6 +53,7 @@ const Dashboard = () => {
   const { cards, addCard } = useCards();
   const [showAddCardModal, setShowAddCardModal] = useState(false);
   const [goals, setGoals] = useState([]);
+  const [portfolioSummary, setPortfolioSummary] = useState(null);
 
   // Fetch expenses from context on mount
   useEffect(() => {
@@ -65,6 +66,7 @@ const Dashboard = () => {
     fetchIncomes();
     fetchSyncStatus();
     fetchGoals();
+    fetchPortfolioSummary();
   }, [selectedMonth, selectedYear, timeRange, refreshTrigger]);
 
   const fetchGoals = async () => {
@@ -74,6 +76,16 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Failed to fetch goals:', error);
       setGoals([]);
+    }
+  };
+
+  const fetchPortfolioSummary = async () => {
+    try {
+      const response = await investAPI.getPortfolioSummary();
+      setPortfolioSummary(response.data);
+    } catch (error) {
+      console.error('Failed to fetch portfolio summary:', error);
+      setPortfolioSummary(null);
     }
   };
 
@@ -723,6 +735,51 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Investment Overview Card */}
+      {portfolioSummary && portfolioSummary.holdingCount > 0 && (
+        <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10 bg-gradient-to-br from-teal-500/5 to-cyan-500/5">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-text-primary mb-1 tracking-tight">Investment Portfolio</h2>
+              <p className="text-text-secondary text-sm">Track your investments and performance</p>
+            </div>
+            <Link to="/invest">
+              <Button variant="ghost" size="sm">
+                View Portfolio →
+              </Button>
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div>
+              <p className="text-text-secondary text-sm mb-2">Total Invested</p>
+              <p className="text-2xl font-bold text-highlight-aqua">{formatIncome(portfolioSummary.totalInvested)}</p>
+            </div>
+            <div>
+              <p className="text-text-secondary text-sm mb-2">Current Value</p>
+              <p className="text-2xl font-bold text-highlight-aqua">{formatIncome(portfolioSummary.totalCurrentValue)}</p>
+            </div>
+            <div>
+              <p className="text-text-secondary text-sm mb-2">Total P/L</p>
+              <p className={`text-2xl font-bold ${portfolioSummary.totalProfitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {portfolioSummary.totalProfitLoss >= 0 ? '+' : ''}{formatIncome(portfolioSummary.totalProfitLoss)}
+              </p>
+              <p className={`text-sm ${portfolioSummary.totalProfitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {portfolioSummary.totalProfitLoss >= 0 ? '+' : ''}{portfolioSummary.totalProfitLossPercent.toFixed(2)}%
+              </p>
+            </div>
+            <div>
+              <p className="text-text-secondary text-sm mb-2">Holdings</p>
+              <p className="text-2xl font-bold text-highlight-aqua">{portfolioSummary.holdingCount}</p>
+              {portfolioSummary.bestPerformer && (
+                <p className="text-xs text-text-muted mt-1">
+                  Best: {portfolioSummary.bestPerformer.symbol} (+{portfolioSummary.bestPerformer.profitLossPercent.toFixed(1)}%)
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Financial Health Metrics */}
       <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10">

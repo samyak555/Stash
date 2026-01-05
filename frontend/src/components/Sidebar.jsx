@@ -30,6 +30,13 @@ const TransactionIcon = ({ className }) => (
   </svg>
 );
 
+// Invest icon SVG
+const InvestIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+  </svg>
+);
+
 // Logout icon SVG
 const LogoutIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,6 +67,7 @@ const Sidebar = ({ user, setUser }) => {
     { path: '/income', label: 'Income', Icon: IncomeIcon },
     { path: '/budgets', label: 'Budgets', Icon: BudgetsIcon },
     { path: '/goals', label: 'Goals', Icon: GoalsIcon },
+    { path: '/invest', label: 'Stash Invest', Icon: InvestIcon },
     { path: '/family', label: 'Family', Icon: FamilyIcon },
     { path: '/insights', label: 'Stash Insight', Icon: InsightsIcon },
     { path: '/settings', label: 'Settings', Icon: SettingsIcon },

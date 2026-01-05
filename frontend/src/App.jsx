@@ -18,6 +18,7 @@ import Goals from './pages/Goals';
 import Insights from './pages/Insights';
 import Family from './pages/Family';
 import Settings from './pages/Settings';
+import Invest from './pages/Invest';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import DataDeletionPolicy from './pages/DataDeletionPolicy';
@@ -330,6 +331,16 @@ function AppContent({ setUser: setUserProp }) {
             <ProtectedRoute user={user}>
               <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
                 <Settings />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invest"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <Invest />
               </Layout>
             </ProtectedRoute>
           }

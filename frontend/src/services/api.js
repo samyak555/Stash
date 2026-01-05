@@ -247,6 +247,25 @@ export const transactionAPI = {
   getSyncStatus: () => api.get('/transactions/sync-status'),
 };
 
+export const investAPI = {
+  getPortfolio: () => api.get('/invest/portfolio'),
+  getPortfolioSummary: () => api.get('/invest/portfolio/summary'),
+  getHoldings: () => api.get('/invest/holdings'),
+  createHolding: (data) => api.post('/invest/holding', data),
+  updateHolding: (id, data) => api.put(`/invest/holding/${id}`, data),
+  deleteHolding: (id) => api.delete(`/invest/holding/${id}`),
+};
+
+export const marketAPI = {
+  getStock: (symbol) => api.get('/market/stock', { params: { symbol } }),
+  getStocks: (symbols) => api.get('/market/stocks', { params: { symbols } }),
+  getCrypto: (symbol) => api.get('/market/crypto', { params: { symbol } }),
+  getCryptos: (symbols) => api.get('/market/cryptos', { params: { symbols } }),
+  getMetals: () => api.get('/market/metals'),
+  getMutualFund: (schemeCode) => api.get('/market/mutual-fund', { params: { schemeCode } }),
+  getMutualFunds: (schemeCodes) => api.get('/market/mutual-funds', { params: { schemeCodes } }),
+};
+
 export default api;
 
 
