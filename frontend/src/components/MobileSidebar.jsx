@@ -85,7 +85,7 @@ const MobileSidebar = ({ user, setUser }) => {
     { path: '/goals', label: 'Goals', Icon: GoalsIcon },
     { path: '/invest', label: 'Stash Invest', Icon: InvestIcon },
     { path: '/portfolio-insights', label: 'Portfolio Insights', Icon: InsightsIcon },
-    { path: '/news', label: 'Finance News', Icon: InsightsIcon },
+    { path: '/news', label: 'Stash News', Icon: InsightsIcon },
     { path: '/family', label: 'Family', Icon: FamilyIcon },
     { path: '/insights', label: 'Stash Insight', Icon: InsightsIcon },
     { path: '/analytics', label: 'Analytics', Icon: InsightsIcon },

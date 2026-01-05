@@ -1,3 +1,10 @@
+/**
+ * STASH NEWS CONTROLLER
+ * 
+ * Always returns 200 OK with JSON array
+ * Never throws errors to frontend
+ */
+
 import {
   getFinanceNews,
   getCategorizedNews,
@@ -5,19 +12,26 @@ import {
 } from '../services/financeNewsService.js';
 
 /**
- * Get finance news by category
+ * Get news - SIMPLIFIED ENDPOINT
+ * GET /api/news
+ * 
+ * Response: Always 200 OK, JSON array
  */
 export const getNews = async (req, res) => {
   try {
-    const { category = 'all' } = req.query;
-    const news = await getFinanceNews(category);
-    // Ensure we always return an array
+    const news = await getFinanceNews('all');
+    
+    // FORCE array response
     const newsArray = Array.isArray(news) ? news : [];
-    res.json(newsArray);
+    
+    console.log(`[STASH NEWS API] Returning ${newsArray.length} articles`);
+    
+    // ALWAYS return 200 OK with array
+    res.status(200).json(newsArray);
   } catch (error) {
-    console.error('Error fetching news:', error);
-    // Return empty array instead of error
-    res.json([]);
+    console.error('[STASH NEWS API] Error:', error.message);
+    // Return empty array, never error
+    res.status(200).json([]);
   }
 };
 
@@ -27,6 +41,7 @@ export const getNews = async (req, res) => {
 export const getCategorized = async (req, res) => {
   try {
     const categorized = await getCategorizedNews();
+    
     // Ensure all categories are arrays
     const result = {
       all: Array.isArray(categorized.all) ? categorized.all : [],
@@ -34,10 +49,11 @@ export const getCategorized = async (req, res) => {
       crypto: Array.isArray(categorized.crypto) ? categorized.crypto : [],
       economy: Array.isArray(categorized.economy) ? categorized.economy : [],
     };
-    res.json(result);
+    
+    res.status(200).json(result);
   } catch (error) {
-    console.error('Error fetching categorized news:', error);
-    res.json({
+    console.error('[STASH NEWS API] Categorized error:', error.message);
+    res.status(200).json({
       all: [],
       stocks: [],
       crypto: [],
@@ -53,10 +69,12 @@ export const getHeadlines = async (req, res) => {
   try {
     const { limit = 5 } = req.query;
     const headlines = await getTopHeadlines(parseInt(limit));
-    res.json(headlines);
+    
+    const headlinesArray = Array.isArray(headlines) ? headlines : [];
+    
+    res.status(200).json(headlinesArray);
   } catch (error) {
-    console.error('Error fetching headlines:', error);
-    res.json([]); // Return empty array
+    console.error('[STASH NEWS API] Headlines error:', error.message);
+    res.status(200).json([]);
   }
 };
-

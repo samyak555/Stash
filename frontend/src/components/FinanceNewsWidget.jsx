@@ -42,7 +42,7 @@ const FinanceNewsWidget = () => {
   if (loading) {
     return (
       <div className="glass-card rounded-2xl p-8 border border-white/10">
-        <h2 className="text-xl font-bold text-text-primary mb-4">Finance News</h2>
+        <h2 className="text-xl font-bold text-text-primary mb-4">Stash News</h2>
         <div className="space-y-3">
           {[1, 2, 3].map(i => (
             <div key={i} className="h-16 bg-slate-700/50 rounded animate-pulse"></div>
@@ -59,7 +59,7 @@ const FinanceNewsWidget = () => {
   return (
     <div className="glass-card rounded-2xl p-8 border border-white/10">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-text-primary">Finance News</h2>
+        <h2 className="text-xl font-bold text-text-primary">Stash News</h2>
         <Link 
           to="/news" 
           className="text-teal-400 text-sm hover:text-teal-300 transition-colors"
