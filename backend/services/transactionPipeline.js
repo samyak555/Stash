@@ -6,6 +6,7 @@
  * → RECURRING DETECTION → INSIGHTS ENGINE → ALERTS/REPORTS
  */
 
+import crypto from 'crypto';
 import AutoTransaction from '../models/AutoTransaction.js';
 import { normalizeTransaction } from './transactionNormalizer.js';
 import { detectMerchant } from './merchantDetectionEngine.js';
