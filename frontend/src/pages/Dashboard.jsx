@@ -1284,6 +1284,51 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Financial Health Score Widget */}
+      {financialHealth && (
+        <div className="glass-card rounded-2xl p-6 border border-white/10 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-white">Financial Health</h2>
+            <Link
+              to="/analytics"
+              className="text-teal-400 hover:text-teal-300 text-sm font-medium"
+            >
+              View Details →
+            </Link>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="text-center">
+              <div className={`text-5xl font-bold ${
+                financialHealth.score >= 80 ? 'text-green-400' :
+                financialHealth.score >= 65 ? 'text-teal-400' :
+                financialHealth.score >= 50 ? 'text-yellow-400' :
+                financialHealth.score >= 35 ? 'text-orange-400' :
+                'text-red-400'
+              }`}>
+                {financialHealth.score}
+              </div>
+              <div className="text-slate-400 text-sm mt-1">out of 100</div>
+            </div>
+            <div className="flex-1">
+              <div className={`px-3 py-1 rounded-lg border inline-block ${
+                financialHealth.level === 'excellent' ? 'bg-green-500/20 text-green-400 border-green-500/50' :
+                financialHealth.level === 'good' ? 'bg-teal-500/20 text-teal-400 border-teal-500/50' :
+                financialHealth.level === 'fair' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' :
+                financialHealth.level === 'needs_improvement' ? 'bg-orange-500/20 text-orange-400 border-orange-500/50' :
+                'bg-red-500/20 text-red-400 border-red-500/50'
+              }`}>
+                {financialHealth.level.replace('_', ' ').toUpperCase()}
+              </div>
+              {financialHealth.recommendations && financialHealth.recommendations.length > 0 && (
+                <p className="text-slate-400 text-xs mt-2">
+                  {financialHealth.recommendations[0].message}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Finance News Widget */}
       <FinanceNewsWidget />
 
