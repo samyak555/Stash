@@ -33,6 +33,8 @@ import alertsRoutes from './routes/alertsRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import cryptoRoutes from './routes/cryptoRoutes.js';
 import mutualFundRoutes from './routes/mutualFundRoutes.js';
+import autoTransactionRoutes from './routes/autoTransactionRoutes.js';
+import csvImportRoutes from './routes/csvImportRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -143,6 +145,8 @@ app.use('/api/alerts', alertsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/crypto', cryptoRoutes);
 app.use('/api/mutual-funds', mutualFundRoutes);
+app.use('/api/transactions', autoTransactionRoutes);
+app.use('/api/csv-import', csvImportRoutes);
 
 // Error handling middleware - Production-ready (no stack traces)
 app.use((err, req, res, next) => {

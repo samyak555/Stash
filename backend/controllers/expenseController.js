@@ -15,6 +15,29 @@ export const getAll = async (req, res) => {
 
 export const create = async (req, res) => {
   try {
+    // Also create through auto-tracking pipeline
+    try {
+      const { processTransaction } = await import('../services/transactionPipeline.js');
+      const rawTransaction = {
+        amount: parseFloat(req.body.amount) || 0,
+        type: 'debit',
+        date: req.body.date || new Date(),
+        merchant: req.body.merchant || '',
+        description: req.body.description || req.body.category || '',
+        note: req.body.note || '',
+        accountType: 'bank',
+      };
+      
+      // Process through pipeline (non-blocking)
+      processTransaction(rawTransaction, req.userId, 'manual').catch(err => {
+        console.error('Pipeline processing error:', err);
+      });
+    } catch (pipelineError) {
+      console.error('Pipeline import error:', pipelineError);
+      // Continue with fileDB even if pipeline fails
+    }
+    
+    // Create in fileDB (existing behavior)
     const expense = fileDB.createExpense({
       ...req.body,
       user: req.userId,
