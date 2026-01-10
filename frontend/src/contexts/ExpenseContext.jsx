@@ -18,7 +18,7 @@ export const ExpenseProvider = ({ children }) => {
         setExpenses([]);
         return [];
       }
-      setExpenses(response.data || []);
+      setExpenses(Array.isArray(response.data) ? response.data : []);
       return response.data || [];
     } catch (error) {
       console.error('Failed to fetch expenses:', error);

@@ -28,7 +28,7 @@ const Income = () => {
     try {
       setLoading(true);
       const response = await incomeAPI.getAll();
-      setIncomes(response.data || []);
+      setIncomes(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       toast.error('Failed to load income');
     } finally {
@@ -223,16 +223,16 @@ const Income = () => {
             </div>
           </div>
           <div className="flex gap-3 mt-6">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               variant="primary"
             >
               {editingIncome ? 'Update Income' : 'Add Income'}
             </Button>
             {editingIncome && (
-              <Button 
-                type="button" 
-                onClick={resetForm} 
+              <Button
+                type="button"
+                onClick={resetForm}
                 variant="ghost"
               >
                 Cancel

@@ -2,16 +2,113 @@ import { useState, useEffect } from 'react';
 import { goalAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { GoalsIcon } from '../components/Icons';
-import Logo from '../components/Logo';
+import Button from '../components/ui/Button';
 import ProgressInput from '../components/ProgressInput';
 import AuthGuard from '../components/AuthGuard';
+
+const GoalItem = ({ goal, onEdit, onDelete, onAddProgress }) => {
+  const [progressAmount, setProgressAmount] = useState('');
+
+  const getGoalStatus = (goal) => {
+    const deadline = new Date(goal.deadline);
+    const now = new Date();
+    const progress = ((goal.currentAmount || 0) / parseFloat(goal.targetAmount)) * 100;
+
+    if (progress >= 100) return { status: 'completed', color: 'green', text: 'Completed' };
+    if (deadline < now) return { status: 'expired', color: 'red', text: 'Expired' };
+    return { status: 'active', color: 'blue', text: 'Active' };
+  };
+
+  const status = getGoalStatus(goal);
+  const progress = ((goal.currentAmount || 0) / parseFloat(goal.targetAmount)) * 100;
+
+  return (
+    <div
+      className={`glass-card rounded-2xl p-6 border ${status.status === 'completed' ? 'border-green-500/30' :
+          status.status === 'expired' ? 'border-red-500/30' :
+            'border-white/10'
+        }`}
+    >
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h3 className="text-xl font-bold text-white mb-1">{goal.title}</h3>
+          {goal.description && (
+            <p className="text-sm text-slate-400">{goal.description}</p>
+          )}
+        </div>
+        <span className={`px-3 py-1.5 text-xs font-semibold rounded-lg ${status.color === 'green' ? 'bg-green-500/10 border border-green-500/30 text-green-400' : status.color === 'red' ? 'bg-red-500/10 border border-red-500/30 text-red-400' : 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-400'}`}>
+          {status.text}
+        </span>
+      </div>
+
+      <div className="space-y-3 mb-4">
+        <div className="flex justify-between">
+          <span className="text-slate-400">Target:</span>
+          <span className="font-bold text-white">₹{parseFloat(goal.targetAmount).toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-slate-400">Saved:</span>
+          <span className="font-bold text-green-400">₹{(goal.currentAmount || 0).toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-slate-400">Remaining:</span>
+          <span className="font-bold text-yellow-400">
+            ₹{(parseFloat(goal.targetAmount) - (goal.currentAmount || 0)).toFixed(2)}
+          </span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-slate-400">Deadline:</span>
+          <span className="text-slate-200">{new Date(goal.deadline).toLocaleDateString()}</span>
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <div className="w-full bg-white/5 rounded-full h-3 mb-3 border border-white/10 overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all ${status.status === 'completed' ? 'bg-green-500/80' :
+                status.status === 'expired' ? 'bg-red-500/80' :
+                  'bg-cyan-500/80'
+              }`}
+            style={{ width: `${Math.min(progress, 100)}%` }}
+          ></div>
+        </div>
+        <div className="flex justify-between text-xs text-slate-400">
+          <span>Progress</span>
+          <span>{progress.toFixed(1)}%</span>
+        </div>
+      </div>
+
+      <div className="mb-2">
+        <ProgressInput onAdd={(id, amount) => onAddProgress(id, amount)} goalId={goal._id} />
+      </div>
+
+      <div className="flex gap-2 mt-4">
+        <Button
+          onClick={() => onEdit(goal)}
+          variant="ghost"
+          size="sm"
+          className="flex-1 text-cyan-400 hover:text-cyan-300"
+        >
+          Edit
+        </Button>
+        <Button
+          onClick={() => onDelete(goal._id)}
+          variant="danger"
+          size="sm"
+          className="flex-1"
+        >
+          Delete
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 const Goals = () => {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
-  const [isGuest, setIsGuest] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     targetAmount: '',
@@ -20,7 +117,6 @@ const Goals = () => {
   });
 
   useEffect(() => {
-    // AuthGuard handles guest mode, so just fetch goals
     fetchGoals();
   }, []);
 
@@ -31,6 +127,7 @@ const Goals = () => {
       setGoals(response.data || []);
     } catch (error) {
       toast.error('Failed to load goals');
+      setGoals([]);
     } finally {
       setLoading(false);
     }
@@ -104,210 +201,119 @@ const Goals = () => {
     setShowForm(false);
   };
 
-  // Calculate goal status
-  const getGoalStatus = (goal) => {
-    const deadline = new Date(goal.deadline);
-    const now = new Date();
-    const progress = ((goal.currentAmount || 0) / parseFloat(goal.targetAmount)) * 100;
-    
-    if (progress >= 100) return { status: 'completed', color: 'green', text: 'Completed' };
-    if (deadline < now) return { status: 'expired', color: 'red', text: 'Expired' };
-    return { status: 'active', color: 'blue', text: 'Active' };
-  };
-
   return (
     <AuthGuard requireAuth={true}>
       {loading ? (
         <div className="text-center py-8 text-white">Loading goals...</div>
       ) : (
         <div className="px-4 py-8 animate-fade-in">
-      <div className="mb-12">
-        <div className="flex justify-between items-start gap-6">
-          <div className="space-y-3">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight flex items-center">
-              <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mr-4">
-                <GoalsIcon className="w-7 h-7 text-yellow-400" />
+          <div className="mb-12">
+            <div className="flex justify-between items-start gap-6">
+              <div className="space-y-3">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight flex items-center">
+                  <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mr-4">
+                    <GoalsIcon className="w-7 h-7 text-yellow-400" />
+                  </div>
+                  Goals
+                </h1>
+                <p className="text-slate-400 text-lg font-normal">Set and achieve your financial goals</p>
               </div>
-              Goals
-            </h1>
-            <p className="text-slate-400 text-lg font-normal">Set and achieve your financial goals</p>
-          </div>
-          <Button
-            onClick={() => setShowForm(!showForm)}
-            variant="primary"
-            leftIcon={<span>{showForm ? '✕' : '+'}</span>}
-            className="whitespace-nowrap"
-          >
-            {showForm ? 'Cancel' : 'Create Goal'}
-          </Button>
-        </div>
-      </div>
-
-      {showForm && (
-        <form onSubmit={handleSubmit} className="glass-card p-8 rounded-2xl mb-10 border border-white/10">
-          <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">
-            {editingGoal ? 'Edit Goal' : 'Create New Goal'}
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Goal Title</label>
-              <input
-                type="text"
-                required
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
-                placeholder="e.g., New Laptop"
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Target Amount (₹)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  value={formData.targetAmount}
-                  onChange={(e) => setFormData({ ...formData, targetAmount: e.target.value })}
-                  className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
-                  placeholder="0.00"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Deadline</label>
-                <input
-                  type="date"
-                  required
-                  value={formData.deadline}
-                  onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                  className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Description (Optional)</label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows="3"
-                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
-                placeholder="Describe your goal..."
-              />
-            </div>
-          </div>
-          <div className="flex gap-3 mt-6">
-            <Button type="submit" variant="primary">
-              {editingGoal ? 'Update' : 'Create'} Goal
-            </Button>
-            {editingGoal && (
-              <Button type="button" onClick={resetForm} variant="ghost">
-                Cancel
+              <Button
+                onClick={() => setShowForm(!showForm)}
+                variant="primary"
+                leftIcon={<span>{showForm ? '✕' : '+'}</span>}
+                className="whitespace-nowrap"
+              >
+                {showForm ? 'Cancel' : 'Create Goal'}
               </Button>
+            </div>
+          </div>
+
+          {showForm && (
+            <form onSubmit={handleSubmit} className="glass-card p-8 rounded-2xl mb-10 border border-white/10">
+              <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">
+                {editingGoal ? 'Edit Goal' : 'Create New Goal'}
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Goal Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
+                    placeholder="e.g., New Laptop"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Target Amount (₹)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      value={formData.targetAmount}
+                      onChange={(e) => setFormData({ ...formData, targetAmount: e.target.value })}
+                      className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Deadline</label>
+                    <input
+                      type="date"
+                      required
+                      value={formData.deadline}
+                      onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                      className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-3 tracking-tight">Description (Optional)</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows="3"
+                    className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-base font-normal"
+                    placeholder="Describe your goal..."
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <Button type="submit" variant="primary">
+                  {editingGoal ? 'Update' : 'Create'} Goal
+                </Button>
+                {editingGoal && (
+                  <Button type="button" onClick={resetForm} variant="ghost">
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            </form>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(!goals || !Array.isArray(goals) || goals.length === 0) ? (
+              <div className="col-span-full glass-card rounded-2xl p-12 text-center border border-white/10">
+                <GoalsIcon className="w-16 h-16 text-slate-500 mx-auto mb-4" />
+                <p className="text-slate-400 text-lg font-normal">No goals created yet</p>
+                <p className="text-slate-500 text-sm mt-2">Create your first savings goal!</p>
+              </div>
+            ) : (
+              goals.map((goal) => (
+                <GoalItem
+                  key={goal._id}
+                  goal={goal}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onAddProgress={handleAddProgress}
+                />
+              ))
             )}
           </div>
-        </form>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {(!goals || !Array.isArray(goals) || goals.length === 0) ? (
-          <div className="col-span-full glass-card rounded-2xl p-12 text-center border border-white/10">
-            <GoalsIcon className="w-16 h-16 text-slate-500 mx-auto mb-4" />
-            <p className="text-slate-400 text-lg font-normal">No goals created yet</p>
-            <p className="text-slate-500 text-sm mt-2">Create your first savings goal!</p>
-          </div>
-        ) : (
-          (Array.isArray(goals) ? goals : []).map((goal) => {
-            const status = getGoalStatus(goal);
-            const progress = ((goal.currentAmount || 0) / parseFloat(goal.targetAmount)) * 100;
-            const [progressAmount, setProgressAmount] = useState('');
-
-            return (
-              <div
-                key={goal._id}
-                className={`glass-card rounded-2xl p-6 border ${
-                  status.status === 'completed' ? 'border-green-500/30' :
-                  status.status === 'expired' ? 'border-red-500/30' :
-                  'border-white/10'
-                }`}
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-1">{goal.title}</h3>
-                    {goal.description && (
-                      <p className="text-sm text-slate-400">{goal.description}</p>
-                    )}
-                  </div>
-                  <span className={`px-3 py-1.5 text-xs font-semibold rounded-lg ${status.color === 'green' ? 'bg-green-500/10 border border-green-500/30 text-green-400' : status.color === 'red' ? 'bg-red-500/10 border border-red-500/30 text-red-400' : 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-400'}`}>
-                    {status.text}
-                  </span>
-                </div>
-
-                <div className="space-y-3 mb-4">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Target:</span>
-                    <span className="font-bold text-white">₹{parseFloat(goal.targetAmount).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Saved:</span>
-                    <span className="font-bold text-green-400">₹{(goal.currentAmount || 0).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Remaining:</span>
-                    <span className="font-bold text-yellow-400">
-                      ₹{(parseFloat(goal.targetAmount) - (goal.currentAmount || 0)).toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">Deadline:</span>
-                    <span className="text-slate-200">{new Date(goal.deadline).toLocaleDateString()}</span>
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <div className="w-full bg-white/5 rounded-full h-3 mb-3 border border-white/10 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all ${
-                        status.status === 'completed' ? 'bg-green-500/80' :
-                        status.status === 'expired' ? 'bg-red-500/80' :
-                        'bg-cyan-500/80'
-                      }`}
-                      style={{ width: `${Math.min(progress, 100)}%` }}
-                    ></div>
-                  </div>
-                  <div className="flex justify-between text-xs text-slate-400">
-                    <span>Progress</span>
-                    <span>{progress.toFixed(1)}%</span>
-                  </div>
-                </div>
-
-                <div className="mb-2">
-                  <ProgressInput onAdd={handleAddProgress} goalId={goal._id} />
-                </div>
-
-                <div className="flex gap-2 mt-4">
-                  <Button
-                    onClick={() => handleEdit(goal)}
-                    variant="ghost"
-                    size="sm"
-                    className="flex-1 text-cyan-400 hover:text-cyan-300"
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    onClick={() => handleDelete(goal._id)}
-                    variant="danger"
-                    size="sm"
-                    className="flex-1"
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
-    </div>
+        </div>
       )}
     </AuthGuard>
   );
