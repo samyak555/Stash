@@ -67,8 +67,11 @@ export const checkIn = async (req, res) => {
             return res.status(404).json({ message: 'Failed to update streak' });
         }
 
-        // Award daily login points
-        const pointsResult = await awardPoints(req.userId, POINTS.DAILY_LOGIN, 'Daily check-in');
+        let pointsResult = null;
+        // Only award points if not already checked in today
+        if (!streakResult.alreadyCheckedIn) {
+            pointsResult = await awardPoints(req.userId, POINTS.DAILY_LOGIN, 'Daily check-in');
+        }
 
         res.json({
             ...streakResult,

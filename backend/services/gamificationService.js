@@ -183,7 +183,12 @@ export const updateStreak = async (userId) => {
         if (lastActive) {
             // Same day - no change
             if (lastActive.toDateString() === now.toDateString()) {
-                return { success: true, streak: user.currentStreak, streakContinues: true };
+                return {
+                    success: true,
+                    streak: user.currentStreak,
+                    streakContinues: true,
+                    alreadyCheckedIn: true
+                };
             }
 
             // Yesterday - continue streak
@@ -225,6 +230,7 @@ export const updateStreak = async (userId) => {
             streak: user.currentStreak,
             longestStreak: user.longestStreak,
             streakContinues,
+            alreadyCheckedIn: false
         };
     } catch (error) {
         console.error('Update streak error:', error);

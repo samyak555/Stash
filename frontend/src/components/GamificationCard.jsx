@@ -9,7 +9,31 @@ const GamificationCard = () => {
     const [checkingIn, setCheckingIn] = useState(false);
 
     useEffect(() => {
-        fetchStats();
+        const initGamification = async () => {
+            try {
+                setCheckingIn(true);
+                // Attempt automatic check-in
+                const checkInResponse = await gamificationAPI.checkIn();
+
+                // Show toast only if points were actually awarded (first time today)
+                if (checkInResponse?.data?.pointsAwarded > 0) {
+                    toast.success(`Daily Streak! +${checkInResponse.data.pointsAwarded} XP 🔥`);
+                }
+
+                // Fetch latest full stats
+                const statsResponse = await gamificationAPI.getStats();
+                setStats(statsResponse.data);
+            } catch (error) {
+                console.error('Gamification sync failed:', error);
+                // Fallback to just fetching stats if check-in fails
+                fetchStats();
+            } finally {
+                setLoading(false);
+                setCheckingIn(false);
+            }
+        };
+
+        initGamification();
     }, []);
 
     const fetchStats = async () => {
@@ -18,22 +42,6 @@ const GamificationCard = () => {
             setStats(response.data);
         } catch (error) {
             console.error('Failed to fetch stats:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleCheckIn = async () => {
-        if (checkingIn) return;
-        setCheckingIn(true);
-        try {
-            await gamificationAPI.checkIn();
-            await fetchStats();
-            // Optional: Add subtle toast success here instead of confetti
-        } catch (error) {
-            console.error('Check-in failed:', error);
-        } finally {
-            setCheckingIn(false);
         }
     };
 
@@ -125,16 +133,13 @@ const GamificationCard = () => {
                         )}
                     </div>
 
-                    {/* Action Button */}
-                    <Button
-                        variant={stats?.streakContinues ? "secondary" : "primary"}
-                        onClick={handleCheckIn}
-                        disabled={checkingIn}
-                        className="min-w-[140px]"
-                        leftIcon={!stats?.streakContinues && <Icon icon="zap" size={16} />}
-                    >
-                        {checkingIn ? 'Syncing...' : stats?.streakContinues ? 'Check In Done' : 'Daily Check In'}
-                    </Button>
+                    {/* Status Indicator (Renamed from Button) */}
+                    <div className="min-w-[140px] flex justify-end">
+                        <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/10 px-4 py-2 border border-emerald-500/20 text-emerald-400 text-sm font-medium">
+                            <Icon icon="check" size={16} />
+                            <span>Streak Active</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
