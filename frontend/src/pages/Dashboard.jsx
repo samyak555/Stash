@@ -43,6 +43,7 @@ import FinanceNewsWidget from '../components/FinanceNewsWidget';
 import FinancialHealthScore from '../components/FinancialHealthScore';
 import { analyticsAPI } from '../services/api';
 import GamificationCard from '../components/GamificationCard';
+import UserOnboardingModal from '../components/UserOnboardingModal';
 
 const Dashboard = () => {
   const { expenses, refreshTrigger, fetchExpenses } = useExpenses();
@@ -59,6 +60,22 @@ const Dashboard = () => {
   const [goals, setGoals] = useState([]);
   const [portfolioSummary, setPortfolioSummary] = useState(null);
   const [financialHealth, setFinancialHealth] = useState(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Check if user needs onboarding
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.onboardingCompleted) {
+          setShowOnboarding(true);
+        }
+      } catch (error) {
+        console.error('Error checking onboarding:', error);
+      }
+    };
+    checkOnboarding();
+  }, []);
 
   // Fetch expenses from context on mount
   useEffect(() => {
@@ -541,417 +558,358 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-8">
-      {!dashboardData && (
-        <div className="text-center py-12 mb-8">
-          <Logo size="xl" showText={true} className="justify-center mb-6" />
-          <h2 className="text-3xl font-bold text-text-primary mb-4">Welcome to Stash</h2>
-          <p className="text-text-secondary">Start adding expenses and income to see your dashboard</p>
-        </div>
-      )}
-      {/* Sync Status Banner */}
-      {syncStatus?.connected && (
-        <div className="mb-6 glass-card rounded-xl p-5 border border-cyan-500/20 bg-cyan-500/5">
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div className="flex items-center space-x-4">
-              <div className="w-2.5 h-2.5 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
-              <div>
-                <p className="text-cyan-400 font-semibold text-sm tracking-tight">
-                  Auto-Sync Active
-                </p>
-                <p className="text-text-secondary text-xs font-normal mt-0.5">
-                  {syncStatus.email} • Last sync: {syncStatus.lastSync ? new Date(syncStatus.lastSync).toLocaleString() : 'Never'}
-                </p>
+    <>
+      <UserOnboardingModal
+        isOpen={showOnboarding}
+        onComplete={(userType) => {
+          setShowOnboarding(false);
+          // Update user in localStorage
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          user.onboardingCompleted = true;
+          user.userType = userType;
+          localStorage.setItem('user', JSON.stringify(user));
+          toast.success(`Welcome! Your ${userType === 'genZ' ? 'Gen Z' : userType} mode is active! 🎉`);
+        }}
+      />
+      <div className="space-y-8">
+        {!dashboardData && (
+          <div className="text-center py-12 mb-8">
+            <Logo size="xl" showText={true} className="justify-center mb-6" />
+            <h2 className="text-3xl font-bold text-text-primary mb-4">Welcome to Stash</h2>
+            <p className="text-text-secondary">Start adding expenses and income to see your dashboard</p>
+          </div>
+        )}
+        {/* Sync Status Banner */}
+        {syncStatus?.connected && (
+          <div className="mb-6 glass-card rounded-xl p-5 border border-cyan-500/20 bg-cyan-500/5">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center space-x-4">
+                <div className="w-2.5 h-2.5 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
+                <div>
+                  <p className="text-cyan-400 font-semibold text-sm tracking-tight">
+                    Auto-Sync Active
+                  </p>
+                  <p className="text-text-secondary text-xs font-normal mt-0.5">
+                    {syncStatus.email} • Last sync: {syncStatus.lastSync ? new Date(syncStatus.lastSync).toLocaleString() : 'Never'}
+                  </p>
+                </div>
               </div>
-            </div>
-            <Link
-              to="/settings"
-              className="text-xs font-medium text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-1"
-            >
-              Manage Settings
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* Header - Proper spacing from TopNav to prevent collision */}
-      <div className="mb-12 pt-4">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
-          <div className="space-y-3">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gradient-brand tracking-tight">Dashboard</h1>
-            <p className="text-text-secondary text-base sm:text-lg font-normal">Your financial overview at a glance</p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <select
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-              className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-text-primary text-sm font-normal focus:outline-none focus:border-teal/50 focus:bg-white/8 transition-all backdrop-blur-sm"
-            >
-              <option value="month">Monthly</option>
-              <option value="week">Weekly</option>
-              <option value="year">Yearly</option>
-            </select>
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-text-primary text-sm font-normal focus:outline-none focus:border-teal/50 focus:bg-white/8 transition-all backdrop-blur-sm"
-            >
-              {Array.from({ length: 12 }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {new Date(2000, i).toLocaleString('default', { month: 'long' })}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-text-primary text-sm font-normal focus:outline-none focus:border-teal/50 focus:bg-white/8 transition-all backdrop-blur-sm"
-            >
-              {Array.from({ length: 5 }, (_, i) => {
-                const year = new Date().getFullYear() - 2 + i;
-                return <option key={year} value={year}>{year}</option>;
-              })}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Cards Section */}
-      <div className="space-y-4 mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-text-primary mb-1">Cards</h2>
-            <p className="text-text-secondary text-sm">Your saved payment cards</p>
-          </div>
-          <div className="flex gap-2">
-            {cards.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={() => window.location.href = '/cards'}>
-                View All
-              </Button>
-            )}
-            <Button variant="primary" size="sm" onClick={() => setShowAddCardModal(true)}>
-              ➕ Add Card
-            </Button>
-          </div>
-        </div>
-
-        {cards.length === 0 ? (
-          <div className="glass-card rounded-xl p-8 border border-white/10 text-center">
-            <div className="max-w-sm mx-auto">
-              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
-                <svg className="w-6 h-6 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
-              </div>
-              <p className="text-text-secondary text-sm mb-4">No cards added yet</p>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setShowAddCardModal(true)}
+              <Link
+                to="/settings"
+                className="text-xs font-medium text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-1"
               >
+                Manage Settings
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Header - Proper spacing from TopNav to prevent collision */}
+        <div className="mb-12 pt-4">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+            <div className="space-y-3">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gradient-brand tracking-tight">Dashboard</h1>
+              <p className="text-text-secondary text-base sm:text-lg font-normal">Your financial overview at a glance</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <select
+                value={timeRange}
+                onChange={(e) => setTimeRange(e.target.value)}
+                className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-text-primary text-sm font-normal focus:outline-none focus:border-teal/50 focus:bg-white/8 transition-all backdrop-blur-sm"
+              >
+                <option value="month">Monthly</option>
+                <option value="week">Weekly</option>
+                <option value="year">Yearly</option>
+              </select>
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-text-primary text-sm font-normal focus:outline-none focus:border-teal/50 focus:bg-white/8 transition-all backdrop-blur-sm"
+              >
+                {Array.from({ length: 12 }, (_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {new Date(2000, i).toLocaleString('default', { month: 'long' })}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-text-primary text-sm font-normal focus:outline-none focus:border-teal/50 focus:bg-white/8 transition-all backdrop-blur-sm"
+              >
+                {Array.from({ length: 5 }, (_, i) => {
+                  const year = new Date().getFullYear() - 2 + i;
+                  return <option key={year} value={year}>{year}</option>;
+                })}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Cards Section */}
+        <div className="space-y-4 mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-text-primary mb-1">Cards</h2>
+              <p className="text-text-secondary text-sm">Your saved payment cards</p>
+            </div>
+            <div className="flex gap-2">
+              {cards.length > 0 && (
+                <Button variant="ghost" size="sm" onClick={() => window.location.href = '/cards'}>
+                  View All
+                </Button>
+              )}
+              <Button variant="primary" size="sm" onClick={() => setShowAddCardModal(true)}>
                 ➕ Add Card
               </Button>
             </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {cards.slice(0, 3).map((card) => (
-              <div
-                key={card.id}
-                className="glass-card rounded-xl p-5 border border-white/10 relative overflow-hidden"
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${card.type === 'Credit'
-                  ? 'from-blue-500/20 to-purple-500/20'
-                  : 'from-green-500/20 to-cyan-500/20'
-                  } opacity-50`}></div>
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${card.type === 'Credit'
-                      ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                      : 'bg-green-500/20 text-green-300 border border-green-500/30'
-                      }`}>
-                      {card.type}
-                    </span>
-                    <span className="text-xs text-text-secondary">{card.bankName}</span>
-                  </div>
-                  <p className="text-lg font-mono font-semibold text-text-primary mb-4 tracking-wider">
-                    •••• •••• •••• {card.last4Digits}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-text-secondary mb-1">Expires</p>
-                      <p className="text-sm font-medium text-text-primary">{card.expiry}</p>
+
+          {cards.length === 0 ? (
+            <div className="glass-card rounded-xl p-8 border border-white/10 text-center">
+              <div className="max-w-sm mx-auto">
+                <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                </div>
+                <p className="text-text-secondary text-sm mb-4">No cards added yet</p>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setShowAddCardModal(true)}
+                >
+                  ➕ Add Card
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {cards.slice(0, 3).map((card) => (
+                <div
+                  key={card.id}
+                  className="glass-card rounded-xl p-5 border border-white/10 relative overflow-hidden"
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-br ${card.type === 'Credit'
+                    ? 'from-blue-500/20 to-purple-500/20'
+                    : 'from-green-500/20 to-cyan-500/20'
+                    } opacity-50`}></div>
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${card.type === 'Credit'
+                        ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                        : 'bg-green-500/20 text-green-300 border border-green-500/30'
+                        }`}>
+                        {card.type}
+                      </span>
+                      <span className="text-xs text-text-secondary">{card.bankName}</span>
+                    </div>
+                    <p className="text-lg font-mono font-semibold text-text-primary mb-4 tracking-wider">
+                      •••• •••• •••• {card.last4Digits}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-text-secondary mb-1">Expires</p>
+                        <p className="text-sm font-medium text-text-primary">{card.expiry}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <AddCardModal
-        isOpen={showAddCardModal}
-        onClose={() => setShowAddCardModal(false)}
-        onAdd={(cardData) => {
-          addCard(cardData);
-          toast.success('Card added successfully');
-        }}
-      />
-
-      {/* Gamification Card - NEW! */}
-      <div className="mb-8">
-        <GamificationCard />
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="glass-card rounded-2xl p-8 border border-white/10">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
-                <IncomeIcon className="w-5 h-5 text-cyan-400" />
-              </div>
-              <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Total Income</h3>
+              ))}
             </div>
-            <div>
-              <p className="text-4xl font-bold text-highlight-aqua mb-1 tracking-tight">{formatIncome(totalIncome)}</p>
-              <p className="text-xs text-text-muted font-normal">{incomes.length} entries</p>
-            </div>
-          </div>
-        </div>
-        <div className="glass-card rounded-2xl p-8 border border-white/10">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-pink-500/10 border border-pink-500/20">
-                <ExpensesIcon className="w-5 h-5 text-pink-400" />
-              </div>
-              <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Total Expenses</h3>
-            </div>
-            <div>
-              <p className="text-4xl font-bold text-highlight-aqua mb-1 tracking-tight">{formatExpense(totalExpenses)}</p>
-              <p className="text-xs text-text-muted font-normal">{expenses.length} entries</p>
-            </div>
-          </div>
-        </div>
-        <div className="glass-card rounded-2xl p-8 border border-white/10">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className={`p-3 rounded-xl ${balance >= 0 ? 'bg-purple-500/10 border-purple-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
-                <DashboardIcon className={`w-5 h-5 ${balance >= 0 ? 'text-purple-400' : 'text-red-400'}`} />
-              </div>
-              <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Balance</h3>
-            </div>
-            <div>
-              <p className={`text-4xl font-bold mb-1 tracking-tight ${balance >= 0 ? 'text-highlight-aqua' : 'text-red-400'}`}>
-                {formatIncome(balance)}
-              </p>
-              <p className="text-xs text-text-muted font-normal">{balance >= 0 ? 'Positive' : 'Negative'} balance</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Investment Overview Card */}
-      {portfolioSummary && portfolioSummary.holdingCount > 0 && (
-        <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10 bg-gradient-to-br from-teal-500/5 to-cyan-500/5">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-text-primary mb-1 tracking-tight">Investment Portfolio</h2>
-              <p className="text-text-secondary text-sm">Track your investments and performance</p>
-            </div>
-            <Link to="/invest">
-              <Button variant="ghost" size="sm">
-                View Portfolio →
-              </Button>
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div>
-              <p className="text-text-secondary text-sm mb-2">Total Invested</p>
-              <p className="text-2xl font-bold text-highlight-aqua">{formatIncome(portfolioSummary.totalInvested)}</p>
-            </div>
-            <div>
-              <p className="text-text-secondary text-sm mb-2">Current Value</p>
-              <p className="text-2xl font-bold text-highlight-aqua">{formatIncome(portfolioSummary.totalCurrentValue)}</p>
-            </div>
-            <div>
-              <p className="text-text-secondary text-sm mb-2">Total P/L</p>
-              <p className={`text-2xl font-bold ${portfolioSummary.totalProfitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {portfolioSummary.totalProfitLoss >= 0 ? '+' : ''}{formatIncome(portfolioSummary.totalProfitLoss)}
-              </p>
-              <p className={`text-sm ${portfolioSummary.totalProfitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {portfolioSummary.totalProfitLoss >= 0 ? '+' : ''}{portfolioSummary.totalProfitLossPercent.toFixed(2)}%
-              </p>
-            </div>
-            <div>
-              <p className="text-text-secondary text-sm mb-2">Holdings</p>
-              <p className="text-2xl font-bold text-highlight-aqua">{portfolioSummary.holdingCount}</p>
-              {portfolioSummary.bestPerformer && (
-                <p className="text-xs text-text-muted mt-1">
-                  Best: {portfolioSummary.bestPerformer.symbol} (+{portfolioSummary.bestPerformer.profitLossPercent.toFixed(1)}%)
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Financial Health Metrics */}
-      <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10">
-        <h2 className="text-xl font-bold text-text-primary mb-6 tracking-tight">Financial Health</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="text-center">
-            <div className="inline-block relative w-28 h-28 mb-4">
-              <svg className="transform -rotate-90 w-28 h-28">
-                <circle cx="56" cy="56" r="48" stroke="rgba(255,255,255,0.1)" strokeWidth="6" fill="none" />
-                <circle
-                  cx="56"
-                  cy="56"
-                  r="48"
-                  stroke={savingsRate >= 20 ? '#10b981' : savingsRate >= 10 ? '#f59e0b' : '#ef4444'}
-                  strokeWidth="6"
-                  fill="none"
-                  strokeDasharray={`${(Math.min(Math.max(savingsRate, 0), 100) * 3.02)} 302`}
-                  strokeLinecap="round"
-                  className="transition-all duration-500"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-2xl font-bold text-highlight-aqua">{savingsRate}%</span>
-              </div>
-            </div>
-            <p className="text-sm text-slate-400 font-normal">Savings Rate</p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-highlight-aqua mb-2 tracking-tight">{formatExpense(avgDailySpending)}</p>
-            <p className="text-sm text-slate-400 font-normal">Avg Daily Spending</p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-highlight-aqua mb-2 tracking-tight">{formatExpense(spendingVelocity)}</p>
-            <p className="text-sm text-slate-400 font-normal">Spending Velocity</p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-highlight-aqua mb-2 tracking-tight">{expenses.length}</p>
-            <p className="text-sm text-slate-400 font-normal">Transactions</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Charts Row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Income vs Expenses Trend */}
-        <div className="glass-card rounded-2xl p-8 border border-white/10">
-          <div className="flex items-center mb-6">
-            <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 mr-3">
-              <DashboardIcon className="w-5 h-5 text-blue-400" />
-            </div>
-            <h3 className="text-xl font-bold text-text-primary tracking-tight">Income vs Expenses</h3>
-          </div>
-          <div style={{ height: '300px' }}>
-            <Line
-              data={{
-                labels: trendData.map(d => d.month),
-                datasets: [
-                  {
-                    label: 'Income',
-                    data: trendData.map(d => d.income),
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                  },
-                  {
-                    label: 'Expenses',
-                    data: trendData.map(d => d.expenses),
-                    borderColor: '#ef4444',
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                  }
-                ]
-              }}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    labels: { color: '#9ca3af' }
-                  },
-                  tooltip: {
-                    backgroundColor: '#1f2937',
-                    borderColor: '#374151',
-                    borderWidth: 1,
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    callbacks: {
-                      label: (context) => {
-                        const value = context.parsed.y;
-                        if (context.datasetIndex === 1) {
-                          return `Expenditure: ₹${(value / 100000).toFixed(2)}L`;
-                        }
-                        return `${context.dataset.label}: ₹${value.toFixed(2)}`;
-                      }
-                    }
-                  }
-                },
-                scales: {
-                  x: {
-                    ticks: { color: '#9ca3af' },
-                    grid: { color: '#374151' }
-                  },
-                  y: {
-                    ticks: {
-                      color: '#9ca3af',
-                      callback: (value) => `₹${(value / 100000).toFixed(1)}L`
-                    },
-                    grid: { color: '#374151' }
-                  }
-                }
-              }}
-            />
-          </div>
-          {chartExplanations.incomeVsExpenses && (
-            <p className="text-sm text-text-secondary font-normal mt-4 text-center">
-              {chartExplanations.incomeVsExpenses}
-            </p>
           )}
         </div>
 
-        {/* Category Breakdown Pie Chart */}
-        <div className="glass-card rounded-2xl p-8 border border-white/10">
-          <div className="flex items-center mb-6">
-            <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 mr-3">
-              <ShoppingIcon className="w-5 h-5 text-purple-400" />
+        <AddCardModal
+          isOpen={showAddCardModal}
+          onClose={() => setShowAddCardModal(false)}
+          onAdd={(cardData) => {
+            addCard(cardData);
+            toast.success('Card added successfully');
+          }}
+        />
+
+        {/* Gamification Card - NEW! */}
+        <div className="mb-8">
+          <GamificationCard />
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="glass-card rounded-2xl p-8 border border-white/10">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                  <IncomeIcon className="w-5 h-5 text-cyan-400" />
+                </div>
+                <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Total Income</h3>
+              </div>
+              <div>
+                <p className="text-4xl font-bold text-highlight-aqua mb-1 tracking-tight">{formatIncome(totalIncome)}</p>
+                <p className="text-xs text-text-muted font-normal">{incomes.length} entries</p>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-white tracking-tight">Category Breakdown</h3>
           </div>
-          {categoryData.length > 0 ? (
+          <div className="glass-card rounded-2xl p-8 border border-white/10">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-pink-500/10 border border-pink-500/20">
+                  <ExpensesIcon className="w-5 h-5 text-pink-400" />
+                </div>
+                <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Total Expenses</h3>
+              </div>
+              <div>
+                <p className="text-4xl font-bold text-highlight-aqua mb-1 tracking-tight">{formatExpense(totalExpenses)}</p>
+                <p className="text-xs text-text-muted font-normal">{expenses.length} entries</p>
+              </div>
+            </div>
+          </div>
+          <div className="glass-card rounded-2xl p-8 border border-white/10">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className={`p-3 rounded-xl ${balance >= 0 ? 'bg-purple-500/10 border-purple-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                  <DashboardIcon className={`w-5 h-5 ${balance >= 0 ? 'text-purple-400' : 'text-red-400'}`} />
+                </div>
+                <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Balance</h3>
+              </div>
+              <div>
+                <p className={`text-4xl font-bold mb-1 tracking-tight ${balance >= 0 ? 'text-highlight-aqua' : 'text-red-400'}`}>
+                  {formatIncome(balance)}
+                </p>
+                <p className="text-xs text-text-muted font-normal">{balance >= 0 ? 'Positive' : 'Negative'} balance</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Investment Overview Card */}
+        {portfolioSummary && portfolioSummary.holdingCount > 0 && (
+          <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10 bg-gradient-to-br from-teal-500/5 to-cyan-500/5">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-text-primary mb-1 tracking-tight">Investment Portfolio</h2>
+                <p className="text-text-secondary text-sm">Track your investments and performance</p>
+              </div>
+              <Link to="/invest">
+                <Button variant="ghost" size="sm">
+                  View Portfolio →
+                </Button>
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div>
+                <p className="text-text-secondary text-sm mb-2">Total Invested</p>
+                <p className="text-2xl font-bold text-highlight-aqua">{formatIncome(portfolioSummary.totalInvested)}</p>
+              </div>
+              <div>
+                <p className="text-text-secondary text-sm mb-2">Current Value</p>
+                <p className="text-2xl font-bold text-highlight-aqua">{formatIncome(portfolioSummary.totalCurrentValue)}</p>
+              </div>
+              <div>
+                <p className="text-text-secondary text-sm mb-2">Total P/L</p>
+                <p className={`text-2xl font-bold ${portfolioSummary.totalProfitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {portfolioSummary.totalProfitLoss >= 0 ? '+' : ''}{formatIncome(portfolioSummary.totalProfitLoss)}
+                </p>
+                <p className={`text-sm ${portfolioSummary.totalProfitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {portfolioSummary.totalProfitLoss >= 0 ? '+' : ''}{portfolioSummary.totalProfitLossPercent.toFixed(2)}%
+                </p>
+              </div>
+              <div>
+                <p className="text-text-secondary text-sm mb-2">Holdings</p>
+                <p className="text-2xl font-bold text-highlight-aqua">{portfolioSummary.holdingCount}</p>
+                {portfolioSummary.bestPerformer && (
+                  <p className="text-xs text-text-muted mt-1">
+                    Best: {portfolioSummary.bestPerformer.symbol} (+{portfolioSummary.bestPerformer.profitLossPercent.toFixed(1)}%)
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Financial Health Metrics */}
+        <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10">
+          <h2 className="text-xl font-bold text-text-primary mb-6 tracking-tight">Financial Health</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="inline-block relative w-28 h-28 mb-4">
+                <svg className="transform -rotate-90 w-28 h-28">
+                  <circle cx="56" cy="56" r="48" stroke="rgba(255,255,255,0.1)" strokeWidth="6" fill="none" />
+                  <circle
+                    cx="56"
+                    cy="56"
+                    r="48"
+                    stroke={savingsRate >= 20 ? '#10b981' : savingsRate >= 10 ? '#f59e0b' : '#ef4444'}
+                    strokeWidth="6"
+                    fill="none"
+                    strokeDasharray={`${(Math.min(Math.max(savingsRate, 0), 100) * 3.02)} 302`}
+                    strokeLinecap="round"
+                    className="transition-all duration-500"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-2xl font-bold text-highlight-aqua">{savingsRate}%</span>
+                </div>
+              </div>
+              <p className="text-sm text-slate-400 font-normal">Savings Rate</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl font-bold text-highlight-aqua mb-2 tracking-tight">{formatExpense(avgDailySpending)}</p>
+              <p className="text-sm text-slate-400 font-normal">Avg Daily Spending</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl font-bold text-highlight-aqua mb-2 tracking-tight">{formatExpense(spendingVelocity)}</p>
+              <p className="text-sm text-slate-400 font-normal">Spending Velocity</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl font-bold text-highlight-aqua mb-2 tracking-tight">{expenses.length}</p>
+              <p className="text-sm text-slate-400 font-normal">Transactions</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Charts Row 1 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Income vs Expenses Trend */}
+          <div className="glass-card rounded-2xl p-8 border border-white/10">
+            <div className="flex items-center mb-6">
+              <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 mr-3">
+                <DashboardIcon className="w-5 h-5 text-blue-400" />
+              </div>
+              <h3 className="text-xl font-bold text-text-primary tracking-tight">Income vs Expenses</h3>
+            </div>
             <div style={{ height: '300px' }}>
-              <Pie
+              <Line
                 data={{
-                  labels: categoryData.map(d => d.category),
-                  datasets: [{
-                    data: categoryData.map(d => d.amount),
-                    backgroundColor: COLORS.slice(0, categoryData.length),
-                    borderColor: '#1f2937',
-                    borderWidth: 2
-                  }]
+                  labels: trendData.map(d => d.month),
+                  datasets: [
+                    {
+                      label: 'Income',
+                      data: trendData.map(d => d.income),
+                      borderColor: '#10b981',
+                      backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                      fill: true,
+                      tension: 0.4,
+                    },
+                    {
+                      label: 'Expenses',
+                      data: trendData.map(d => d.expenses),
+                      borderColor: '#ef4444',
+                      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                      fill: true,
+                      tension: 0.4,
+                    }
+                  ]
                 }}
                 options={{
                   responsive: true,
                   maintainAspectRatio: false,
                   plugins: {
                     legend: {
-                      position: 'right',
-                      labels: {
-                        color: '#9ca3af',
-                        padding: 15,
-                        font: { size: 12 }
-                      }
+                      labels: { color: '#9ca3af' }
                     },
                     tooltip: {
                       backgroundColor: '#1f2937',
@@ -961,124 +919,136 @@ const Dashboard = () => {
                       bodyColor: '#fff',
                       callbacks: {
                         label: (context) => {
-                          const label = context.label || '';
-                          const value = context.parsed;
-                          const total = categoryData.reduce((sum, d) => sum + d.amount, 0);
-                          const percent = ((value / total) * 100).toFixed(0);
-                          return `${label}: ₹${value.toFixed(2)} (${percent}%)`;
+                          const value = context.parsed.y;
+                          if (context.datasetIndex === 1) {
+                            return `Expenditure: ₹${(value / 100000).toFixed(2)}L`;
+                          }
+                          return `${context.dataset.label}: ₹${value.toFixed(2)}`;
                         }
                       }
+                    }
+                  },
+                  scales: {
+                    x: {
+                      ticks: { color: '#9ca3af' },
+                      grid: { color: '#374151' }
+                    },
+                    y: {
+                      ticks: {
+                        color: '#9ca3af',
+                        callback: (value) => `₹${(value / 100000).toFixed(1)}L`
+                      },
+                      grid: { color: '#374151' }
                     }
                   }
                 }}
               />
             </div>
-          ) : null}
-          {categoryData.length > 0 && chartExplanations.categoryBreakdown && (
-            <p className="text-sm text-text-secondary font-normal mt-4 text-center">
-              {chartExplanations.categoryBreakdown}
-            </p>
-          )}
-          {categoryData.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-[300px] text-center">
-              <ShoppingIcon className="w-16 h-16 text-text-muted mb-4" />
-              <p className="text-text-secondary text-lg mb-2 font-medium">No expenses yet</p>
-              <p className="text-text-muted text-sm">Add expenses to see category breakdown</p>
-              <div className="mt-6 grid grid-cols-3 gap-4 w-full max-w-md">
-                {['Food', 'Travel', 'Shopping', 'Entertainment', 'Bills', 'Others'].map((cat, idx) => (
-                  <div key={cat} className="glass-card rounded-xl p-4 border border-white/10 transition-all">
-                    <div className="flex items-center justify-center mb-3">
-                      {categoryIcons[cat] || <ShoppingIcon className="w-5 h-5 text-text-muted" />}
-                    </div>
-                    <p className="text-xs text-text-secondary text-center font-normal uppercase tracking-wider">{cat}</p>
-                    <p className="text-xs text-text-muted text-center mt-2 font-normal">₹0.00</p>
-                  </div>
-                ))}
+            {chartExplanations.incomeVsExpenses && (
+              <p className="text-sm text-text-secondary font-normal mt-4 text-center">
+                {chartExplanations.incomeVsExpenses}
+              </p>
+            )}
+          </div>
+
+          {/* Category Breakdown Pie Chart */}
+          <div className="glass-card rounded-2xl p-8 border border-white/10">
+            <div className="flex items-center mb-6">
+              <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 mr-3">
+                <ShoppingIcon className="w-5 h-5 text-purple-400" />
               </div>
+              <h3 className="text-xl font-bold text-white tracking-tight">Category Breakdown</h3>
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* Charts Row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Monthly Spending Bar Chart */}
-        <div className="glass-card rounded-2xl p-8 border border-white/10">
-          <div className="flex items-center mb-6">
-            <div className="p-2 rounded-lg bg-pink-500/10 border border-pink-500/20 mr-3">
-              <ExpensesIcon className="w-5 h-5 text-pink-400" />
-            </div>
-            <h3 className="text-xl font-bold text-text-primary tracking-tight">Monthly Spending</h3>
-          </div>
-          <div style={{ height: '300px' }}>
-            <Bar
-              data={{
-                labels: monthlyChartData.map(d => d.month),
-                datasets: [{
-                  label: 'Spending',
-                  data: monthlyChartData.map(d => d.amount),
-                  backgroundColor: '#3b82f6',
-                  borderRadius: 8
-                }]
-              }}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    display: false
-                  },
-                  tooltip: {
-                    backgroundColor: '#1f2937',
-                    borderColor: '#374151',
-                    borderWidth: 1,
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    callbacks: {
-                      label: (context) => `₹${context.parsed.y.toFixed(2)}`
+            {categoryData.length > 0 ? (
+              <div style={{ height: '300px' }}>
+                <Pie
+                  data={{
+                    labels: categoryData.map(d => d.category),
+                    datasets: [{
+                      data: categoryData.map(d => d.amount),
+                      backgroundColor: COLORS.slice(0, categoryData.length),
+                      borderColor: '#1f2937',
+                      borderWidth: 2
+                    }]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        position: 'right',
+                        labels: {
+                          color: '#9ca3af',
+                          padding: 15,
+                          font: { size: 12 }
+                        }
+                      },
+                      tooltip: {
+                        backgroundColor: '#1f2937',
+                        borderColor: '#374151',
+                        borderWidth: 1,
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        callbacks: {
+                          label: (context) => {
+                            const label = context.label || '';
+                            const value = context.parsed;
+                            const total = categoryData.reduce((sum, d) => sum + d.amount, 0);
+                            const percent = ((value / total) * 100).toFixed(0);
+                            return `${label}: ₹${value.toFixed(2)} (${percent}%)`;
+                          }
+                        }
+                      }
                     }
-                  }
-                },
-                scales: {
-                  x: {
-                    ticks: { color: '#9ca3af' },
-                    grid: { color: '#374151' }
-                  },
-                  y: {
-                    ticks: { color: '#9ca3af' },
-                    grid: { color: '#374151' }
-                  }
-                }
-              }}
-            />
+                  }}
+                />
+              </div>
+            ) : null}
+            {categoryData.length > 0 && chartExplanations.categoryBreakdown && (
+              <p className="text-sm text-text-secondary font-normal mt-4 text-center">
+                {chartExplanations.categoryBreakdown}
+              </p>
+            )}
+            {categoryData.length === 0 && (
+              <div className="flex flex-col items-center justify-center h-[300px] text-center">
+                <ShoppingIcon className="w-16 h-16 text-text-muted mb-4" />
+                <p className="text-text-secondary text-lg mb-2 font-medium">No expenses yet</p>
+                <p className="text-text-muted text-sm">Add expenses to see category breakdown</p>
+                <div className="mt-6 grid grid-cols-3 gap-4 w-full max-w-md">
+                  {['Food', 'Travel', 'Shopping', 'Entertainment', 'Bills', 'Others'].map((cat, idx) => (
+                    <div key={cat} className="glass-card rounded-xl p-4 border border-white/10 transition-all">
+                      <div className="flex items-center justify-center mb-3">
+                        {categoryIcons[cat] || <ShoppingIcon className="w-5 h-5 text-text-muted" />}
+                      </div>
+                      <p className="text-xs text-text-secondary text-center font-normal uppercase tracking-wider">{cat}</p>
+                      <p className="text-xs text-text-muted text-center mt-2 font-normal">₹0.00</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-          {chartExplanations.monthlySpending && (
-            <p className="text-sm text-text-secondary font-normal mt-4 text-center">
-              {chartExplanations.monthlySpending}
-            </p>
-          )}
         </div>
 
-        {/* Daily Spending Trend */}
-        <div className="glass-light rounded-xl p-6 shadow-lg border border-slate-700/30">
-          <div className="flex items-center mb-4">
-            <DashboardIcon className="w-5 h-5 text-yellow-400 mr-2" />
-            <h3 className="text-xl font-bold text-text-primary">Daily Spending Trend (Last 30 Days)</h3>
-          </div>
-          {dailyChartData.length > 0 ? (
+        {/* Charts Row 2 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Monthly Spending Bar Chart */}
+          <div className="glass-card rounded-2xl p-8 border border-white/10">
+            <div className="flex items-center mb-6">
+              <div className="p-2 rounded-lg bg-pink-500/10 border border-pink-500/20 mr-3">
+                <ExpensesIcon className="w-5 h-5 text-pink-400" />
+              </div>
+              <h3 className="text-xl font-bold text-text-primary tracking-tight">Monthly Spending</h3>
+            </div>
             <div style={{ height: '300px' }}>
-              <Line
+              <Bar
                 data={{
-                  labels: dailyChartData.map(d => d.date),
+                  labels: monthlyChartData.map(d => d.month),
                   datasets: [{
-                    label: 'Daily Spending',
-                    data: dailyChartData.map(d => d.amount),
-                    borderColor: '#f59e0b',
-                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 3,
-                    pointBackgroundColor: '#f59e0b'
+                    label: 'Spending',
+                    data: monthlyChartData.map(d => d.amount),
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 8
                   }]
                 }}
                 options={{
@@ -1101,11 +1071,7 @@ const Dashboard = () => {
                   },
                   scales: {
                     x: {
-                      ticks: {
-                        color: '#9ca3af',
-                        maxRotation: 45,
-                        minRotation: 45
-                      },
+                      ticks: { color: '#9ca3af' },
                       grid: { color: '#374151' }
                     },
                     y: {
@@ -1116,306 +1082,371 @@ const Dashboard = () => {
                 }}
               />
             </div>
-          ) : null}
-          {dailyChartData.length > 0 && chartExplanations.dailyTrend && (
-            <p className="text-sm text-text-secondary font-normal mt-4 text-center">
-              {chartExplanations.dailyTrend}
-            </p>
-          )}
-          {dailyChartData.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-[300px] text-center px-4 overflow-hidden">
-              <DashboardIcon className="w-12 h-12 text-text-muted mb-3" />
-              <p className="text-text-secondary text-base mb-1">No spending data for last 30 days</p>
-              <p className="text-text-muted text-xs mb-4">Add expenses to see your daily spending trend</p>
-              <div className="w-full max-w-full overflow-x-auto">
-                <div className="grid grid-cols-7 gap-1.5 min-w-max mx-auto">
-                  {Array.from({ length: 30 }, (_, i) => {
-                    const day = new Date();
-                    day.setDate(day.getDate() - (29 - i));
-                    return (
-                      <div key={i} className="glass-light rounded p-1.5 border border-gray-700 min-w-[40px]">
-                        <p className="text-[10px] text-text-muted text-center leading-tight">{day.getDate()}</p>
-                        <div className="h-6 bg-card-bg rounded mt-1 flex items-end justify-center">
-                          <div className="w-full bg-card-hover rounded" style={{ height: '0%' }}></div>
+            {chartExplanations.monthlySpending && (
+              <p className="text-sm text-text-secondary font-normal mt-4 text-center">
+                {chartExplanations.monthlySpending}
+              </p>
+            )}
+          </div>
+
+          {/* Daily Spending Trend */}
+          <div className="glass-light rounded-xl p-6 shadow-lg border border-slate-700/30">
+            <div className="flex items-center mb-4">
+              <DashboardIcon className="w-5 h-5 text-yellow-400 mr-2" />
+              <h3 className="text-xl font-bold text-text-primary">Daily Spending Trend (Last 30 Days)</h3>
+            </div>
+            {dailyChartData.length > 0 ? (
+              <div style={{ height: '300px' }}>
+                <Line
+                  data={{
+                    labels: dailyChartData.map(d => d.date),
+                    datasets: [{
+                      label: 'Daily Spending',
+                      data: dailyChartData.map(d => d.amount),
+                      borderColor: '#f59e0b',
+                      backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                      fill: true,
+                      tension: 0.4,
+                      pointRadius: 3,
+                      pointBackgroundColor: '#f59e0b'
+                    }]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        display: false
+                      },
+                      tooltip: {
+                        backgroundColor: '#1f2937',
+                        borderColor: '#374151',
+                        borderWidth: 1,
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        callbacks: {
+                          label: (context) => `₹${context.parsed.y.toFixed(2)}`
+                        }
+                      }
+                    },
+                    scales: {
+                      x: {
+                        ticks: {
+                          color: '#9ca3af',
+                          maxRotation: 45,
+                          minRotation: 45
+                        },
+                        grid: { color: '#374151' }
+                      },
+                      y: {
+                        ticks: { color: '#9ca3af' },
+                        grid: { color: '#374151' }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            ) : null}
+            {dailyChartData.length > 0 && chartExplanations.dailyTrend && (
+              <p className="text-sm text-text-secondary font-normal mt-4 text-center">
+                {chartExplanations.dailyTrend}
+              </p>
+            )}
+            {dailyChartData.length === 0 && (
+              <div className="flex flex-col items-center justify-center h-[300px] text-center px-4 overflow-hidden">
+                <DashboardIcon className="w-12 h-12 text-text-muted mb-3" />
+                <p className="text-text-secondary text-base mb-1">No spending data for last 30 days</p>
+                <p className="text-text-muted text-xs mb-4">Add expenses to see your daily spending trend</p>
+                <div className="w-full max-w-full overflow-x-auto">
+                  <div className="grid grid-cols-7 gap-1.5 min-w-max mx-auto">
+                    {Array.from({ length: 30 }, (_, i) => {
+                      const day = new Date();
+                      day.setDate(day.getDate() - (29 - i));
+                      return (
+                        <div key={i} className="glass-light rounded p-1.5 border border-gray-700 min-w-[40px]">
+                          <p className="text-[10px] text-text-muted text-center leading-tight">{day.getDate()}</p>
+                          <div className="h-6 bg-card-bg rounded mt-1 flex items-end justify-center">
+                            <div className="w-full bg-card-hover rounded" style={{ height: '0%' }}></div>
+                          </div>
+                          <p className="text-[9px] text-text-muted text-center mt-0.5 leading-tight">₹0</p>
                         </div>
-                        <p className="text-[9px] text-text-muted text-center mt-0.5 leading-tight">₹0</p>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Top Categories Infographic */}
-      <div className="glass-light rounded-xl p-6 mb-8">
-        <h2 className="text-2xl font-bold text-text-primary mb-4 flex items-center">
-          <ShoppingIcon className="w-6 h-6 mr-2 text-teal" />
-          Top Spending Categories
-        </h2>
-        <div className="space-y-4">
-          {topCategories.map((item, index) => {
-            const percentage = (item.amount / totalExpenses) * 100;
-            return (
-              <div key={item.category} className="flex items-center gap-4">
-                <div className="flex items-center gap-3 w-32">
+        {/* Top Categories Infographic */}
+        <div className="glass-light rounded-xl p-6 mb-8">
+          <h2 className="text-2xl font-bold text-text-primary mb-4 flex items-center">
+            <ShoppingIcon className="w-6 h-6 mr-2 text-teal" />
+            Top Spending Categories
+          </h2>
+          <div className="space-y-4">
+            {topCategories.map((item, index) => {
+              const percentage = (item.amount / totalExpenses) * 100;
+              return (
+                <div key={item.category} className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 w-32">
+                    <div className="text-text-secondary">
+                      {categoryIcons[item.category] || <ShoppingIcon className="w-5 h-5" />}
+                    </div>
+                    <span className="text-sm text-text-primary font-medium">{item.category}</span>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-text-secondary">{percentage.toFixed(1)}%</span>
+                      <span className="text-sm font-bold text-highlight-aqua">{formatExpense(item.amount)}</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div
+                        className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Category Cards - Like Fold App */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-text-primary mb-4 flex items-center">
+            <ShoppingIcon className="w-6 h-6 mr-2 text-teal" />
+            Spending by Category
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {categoryData.slice(0, 10).map((item, index) => (
+              <div key={item.category} className="glass-light rounded-xl p-4 border border-gray-700 hover:border-blue-500/50 transition-all hover:scale-105">
+                <div className="flex items-center justify-between mb-2">
                   <div className="text-text-secondary">
                     {categoryIcons[item.category] || <ShoppingIcon className="w-5 h-5" />}
                   </div>
-                  <span className="text-sm text-text-primary font-medium">{item.category}</span>
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-text-secondary">{percentage.toFixed(1)}%</span>
-                    <span className="text-sm font-bold text-highlight-aqua">{formatExpense(item.amount)}</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div
-                      className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"
-                      style={{ width: `${percentage}%` }}
-                    ></div>
-                  </div>
+                <p className="text-xs text-text-secondary mb-2 font-normal">{item.category}</p>
+                <p className="text-xl font-bold text-highlight-aqua mb-3 tracking-tight">{formatExpense(item.amount)}</p>
+                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 transition-all duration-500"
+                    style={{ width: `${categoryData[0] ? (item.amount / categoryData[0].amount) * 100 : 0}%` }}
+                  ></div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Category Cards - Like Fold App */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-text-primary mb-4 flex items-center">
-          <ShoppingIcon className="w-6 h-6 mr-2 text-teal" />
-          Spending by Category
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {categoryData.slice(0, 10).map((item, index) => (
-            <div key={item.category} className="glass-light rounded-xl p-4 border border-gray-700 hover:border-blue-500/50 transition-all hover:scale-105">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-text-secondary">
-                  {categoryIcons[item.category] || <ShoppingIcon className="w-5 h-5" />}
-                </div>
-              </div>
-              <p className="text-xs text-text-secondary mb-2 font-normal">{item.category}</p>
-              <p className="text-xl font-bold text-highlight-aqua mb-3 tracking-tight">{formatExpense(item.amount)}</p>
-              <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 transition-all duration-500"
-                  style={{ width: `${categoryData[0] ? (item.amount / categoryData[0].amount) * 100 : 0}%` }}
-                ></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="glass-card rounded-2xl p-6 border border-white/10">
-          <div className="flex items-center mb-4">
-            <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 mr-3">
-              <BudgetsIcon className="w-5 h-5 text-purple-400" />
-            </div>
-            <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Active Budgets</h3>
-          </div>
-          <p className="text-3xl font-bold text-highlight-aqua tracking-tight">{dashboardData.budgets || 0}</p>
-        </div>
-        <div className="glass-card rounded-2xl p-6 border border-white/10">
-          <div className="flex items-center mb-4">
-            <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mr-3">
-              <GoalsIcon className="w-5 h-5 text-yellow-400" />
-            </div>
-            <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Active Goals</h3>
-          </div>
-          <p className="text-3xl font-bold text-highlight-aqua tracking-tight">{dashboardData.activeGoals || 0}</p>
-        </div>
-        <div className="glass-card rounded-2xl p-6 border border-white/10">
-          <div className="flex items-center mb-4">
-            <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20 mr-3">
-              <IncomeIcon className="w-5 h-5 text-green-400" />
-            </div>
-            <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Income Sources</h3>
-          </div>
-          <p className="text-3xl font-bold text-highlight-aqua tracking-tight">
-            {new Set(incomes.map(i => i.source)).size}
-          </p>
-        </div>
-        <div className="glass-card rounded-2xl p-6 border border-white/10">
-          <div className="flex items-center mb-4">
-            <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 mr-3">
-              <ExpensesIcon className="w-5 h-5 text-blue-400" />
-            </div>
-            <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Categories</h3>
-          </div>
-          <p className="text-3xl font-bold text-highlight-aqua tracking-tight">{categoryData.length}</p>
-        </div>
-      </div>
-
-      {/* Bank Sync Coming Soon */}
-      <div className="glass-card rounded-2xl p-8 mb-8 border border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-blue-500/5">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-                <DashboardIcon className="w-5 h-5 text-cyan-400" />
-              </div>
-              <h3 className="text-xl font-bold text-text-primary tracking-tight">Connect Bank</h3>
-              <span className="px-2 py-1 text-xs font-medium text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
-                Coming Soon
-              </span>
-            </div>
-            <p className="text-text-secondary text-base font-normal leading-relaxed">
-              Automatically sync your bank transactions and never miss tracking an expense. Get real-time updates and smarter insights.
-            </p>
-          </div>
-          <Button
-            onClick={() => {
-              const interested = localStorage.getItem('bankSyncInterest');
-              if (!interested) {
-                localStorage.setItem('bankSyncInterest', 'true');
-                toast.success('We\'ll notify you when bank sync is available!');
-              } else {
-                toast('You\'re already on the waitlist!', { icon: '✅' });
-              }
-            }}
-            variant="secondary"
-            className="bg-cyan-500/20 hover:bg-cyan-500/30 border-cyan-500/50 text-cyan-400"
-          >
-            Notify Me
-          </Button>
-        </div>
-      </div>
-
-      {/* Financial Health Score Widget */}
-      {financialHealth && (
-        <div className="glass-card rounded-2xl p-6 border border-white/10 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">Financial Health</h2>
-            <Link
-              to="/analytics"
-              className="text-teal-400 hover:text-teal-300 text-sm font-medium"
-            >
-              View Details →
-            </Link>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="text-center">
-              <div className={`text-5xl font-bold ${financialHealth.score >= 80 ? 'text-green-400' :
-                financialHealth.score >= 65 ? 'text-teal-400' :
-                  financialHealth.score >= 50 ? 'text-yellow-400' :
-                    financialHealth.score >= 35 ? 'text-orange-400' :
-                      'text-red-400'
-                }`}>
-                {financialHealth.score}
-              </div>
-              <div className="text-slate-400 text-sm mt-1">out of 100</div>
-            </div>
-            <div className="flex-1">
-              <div className={`px-3 py-1 rounded-lg border inline-block ${financialHealth.level === 'excellent' ? 'bg-green-500/20 text-green-400 border-green-500/50' :
-                financialHealth.level === 'good' ? 'bg-teal-500/20 text-teal-400 border-teal-500/50' :
-                  financialHealth.level === 'fair' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' :
-                    financialHealth.level === 'needs_improvement' ? 'bg-orange-500/20 text-orange-400 border-orange-500/50' :
-                      'bg-red-500/20 text-red-400 border-red-500/50'
-                }`}>
-                {financialHealth.level.replace('_', ' ').toUpperCase()}
-              </div>
-              {financialHealth.recommendations && financialHealth.recommendations.length > 0 && (
-                <p className="text-slate-400 text-xs mt-2">
-                  {financialHealth.recommendations[0].message}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Finance News Widget */}
-      <FinanceNewsWidget />
-
-      {/* Insights Summary Card - Moved to bottom */}
-      {insights.length > 0 && (
-        <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10 bg-gradient-to-br from-blue-500/5 to-purple-500/5">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
-              <DashboardIcon className="w-6 h-6 text-blue-400" />
-            </div>
-            <h2 className="text-2xl font-bold text-text-primary tracking-tight">Insights Summary</h2>
-          </div>
-          <div className="space-y-4">
-            {insights.map((insight, index) => (
-              <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 transition-all">
-                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-400 mt-2"></div>
-                <p className="text-base text-text-primary font-normal leading-relaxed flex-1">
-                  {insight}
-                </p>
               </div>
             ))}
           </div>
         </div>
-      )}
 
-      {/* Transaction History Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-text-primary mb-1">Recent Transactions</h2>
-            <p className="text-text-secondary text-sm">Your latest financial activity</p>
+        {/* Quick Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="glass-card rounded-2xl p-6 border border-white/10">
+            <div className="flex items-center mb-4">
+              <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 mr-3">
+                <BudgetsIcon className="w-5 h-5 text-purple-400" />
+              </div>
+              <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Active Budgets</h3>
+            </div>
+            <p className="text-3xl font-bold text-highlight-aqua tracking-tight">{dashboardData.budgets || 0}</p>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => window.location.href = '/transactions'}>
-            View All
-          </Button>
+          <div className="glass-card rounded-2xl p-6 border border-white/10">
+            <div className="flex items-center mb-4">
+              <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mr-3">
+                <GoalsIcon className="w-5 h-5 text-yellow-400" />
+              </div>
+              <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Active Goals</h3>
+            </div>
+            <p className="text-3xl font-bold text-highlight-aqua tracking-tight">{dashboardData.activeGoals || 0}</p>
+          </div>
+          <div className="glass-card rounded-2xl p-6 border border-white/10">
+            <div className="flex items-center mb-4">
+              <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20 mr-3">
+                <IncomeIcon className="w-5 h-5 text-green-400" />
+              </div>
+              <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Income Sources</h3>
+            </div>
+            <p className="text-3xl font-bold text-highlight-aqua tracking-tight">
+              {new Set(incomes.map(i => i.source)).size}
+            </p>
+          </div>
+          <div className="glass-card rounded-2xl p-6 border border-white/10">
+            <div className="flex items-center mb-4">
+              <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 mr-3">
+                <ExpensesIcon className="w-5 h-5 text-blue-400" />
+              </div>
+              <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Categories</h3>
+            </div>
+            <p className="text-3xl font-bold text-highlight-aqua tracking-tight">{categoryData.length}</p>
+          </div>
         </div>
-        <div className="glass-card rounded-2xl border border-white/10 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-white/5">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Description</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Amount</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {recentTransactions.length === 0 ? (
+
+        {/* Bank Sync Coming Soon */}
+        <div className="glass-card rounded-2xl p-8 mb-8 border border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-blue-500/5">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                  <DashboardIcon className="w-5 h-5 text-cyan-400" />
+                </div>
+                <h3 className="text-xl font-bold text-text-primary tracking-tight">Connect Bank</h3>
+                <span className="px-2 py-1 text-xs font-medium text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+                  Coming Soon
+                </span>
+              </div>
+              <p className="text-text-secondary text-base font-normal leading-relaxed">
+                Automatically sync your bank transactions and never miss tracking an expense. Get real-time updates and smarter insights.
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                const interested = localStorage.getItem('bankSyncInterest');
+                if (!interested) {
+                  localStorage.setItem('bankSyncInterest', 'true');
+                  toast.success('We\'ll notify you when bank sync is available!');
+                } else {
+                  toast('You\'re already on the waitlist!', { icon: '✅' });
+                }
+              }}
+              variant="secondary"
+              className="bg-cyan-500/20 hover:bg-cyan-500/30 border-cyan-500/50 text-cyan-400"
+            >
+              Notify Me
+            </Button>
+          </div>
+        </div>
+
+        {/* Financial Health Score Widget */}
+        {financialHealth && (
+          <div className="glass-card rounded-2xl p-6 border border-white/10 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-white">Financial Health</h2>
+              <Link
+                to="/analytics"
+                className="text-teal-400 hover:text-teal-300 text-sm font-medium"
+              >
+                View Details →
+              </Link>
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="text-center">
+                <div className={`text-5xl font-bold ${financialHealth.score >= 80 ? 'text-green-400' :
+                  financialHealth.score >= 65 ? 'text-teal-400' :
+                    financialHealth.score >= 50 ? 'text-yellow-400' :
+                      financialHealth.score >= 35 ? 'text-orange-400' :
+                        'text-red-400'
+                  }`}>
+                  {financialHealth.score}
+                </div>
+                <div className="text-slate-400 text-sm mt-1">out of 100</div>
+              </div>
+              <div className="flex-1">
+                <div className={`px-3 py-1 rounded-lg border inline-block ${financialHealth.level === 'excellent' ? 'bg-green-500/20 text-green-400 border-green-500/50' :
+                  financialHealth.level === 'good' ? 'bg-teal-500/20 text-teal-400 border-teal-500/50' :
+                    financialHealth.level === 'fair' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' :
+                      financialHealth.level === 'needs_improvement' ? 'bg-orange-500/20 text-orange-400 border-orange-500/50' :
+                        'bg-red-500/20 text-red-400 border-red-500/50'
+                  }`}>
+                  {financialHealth.level.replace('_', ' ').toUpperCase()}
+                </div>
+                {financialHealth.recommendations && financialHealth.recommendations.length > 0 && (
+                  <p className="text-slate-400 text-xs mt-2">
+                    {financialHealth.recommendations[0].message}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Finance News Widget */}
+        <FinanceNewsWidget />
+
+        {/* Insights Summary Card - Moved to bottom */}
+        {insights.length > 0 && (
+          <div className="glass-card rounded-2xl p-8 mb-8 border border-white/10 bg-gradient-to-br from-blue-500/5 to-purple-500/5">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                <DashboardIcon className="w-6 h-6 text-blue-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-text-primary tracking-tight">Insights Summary</h2>
+            </div>
+            <div className="space-y-4">
+              {insights.map((insight, index) => (
+                <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 transition-all">
+                  <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-400 mt-2"></div>
+                  <p className="text-base text-text-primary font-normal leading-relaxed flex-1">
+                    {insight}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Transaction History Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-text-primary mb-1">Recent Transactions</h2>
+              <p className="text-text-secondary text-sm">Your latest financial activity</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => window.location.href = '/transactions'}>
+              View All
+            </Button>
+          </div>
+          <div className="glass-card rounded-2xl border border-white/10 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead className="bg-white/5">
                   <tr>
-                    <td colSpan="4" className="px-6 py-8 text-center">
-                      <p className="text-text-secondary text-sm">No recent transactions</p>
-                    </td>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Description</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Category</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Amount</th>
                   </tr>
-                ) : (
-                  recentTransactions.map((transaction) => (
-                    <tr key={transaction._id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4 text-sm text-text-secondary font-normal">
-                        {new Date(transaction.date || transaction.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-text-primary font-medium">
-                        {transaction.merchant || transaction.description || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-text-secondary font-normal">
-                        {transaction.category || 'Uncategorized'}
-                      </td>
-                      <td className={`px-6 py-4 text-sm font-semibold ${transaction.type === 'income' ? 'text-green-400' : 'text-red-400'
-                        }`}>
-                        {transaction.type === 'income' ? '+' : '-'}
-                        {formatExpense(Math.abs(transaction.amount || 0))}
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {recentTransactions.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" className="px-6 py-8 text-center">
+                        <p className="text-text-secondary text-sm">No recent transactions</p>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    recentTransactions.map((transaction) => (
+                      <tr key={transaction._id} className="hover:bg-white/5 transition-colors">
+                        <td className="px-6 py-4 text-sm text-text-secondary font-normal">
+                          {new Date(transaction.date || transaction.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-text-primary font-medium">
+                          {transaction.merchant || transaction.description || 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-text-secondary font-normal">
+                          {transaction.category || 'Uncategorized'}
+                        </td>
+                        <td className={`px-6 py-4 text-sm font-semibold ${transaction.type === 'income' ? 'text-green-400' : 'text-red-400'
+                          }`}>
+                          {transaction.type === 'income' ? '+' : '-'}
+                          {formatExpense(Math.abs(transaction.amount || 0))}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Guided Coach - Full width - Moved to bottom */}
-      <div>
-        <GuidedCoach expenses={expenses || []} incomes={incomes || []} stashScore={stashScore || 50} />
+        {/* Guided Coach - Full width - Moved to bottom */}
+        <div>
+          <GuidedCoach expenses={expenses || []} incomes={incomes || []} stashScore={stashScore || 50} />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

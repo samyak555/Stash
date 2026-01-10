@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { gamificationAPI } from '../services/api';
+import Icon from './ui/Icons';
+import Button from './ui/Button';
 
 const GamificationCard = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [showConfetti, setShowConfetti] = useState(false);
+    const [checkingIn, setCheckingIn] = useState(false);
 
     useEffect(() => {
         fetchStats();
@@ -22,130 +24,118 @@ const GamificationCard = () => {
     };
 
     const handleCheckIn = async () => {
+        if (checkingIn) return;
+        setCheckingIn(true);
         try {
-            const response = await gamificationAPI.checkIn();
-            if (response.data) {
-                setShowConfetti(true);
-                fetchStats();
-                setTimeout(() => setShowConfetti(false), 3000);
-            }
+            await gamificationAPI.checkIn();
+            await fetchStats();
+            // Optional: Add subtle toast success here instead of confetti
         } catch (error) {
             console.error('Check-in failed:', error);
+        } finally {
+            setCheckingIn(false);
         }
     };
 
     if (loading) {
         return (
-            <div className="glass-card p-6 rounded-2xl border border-white/10 animate-pulse">
-                <div className="h-24 bg-white/5 rounded-xl"></div>
-            </div>
+            <div className="w-full h-48 bg-slate-900/50 rounded-xl border border-slate-800 animate-pulse" />
         );
     }
 
-    const levelProgress = stats?.pointsForNextLevel
-        ? ((stats.points % 1000) / 1000) * 100
+    // Calculate progress
+    const currentPoints = stats?.points || 0;
+    const nextLevelPoints = (stats?.pointsForNextLevel || 0) + currentPoints;
+    const progressPercent = nextLevelPoints > 0
+        ? (currentPoints / nextLevelPoints) * 100
         : 0;
 
+    // Safe progress for visual bar (clamped)
+    const visualProgress = Math.min(Math.max(progressPercent, 5), 100);
+
     return (
-        <div className="relative">
-            {/* Confetti Effect */}
-            {showConfetti && (
-                <div className="absolute inset-0 pointer-events-none overflow-hidden z-50">
-                    {[...Array(30)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="absolute animate-confetti"
-                            style={{
-                                left: `${Math.random() * 100}%`,
-                                top: '-10%',
-                                animationDelay: `${Math.random() * 0.5}s`,
-                                animationDuration: `${2 + Math.random()}s`,
-                            }}
-                        >
-                            {['🎉', '⭐', '💎', '🔥', '✨'][Math.floor(Math.random() * 5)]}
-                        </div>
-                    ))}
-                </div>
-            )}
+        <div className="group relative overflow-hidden rounded-2xl border border-white/5 bg-[#0F1218] p-6 shadow-xl transition-all hover:border-white/10">
 
-            <div className="glass-card p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-cyan-500/10">
-                {/* Header with Level */}
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="relative">
-                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-purple-500/50">
-                                <span className="text-2xl font-bold text-white">{stats?.level || 1}</span>
-                            </div>
-                            <div className="absolute -top-1 -right-1 bg-yellow-500 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-lg">
-                                ⭐
-                            </div>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-bold text-white">Level {stats?.level || 1}</h3>
-                            <p className="text-sm text-slate-400">{stats?.points || 0} points</p>
+            {/* Background Ambience */}
+            <div className="absolute top-0 right-0 -mt-16 -mr-16 h-64 w-64 rounded-full bg-blue-500/5 blur-3xl transition-opacity group-hover:opacity-75" />
+            <div className="absolute bottom-0 left-0 -mb-16 -ml-16 h-64 w-64 rounded-full bg-purple-500/5 blur-3xl transition-opacity group-hover:opacity-75" />
+
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+
+                {/* Left Section: Level & Status */}
+                <div className="flex items-start gap-5">
+                    {/* Level Ring */}
+                    <div className="relative flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 shadow-inner ring-1 ring-white/10">
+                        <Icon icon="trophy" size={24} className="text-blue-400" />
+                        <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow ring-2 ring-[#0F1218]">
+                            {stats?.level || 1}
                         </div>
                     </div>
 
-                    {/* Check-in Button */}
-                    <button
-                        onClick={handleCheckIn}
-                        className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl font-medium shadow-lg shadow-green-500/30 transition-all hover:scale-105 active:scale-95"
-                    >
-                        <span className="flex items-center gap-2">
-                            <span>🔥</span>
-                            <span>Check In</span>
-                        </span>
-                    </button>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="mb-6">
-                    <div className="flex justify-between text-sm text-slate-400 mb-2">
-                        <span>Progress to Level {(stats?.level || 1) + 1}</span>
-                        <span>{stats?.pointsForNextLevel || 0} pts needed</span>
-                    </div>
-                    <div className="h-3 bg-white/5 rounded-full overflow-hidden">
-                        <div
-                            className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 rounded-full transition-all duration-1000 ease-out"
-                            style={{ width: `${levelProgress}%` }}
-                        />
-                    </div>
-                </div>
-
-                {/* Streak Counter */}
-                <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
-                            <span className="text-2xl">🔥</span>
+                    <div className="space-y-1">
+                        <h3 className="text-sm font-medium uppercase tracking-wider text-slate-400">Current Level</h3>
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-3xl font-light text-white tracking-tight">
+                                {currentPoints.toLocaleString()}
+                            </span>
+                            <span className="text-sm font-medium text-slate-500">XP</span>
                         </div>
-                        <div>
-                            <p className="text-sm text-slate-400">Current Streak</p>
-                            <p className="text-xl font-bold text-white">{stats?.currentStreak || 0} days</p>
-                        </div>
-                    </div>
-                    <div className="text-right">
-                        <p className="text-xs text-slate-500">Best Streak</p>
-                        <p className="text-lg font-semibold text-slate-300">{stats?.longestStreak || 0} days</p>
-                    </div>
-                </div>
 
-                {/* Badges Preview */}
-                {stats?.badges && stats.badges.length > 0 && (
-                    <div className="mt-6">
-                        <p className="text-sm text-slate-400 mb-3">Recent Badges</p>
-                        <div className="flex gap-2 overflow-x-auto pb-2">
-                            {stats.badges.slice(0, 5).map((badge, index) => (
+                        {/* Progress Bar */}
+                        <div className="mt-2 w-full max-w-[200px] space-y-2">
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
                                 <div
-                                    key={index}
-                                    className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 flex items-center justify-center text-2xl hover:scale-110 transition-transform cursor-pointer"
-                                    title={badge.name}
-                                >
-                                    {badge.name?.charAt(0) || '🏆'}
-                                </div>
-                            ))}
+                                    className="h-full bg-blue-500 transition-all duration-500 ease-out"
+                                    style={{ width: `${visualProgress}%` }}
+                                />
+                            </div>
+                            <p className="text-xs text-slate-500">
+                                <span className="text-slate-300 font-medium">{stats?.pointsForNextLevel || 0} XP</span> to next level
+                            </p>
                         </div>
                     </div>
-                )}
+                </div>
+
+                {/* Right Section: Streak & Action */}
+                <div className="flex flex-1 items-center justify-end gap-6 md:gap-12 pl-4 md:border-l md:border-white/5">
+                    {/* Streak Stat */}
+                    <div className="hidden sm:block text-right">
+                        <div className="mb-1 flex items-center justify-end gap-1.5 text-xs font-medium uppercase tracking-wider text-slate-400">
+                            <Icon icon="flame" size={14} className={stats?.currentStreak > 0 ? "text-orange-500" : "text-slate-600"} />
+                            Streak
+                        </div>
+                        <div className="text-2xl font-semibold text-white">
+                            {stats?.currentStreak || 0} <span className="text-sm font-normal text-slate-500">days</span>
+                        </div>
+                    </div>
+
+                    {/* Badges Preview (Mini) */}
+                    <div className="hidden lg:flex items-center gap-2">
+                        {(stats?.badges || []).slice(0, 3).map((badge, idx) => (
+                            <div key={idx} className="group/tooltip relative flex h-10 w-10 items-center justify-center rounded-full bg-slate-800/50 ring-1 ring-white/10 transition-transform hover:scale-110 hover:bg-slate-800 hover:ring-white/20">
+                                <Icon icon="award" size={16} className="text-purple-400" />
+                                {/* Tooltip */}
+                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover/tooltip:opacity-100 shadow-lg border border-white/5">
+                                    {badge.name}
+                                </div>
+                            </div>
+                        ))}
+                        {(stats?.badges || []).length === 0 && (
+                            <div className="h-10 w-10 rounded-full border border-dashed border-slate-700 bg-transparent" />
+                        )}
+                    </div>
+
+                    {/* Action Button */}
+                    <Button
+                        variant={stats?.streakContinues ? "secondary" : "primary"}
+                        onClick={handleCheckIn}
+                        disabled={checkingIn}
+                        className="min-w-[140px]"
+                        leftIcon={!stats?.streakContinues && <Icon icon="zap" size={16} />}
+                    >
+                        {checkingIn ? 'Syncing...' : stats?.streakContinues ? 'Check In Done' : 'Daily Check In'}
+                    </Button>
+                </div>
             </div>
         </div>
     );
