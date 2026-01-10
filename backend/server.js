@@ -35,6 +35,7 @@ import cryptoRoutes from './routes/cryptoRoutes.js';
 import mutualFundRoutes from './routes/mutualFundRoutes.js';
 import autoTransactionRoutes from './routes/autoTransactionRoutes.js';
 import csvImportRoutes from './routes/csvImportRoutes.js';
+import gamificationRoutes from './routes/gamificationRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -58,7 +59,7 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, Postman, OAuth redirects, etc.)
     if (!origin) return callback(null, true);
-    
+
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -98,7 +99,7 @@ app.use((req, res, next) => {
 // ============================================
 // Root-level health check (ultra-fast, no DB check - for Render pings)
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     status: 'OK',
     service: 'Stash Backend API',
     timestamp: new Date().toISOString()
@@ -107,7 +108,7 @@ app.get('/', (req, res) => {
 
 // Lightweight ping endpoint (for keep-alive service)
 app.get('/ping', (req, res) => {
-  res.json({ 
+  res.json({
     status: 'OK',
     timestamp: new Date().toISOString()
   });
@@ -116,7 +117,7 @@ app.get('/ping', (req, res) => {
 // Full health check with DB status
 app.get('/api/health', (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
-  res.json({ 
+  res.json({
     status: 'OK',
     database: dbStatus,
     timestamp: new Date().toISOString()
@@ -147,13 +148,14 @@ app.use('/api/crypto', cryptoRoutes);
 app.use('/api/mutual-funds', mutualFundRoutes);
 app.use('/api/transactions', autoTransactionRoutes);
 app.use('/api/csv-import', csvImportRoutes);
+app.use('/api/gamification', gamificationRoutes);
 
 // Error handling middleware - Production-ready (no stack traces)
 app.use((err, req, res, next) => {
   console.error('Error:', err.message);
   // Don't expose stack traces to client in production
   const isDevelopment = process.env.NODE_ENV !== 'production';
-  
+
   res.status(err.status || 500).json({
     message: err.message || 'Internal server error',
     ...(isDevelopment && { stack: err.stack }) // Only show stack in development
@@ -178,14 +180,14 @@ const startServer = async () => {
     console.log(`   GOOGLE_CLIENT_ID: ${process.env.GOOGLE_CLIENT_ID ? 'set' : '❌ NOT SET'}`);
     console.log(`   BACKEND_URL: ${process.env.BACKEND_URL || 'not set'}`);
     console.log(`   FRONTEND_URL: ${process.env.FRONTEND_URL || 'not set'}`);
-    
+
     // Validate environment variables before starting
     if (!process.env.MONGODB_URI) {
       console.error('❌ MONGODB_URI environment variable is not set');
       console.error('   Please set MONGODB_URI in Render dashboard → Environment');
       process.exit(1);
     }
-    
+
     if (!process.env.JWT_SECRET) {
       console.error('❌ JWT_SECRET environment variable is not set');
       console.error('   Please set JWT_SECRET in Render dashboard → Environment');
@@ -195,7 +197,7 @@ const startServer = async () => {
     console.log('🔌 Connecting to MongoDB...');
     await connectDB();
     console.log('✅ MongoDB connection established');
-    
+
     // Verify Gmail SMTP connection (truly async, non-blocking)
     // Don't await - let it run in background to speed up startup
     console.log('📧 Verifying Gmail SMTP connection (async)...');
@@ -218,7 +220,7 @@ const startServer = async () => {
         console.warn('   Server will start but emails may not work');
         console.warn('   Check EMAIL_USER and EMAIL_PASS environment variables');
       });
-    
+
     console.log(`🚀 Starting server on port ${PORT}...`);
     app.listen(PORT, () => {
       console.log(`✅ Server running successfully on port ${PORT}`);
@@ -228,7 +230,7 @@ const startServer = async () => {
       console.log(`   - GET /api/auth/google/callback`);
       console.log(`   - POST /api/auth/register`);
       console.log(`   - POST /api/auth/login`);
-      
+
       // Start keep-alive service to prevent cold starts
       startKeepAliveService();
     });
@@ -257,7 +259,7 @@ const startKeepAliveService = () => {
   const port = url.port || (url.protocol === 'https:' ? 443 : 80);
   const path = '/ping';
   const protocol = url.protocol === 'https:' ? https : http;
-  
+
   // Ping every 10 minutes (Render free tier sleeps after ~15 min of inactivity)
   const keepAliveJob = schedule.scheduleJob('*/10 * * * *', () => {
     const options = {
@@ -270,34 +272,34 @@ const startKeepAliveService = () => {
         'User-Agent': 'Stash-KeepAlive/1.0'
       }
     };
-    
+
     const req = protocol.request(options, (res) => {
       if (res.statusCode === 200) {
         console.log(`💓 Keep-alive ping successful at ${new Date().toLocaleTimeString()}`);
       } else {
         console.warn(`⚠️  Keep-alive ping returned status ${res.statusCode}`);
       }
-      res.on('data', () => {}); // Consume response
-      res.on('end', () => {});
+      res.on('data', () => { }); // Consume response
+      res.on('end', () => { });
     });
-    
+
     req.on('error', (error) => {
       // Don't log errors in production to avoid noise
       if (process.env.NODE_ENV !== 'production') {
         console.warn(`⚠️  Keep-alive ping failed: ${error.message}`);
       }
     });
-    
+
     req.on('timeout', () => {
       req.destroy();
       if (process.env.NODE_ENV !== 'production') {
         console.warn('⚠️  Keep-alive ping timeout');
       }
     });
-    
+
     req.end();
   });
-  
+
   if (keepAliveJob) {
     console.log('💓 Keep-alive service started (pings every 10 minutes)');
   } else {

@@ -305,6 +305,14 @@ export const alertsAPI = {
   checkAlerts: () => api.post('/alerts/check'),
 };
 
+export const gamificationAPI = {
+  getStats: () => api.get('/gamification/stats'),
+  getAllBadges: () => api.get('/gamification/badges'),
+  getLeaderboard: (limit) => api.get('/gamification/leaderboard', { params: { limit } }),
+  checkIn: () => api.post('/gamification/checkin'),
+  awardPoints: (points, reason) => api.post('/gamification/points', { points, reason }),
+};
+
 export const analyticsAPI = {
   getFinancialHealth: () => api.get('/analytics/health'),
   getExpenseAnalytics: (timeRange) => api.get('/analytics/expenses', { params: { timeRange } }),

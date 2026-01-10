@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
   },
   passwordHash: {
     type: String,
-    required: function() {
+    required: function () {
       return this.authProvider === 'local';
     },
   },
@@ -51,7 +51,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true, // Allow multiple nulls but enforce uniqueness when present
     index: true,
-    required: function() {
+    required: function () {
       return this.authProvider === 'google';
     },
   },
@@ -103,6 +103,86 @@ const userSchema = new mongoose.Schema({
   goalsCompleted: {
     type: Boolean,
     default: false,
+  },
+  // Gamification
+  points: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+  level: {
+    type: Number,
+    default: 1,
+    min: 1,
+    max: 50,
+  },
+  badges: [{
+    id: String,
+    name: String,
+    earnedAt: { type: Date, default: Date.now },
+  }],
+  currentStreak: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+  longestStreak: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+  lastActiveDate: {
+    type: Date,
+    default: Date.now,
+  },
+  // User Type Preferences
+  userType: {
+    type: String,
+    enum: ['genZ', 'freelancer', 'cryptoInvestor', 'nri', 'general'],
+    default: 'general',
+  },
+  // Additional Profile Fields
+  dateOfBirth: {
+    type: Date,
+  },
+  currency: {
+    type: String,
+    default: 'INR',
+  },
+  timezone: {
+    type: String,
+    default: 'Asia/Kolkata',
+  },
+  // Freelancer-specific
+  gstin: {
+    type: String,
+    sparse: true,
+    uppercase: true,
+  },
+  // NRI-specific
+  countriesOfResidence: [{
+    type: String,
+  }],
+  baseCurrency: {
+    type: String,
+    default: 'INR',
+  },
+  // Preferences
+  preferences: {
+    theme: {
+      type: String,
+      enum: ['light', 'dark', 'auto'],
+      default: 'dark',
+    },
+    language: {
+      type: String,
+      default: 'en',
+    },
+    notifications: {
+      email: { type: Boolean, default: true },
+      push: { type: Boolean, default: true },
+      sms: { type: Boolean, default: false },
+    },
   },
   createdAt: {
     type: Date,
