@@ -17,10 +17,64 @@ import {
   SettingsIcon
 } from './Icons';
 
-// ... (CardIcon, TransactionIcon, InvestIcon, LogoutIcon remain same)
+const CardIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+  </svg>
+);
+
+const TransactionIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+  </svg>
+);
+
+const InvestIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+  </svg>
+);
+
+const LogoutIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+  </svg>
+);
 
 const MobileSidebar = ({ user, setUser }) => {
-  // ... (hooks and handlers)
+  const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Close menu on route change
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
+  // Close on escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isOpen]);
+
+  const handleLogout = async () => {
+    try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('isGuest');
+      setUser(null);
+      setIsOpen(false);
+      toast.success('Logged out successfully');
+      navigate('/login');
+    } catch (error) {
+      toast.error('Error logging out');
+    }
+  };
 
   const navItems = [
     { path: '/', label: 'Dashboard', Icon: DashboardIcon },
@@ -173,4 +227,3 @@ const MobileSidebar = ({ user, setUser }) => {
 };
 
 export default MobileSidebar;
-
