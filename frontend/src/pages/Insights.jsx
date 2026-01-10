@@ -88,8 +88,8 @@ const Insights = () => {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`px-6 py-3 font-medium transition-all duration-200 rounded-t-lg border-b-2 text-sm sm:text-base ${activeTab === tab.id
-                ? 'border-purple-500 text-purple-400 bg-purple-500/5'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'
+              ? 'border-purple-500 text-purple-400 bg-purple-500/5'
+              : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'
               }`}
           >
             {tab.label}
@@ -135,6 +135,66 @@ const Insights = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* AI Financial Intelligence Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    {/* Safe to Spend Card */}
+                    <div className="bg-emerald-500/5 rounded-2xl p-6 border border-emerald-500/10">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-emerald-500/10 rounded-lg">
+                          <InsightsIcon className="w-5 h-5 text-emerald-400" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-white">Safe-to-Spend</h3>
+                      </div>
+                      <div className="text-3xl font-bold text-white mb-2">
+                        ₹{(insights.safeToSpend || 0).toLocaleString()}
+                      </div>
+                      <p className="text-sm text-slate-400">
+                        After taxes & estimated fixed savings.
+                      </p>
+                    </div>
+
+                    {/* Tax Estimation Card */}
+                    <div className="bg-blue-500/5 rounded-2xl p-6 border border-blue-500/10">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-blue-500/10 rounded-lg">
+                          <InsightsIcon className="w-5 h-5 text-blue-400" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-white">Est. Tax Liability</h3>
+                      </div>
+                      <div className="text-3xl font-bold text-white mb-2">
+                        ₹{(insights.estimatedTax || 0).toLocaleString()}
+                      </div>
+                      <p className="text-sm text-slate-400">
+                        FY 2024-25 (New Regime Estimate)
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Warnings & Optimization */}
+                  {(insights.warning || insights.taxOptimization) && (
+                    <div className="space-y-4 mb-8">
+                      {insights.warning && (
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
+                          <InsightsIcon className="w-6 h-6 text-red-400 shrink-0 mt-0.5" />
+                          <div>
+                            <h4 className="text-red-400 font-semibold mb-1">Attention Needed</h4>
+                            <p className="text-red-300/80 text-sm">{insights.warning}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {insights.taxOptimization && (
+                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
+                          <InsightsIcon className="w-6 h-6 text-amber-400 shrink-0 mt-0.5" />
+                          <div>
+                            <h4 className="text-amber-400 font-semibold mb-1">Tax Optimization Tip</h4>
+                            <p className="text-amber-300/80 text-sm">{insights.taxOptimization}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {insights.recommendations && insights.recommendations.length > 0 && (
                     <div className="mb-8">
