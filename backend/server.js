@@ -99,6 +99,8 @@ app.use((req, res, next) => {
 // ============================================
 // Root-level health check (ultra-fast, no DB check - for Render pings)
 app.get('/', (req, res) => {
+  // Manual Force Update: 2026-01-10 Gamification Deploy
+  console.log('Force Backend Update: Gamification & Onboarding Routes Active');
   res.json({
     status: 'OK',
     service: 'Stash Backend API',
