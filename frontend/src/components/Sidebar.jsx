@@ -60,27 +60,27 @@ const Sidebar = ({ user, setUser }) => {
     }
   };
 
+  // REORDERED & RENAMED LIST
   const navItems = [
     { path: '/', label: 'Dashboard', Icon: DashboardIcon },
-    { path: '/cards', label: 'Cards', Icon: CardIcon },
+    { path: '/cards', label: 'Cards', Icon: CardIcon },     // High Priority
+    { path: '/goals', label: 'Goals', Icon: GoalsIcon },     // High Priority
     { path: '/transactions', label: 'Transactions', Icon: TransactionIcon },
     { path: '/expenses', label: 'Expenses', Icon: ExpensesIcon },
     { path: '/income', label: 'Income', Icon: IncomeIcon },
-    { path: '/freelancer', label: 'Freelancer Tools', Icon: FreelanceIcon },
     { path: '/budgets', label: 'Budgets', Icon: BudgetsIcon },
-    { path: '/goals', label: 'Goals', Icon: GoalsIcon },
+    { path: '/freelancer', label: 'Tax & Invoicing', Icon: FreelanceIcon }, // Renamed & Placed below Goals
     { path: '/invest', label: 'Stash Invest', Icon: InvestIcon },
+    { path: '/insights', label: 'Stash Insight', Icon: InsightsIcon }, // Merged (Analytics removed)
     { path: '/portfolio-insights', label: 'Portfolio Insights', Icon: InsightsIcon },
     { path: '/news', label: 'Stash News', Icon: InsightsIcon },
     { path: '/family', label: 'Family', Icon: FamilyIcon },
-    { path: '/insights', label: 'Stash Insight', Icon: InsightsIcon },
-    { path: '/analytics', label: 'Analytics', Icon: InsightsIcon },
-    { path: '/settings', label: 'Settings', Icon: SettingsIcon },
+    { path: '/settings', label: 'Settings', Icon: SettingsIcon }, // Bottom
   ];
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-60 bg-sidebar-bg border-r border-border flex flex-col z-50">
-      {/* STASH Logo Section - Clean Professional Brand Area */}
+      {/* STASH Logo Section */}
       <div className="border-b border-border bg-gradient-to-br from-sidebar-bg to-card-bg flex items-center justify-center" style={{ minHeight: '80px', padding: '12px' }}>
         <Link to="/" className="flex items-center justify-center gap-3 w-full h-full">
           <img
