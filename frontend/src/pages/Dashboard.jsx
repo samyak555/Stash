@@ -42,6 +42,7 @@ import LoadingDots from '../components/LoadingDots';
 import FinanceNewsWidget from '../components/FinanceNewsWidget';
 import FinancialHealthScore from '../components/FinancialHealthScore';
 import { analyticsAPI } from '../services/api';
+import GamificationCard from '../components/GamificationCard';
 
 const Dashboard = () => {
   const { expenses, refreshTrigger, fetchExpenses } = useExpenses();
@@ -228,7 +229,7 @@ const Dashboard = () => {
     const today = new Date();
     const diffTime = Math.abs(today - date);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays <= 30) {
       const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       acc[dateStr] = (acc[dateStr] || 0) + parseFloat(expense.amount || 0);
@@ -259,7 +260,7 @@ const Dashboard = () => {
   // Generate insights - moved after all calculations
   const insights = (() => {
     const insightsList = [];
-    
+
     if (safeExpenses.length === 0) {
       return ['Add your first expense to see insights about your spending patterns'];
     }
@@ -379,7 +380,7 @@ const Dashboard = () => {
 
   // Income vs Expenses trend - Last 12 months (moved before getChartExplanations)
   const incomeExpenseTrend = {};
-  
+
   safeExpenses.forEach(expense => {
     const date = new Date(expense.date);
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -429,13 +430,13 @@ const Dashboard = () => {
     if (trendData.length >= 2) {
       const latest = trendData[trendData.length - 1];
       const previous = trendData[trendData.length - 2];
-      const incomeChange = latest.income > 0 && previous.income > 0 
-        ? ((latest.income - previous.income) / previous.income) * 100 
+      const incomeChange = latest.income > 0 && previous.income > 0
+        ? ((latest.income - previous.income) / previous.income) * 100
         : 0;
       const expenseChange = latest.expenses > 0 && previous.expenses > 0
         ? ((latest.expenses - previous.expenses) / previous.expenses) * 100
         : 0;
-      
+
       if (Math.abs(expenseChange) < 5 && Math.abs(incomeChange) < 5) {
         explanations.incomeVsExpenses = "Your income and expenses have been relatively stable recently.";
       } else if (expenseChange > 10) {
@@ -489,10 +490,10 @@ const Dashboard = () => {
       const recent7Days = dailyChartData.slice(-7);
       const previous7Days = dailyChartData.slice(-14, -7);
       const recentAvg = recent7Days.reduce((sum, d) => sum + d.amount, 0) / 7;
-      const previousAvg = previous7Days.length > 0 
-        ? previous7Days.reduce((sum, d) => sum + d.amount, 0) / previous7Days.length 
+      const previousAvg = previous7Days.length > 0
+        ? previous7Days.reduce((sum, d) => sum + d.amount, 0) / previous7Days.length
         : 0;
-      
+
       if (previousAvg > 0) {
         const change = ((recentAvg - previousAvg) / previousAvg) * 100;
         if (Math.abs(change) < 10) {
@@ -636,7 +637,7 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
-        
+
         {cards.length === 0 ? (
           <div className="glass-card rounded-xl p-8 border border-white/10 text-center">
             <div className="max-w-sm mx-auto">
@@ -662,18 +663,16 @@ const Dashboard = () => {
                 key={card.id}
                 className="glass-card rounded-xl p-5 border border-white/10 relative overflow-hidden"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${
-                  card.type === 'Credit' 
-                    ? 'from-blue-500/20 to-purple-500/20' 
-                    : 'from-green-500/20 to-cyan-500/20'
-                } opacity-50`}></div>
+                <div className={`absolute inset-0 bg-gradient-to-br ${card.type === 'Credit'
+                  ? 'from-blue-500/20 to-purple-500/20'
+                  : 'from-green-500/20 to-cyan-500/20'
+                  } opacity-50`}></div>
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-4">
-                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                      card.type === 'Credit'
-                        ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                        : 'bg-green-500/20 text-green-300 border border-green-500/30'
-                    }`}>
+                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${card.type === 'Credit'
+                      ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                      : 'bg-green-500/20 text-green-300 border border-green-500/30'
+                      }`}>
                       {card.type}
                     </span>
                     <span className="text-xs text-text-secondary">{card.bankName}</span>
@@ -702,6 +701,11 @@ const Dashboard = () => {
           toast.success('Card added successfully');
         }}
       />
+
+      {/* Gamification Card - NEW! */}
+      <div className="mb-8">
+        <GamificationCard />
+      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -900,7 +904,7 @@ const Dashboard = () => {
                     grid: { color: '#374151' }
                   },
                   y: {
-                    ticks: { 
+                    ticks: {
                       color: '#9ca3af',
                       callback: (value) => `₹${(value / 100000).toFixed(1)}L`
                     },
@@ -1097,7 +1101,7 @@ const Dashboard = () => {
                   },
                   scales: {
                     x: {
-                      ticks: { 
+                      ticks: {
                         color: '#9ca3af',
                         maxRotation: 45,
                         minRotation: 45
@@ -1298,25 +1302,23 @@ const Dashboard = () => {
           </div>
           <div className="flex items-center gap-6">
             <div className="text-center">
-              <div className={`text-5xl font-bold ${
-                financialHealth.score >= 80 ? 'text-green-400' :
+              <div className={`text-5xl font-bold ${financialHealth.score >= 80 ? 'text-green-400' :
                 financialHealth.score >= 65 ? 'text-teal-400' :
-                financialHealth.score >= 50 ? 'text-yellow-400' :
-                financialHealth.score >= 35 ? 'text-orange-400' :
-                'text-red-400'
-              }`}>
+                  financialHealth.score >= 50 ? 'text-yellow-400' :
+                    financialHealth.score >= 35 ? 'text-orange-400' :
+                      'text-red-400'
+                }`}>
                 {financialHealth.score}
               </div>
               <div className="text-slate-400 text-sm mt-1">out of 100</div>
             </div>
             <div className="flex-1">
-              <div className={`px-3 py-1 rounded-lg border inline-block ${
-                financialHealth.level === 'excellent' ? 'bg-green-500/20 text-green-400 border-green-500/50' :
+              <div className={`px-3 py-1 rounded-lg border inline-block ${financialHealth.level === 'excellent' ? 'bg-green-500/20 text-green-400 border-green-500/50' :
                 financialHealth.level === 'good' ? 'bg-teal-500/20 text-teal-400 border-teal-500/50' :
-                financialHealth.level === 'fair' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' :
-                financialHealth.level === 'needs_improvement' ? 'bg-orange-500/20 text-orange-400 border-orange-500/50' :
-                'bg-red-500/20 text-red-400 border-red-500/50'
-              }`}>
+                  financialHealth.level === 'fair' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' :
+                    financialHealth.level === 'needs_improvement' ? 'bg-orange-500/20 text-orange-400 border-orange-500/50' :
+                      'bg-red-500/20 text-red-400 border-red-500/50'
+                }`}>
                 {financialHealth.level.replace('_', ' ').toUpperCase()}
               </div>
               {financialHealth.recommendations && financialHealth.recommendations.length > 0 && (
@@ -1395,9 +1397,8 @@ const Dashboard = () => {
                       <td className="px-6 py-4 text-sm text-text-secondary font-normal">
                         {transaction.category || 'Uncategorized'}
                       </td>
-                      <td className={`px-6 py-4 text-sm font-semibold ${
-                        transaction.type === 'income' ? 'text-green-400' : 'text-red-400'
-                      }`}>
+                      <td className={`px-6 py-4 text-sm font-semibold ${transaction.type === 'income' ? 'text-green-400' : 'text-red-400'
+                        }`}>
                         {transaction.type === 'income' ? '+' : '-'}
                         {formatExpense(Math.abs(transaction.amount || 0))}
                       </td>
