@@ -23,6 +23,7 @@ import Invest from './pages/Invest';
 import FinanceNews from './pages/FinanceNews';
 import StockDetail from './pages/StockDetail';
 import PortfolioInsights from './pages/PortfolioInsights';
+import FreelancerTools from './pages/FreelancerTools';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import DataDeletionPolicy from './pages/DataDeletionPolicy';
@@ -86,11 +87,11 @@ function AppContent({ setUser: setUserProp }) {
             profession: profession ? decodeURIComponent(profession) : null,
           };
 
-          console.log('📋 Processed user data:', { 
-            email: userData.email, 
-            _id: userData._id, 
-            hasEmail: !!userData.email, 
-            hasId: !!userData._id 
+          console.log('📋 Processed user data:', {
+            email: userData.email,
+            _id: userData._id,
+            hasEmail: !!userData.email,
+            hasId: !!userData._id
           });
 
           // Validate - must have email and _id
@@ -98,7 +99,7 @@ function AppContent({ setUser: setUserProp }) {
             // Save to localStorage FIRST
             localStorage.setItem('token', tokenFromUrl);
             localStorage.setItem('user', JSON.stringify(userData));
-            
+
             if (userData.onboardingCompleted) {
               localStorage.setItem('onboardingCompleted', 'true');
             } else {
@@ -106,7 +107,7 @@ function AppContent({ setUser: setUserProp }) {
             }
 
             console.log('✅ Saved to localStorage, setting user state');
-            
+
             // Set user state
             setUser(userData);
             setUserProp(userData);
@@ -385,6 +386,16 @@ function AppContent({ setUser: setUserProp }) {
             <ProtectedRoute user={user}>
               <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
                 <PortfolioInsights />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/freelancer"
+          element={
+            <ProtectedRoute user={user}>
+              <Layout user={user} setUser={(u) => { setUser(u); setUserProp(u); }}>
+                <FreelancerTools />
               </Layout>
             </ProtectedRoute>
           }

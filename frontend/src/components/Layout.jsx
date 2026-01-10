@@ -17,7 +17,7 @@ const Layout = ({ children, user, setUser }) => {
     const localOnboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
     const backendOnboardingCompleted = user?.onboardingCompleted === true;
     const isGuest = user?.isGuest === true || user?.role === 'guest';
-    
+
     // Skip onboarding checks for guests
     if (isGuest) {
       setShowFirstTimeOnboarding(false);
@@ -25,7 +25,7 @@ const Layout = ({ children, user, setUser }) => {
       setCheckingOnboarding(false);
       return;
     }
-    
+
     // Show first-time onboarding ONLY if onboarding not completed
     // Only check onboardingCompleted flag, not individual fields
     if (!localOnboardingCompleted && !backendOnboardingCompleted && user && !isGuest) {
@@ -69,7 +69,7 @@ const Layout = ({ children, user, setUser }) => {
 
   // Allow Settings page to render even during onboarding (user might need to access settings)
   const isSettingsPage = window.location.pathname === '/settings';
-  
+
   // First-time onboarding (Name, Age, Profession) - mandatory for new Google users
   // BUT allow Settings page to render
   if (showFirstTimeOnboarding && !isSettingsPage) {
@@ -96,8 +96,8 @@ const Layout = ({ children, user, setUser }) => {
     <div className="min-h-screen bg-app-bg relative flex flex-col">
       {/* Top Navigation Bar */}
       <TopNav user={user} setUser={setUser} />
-      
-      <div className="flex flex-1 pt-14 md:pt-16">
+
+      <div className="flex flex-1 pt-20 md:pt-20">
         {/* Left Sidebar - Hidden on mobile, visible on desktop */}
         <div className="hidden md:block">
           <Sidebar user={user} setUser={setUser} />

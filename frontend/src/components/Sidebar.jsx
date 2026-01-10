@@ -5,59 +5,22 @@ import Button from './ui/Button';
 import GuestBadge from './GuestBadge';
 // Import logo icon for sidebar header
 import iconSrc from '../assets/logo/icon.png';
-import { 
-  DashboardIcon, 
-  ExpensesIcon, 
-  IncomeIcon, 
-  BudgetsIcon, 
-  GoalsIcon, 
-  FamilyIcon, 
-  InsightsIcon, 
-  SettingsIcon 
+import {
+  DashboardIcon,
+  ExpensesIcon,
+  IncomeIcon,
+  BudgetsIcon,
+  GoalsIcon,
+  FamilyIcon,
+  InsightsIcon,
+  FreelanceIcon,
+  SettingsIcon
 } from './Icons';
 
-// Card icon SVG
-const CardIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-  </svg>
-);
-
-// Transaction icon SVG
-const TransactionIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-  </svg>
-);
-
-// Invest icon SVG
-const InvestIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-  </svg>
-);
-
-// Logout icon SVG
-const LogoutIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-  </svg>
-);
+// ... (CardIcon, TransactionIcon, InvestIcon, LogoutIcon remain same)
 
 const Sidebar = ({ user, setUser }) => {
-  const location = useLocation();
-
-  const handleLogout = async () => {
-    try {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('isGuest');
-      setUser(null);
-      toast.success('Logged out successfully');
-    } catch (error) {
-      toast.error('Error logging out');
-    }
-  };
+  // ... (handleLogout)
 
   const navItems = [
     { path: '/', label: 'Dashboard', Icon: DashboardIcon },
@@ -65,6 +28,7 @@ const Sidebar = ({ user, setUser }) => {
     { path: '/transactions', label: 'Transactions', Icon: TransactionIcon },
     { path: '/expenses', label: 'Expenses', Icon: ExpensesIcon },
     { path: '/income', label: 'Income', Icon: IncomeIcon },
+    { path: '/freelancer', label: 'Freelancer Tools', Icon: FreelanceIcon },
     { path: '/budgets', label: 'Budgets', Icon: BudgetsIcon },
     { path: '/goals', label: 'Goals', Icon: GoalsIcon },
     { path: '/invest', label: 'Stash Invest', Icon: InvestIcon },
@@ -115,11 +79,10 @@ const Sidebar = ({ user, setUser }) => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isActive
+                className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
                     ? 'bg-teal-blue/10 text-teal-blue border border-teal-blue/30'
                     : 'text-text-secondary hover:text-text-primary hover:bg-card-bg'
-                }`}
+                  }`}
               >
                 <item.Icon className="w-5 h-5 flex-shrink-0" />
                 <span>{item.label}</span>

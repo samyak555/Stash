@@ -109,7 +109,7 @@ const Expenses = () => {
     <div className="px-4 py-8 animate-fade-in">
       {/* Header */}
       <div className="mb-12">
-        <div className="flex justify-between items-start gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-3">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight flex items-center">
               <div className="p-2 rounded-lg bg-pink-500/10 border border-pink-500/20 mr-4">
@@ -123,7 +123,7 @@ const Expenses = () => {
             onClick={() => setShowForm(!showForm)}
             variant="primary"
             leftIcon={<span>{showForm ? '✕' : '+'}</span>}
-            className="whitespace-nowrap"
+            className="w-full sm:w-auto whitespace-nowrap"
           >
             {showForm ? 'Cancel' : 'Add Expense'}
           </Button>
@@ -200,8 +200,8 @@ const Expenses = () => {
             </div>
           </div>
           <div className="flex gap-3 mt-4">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={saving}
               variant="primary"
             >
